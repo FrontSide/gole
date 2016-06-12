@@ -24,7 +24,7 @@ func add_player(player_name string) {
         log.Fatal("No more players can be added to the Game.")
     }
 
-    player := Player{name: player_name, points: 0}
+    player := Player{name: player_name}
 
     for i := 0; i < DEFAULT_NUMBER_OF_LETTERS_IN_HAND; i++ {
         player.letters_in_hand += pop_letter_from_set()
@@ -56,4 +56,6 @@ func main() {
     add_player("mrman")
     add_player("mrman2")
     log.Println("Init letter set:", letter_set)
+
+    place_letter(2, 3, 'a')
 }
