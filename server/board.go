@@ -43,23 +43,19 @@ func init() {
             tiles[vertical_idx][horizontal_idx] = tile
         }
     }
-    log.Println(tiles)
 }
 
-func get_letter_from_tile(vertical_tile_idx int, horizontal_tile_idx int) string {
+func get_letter_from_tile(vertical_tile_idx int, horizontal_tile_idx int) rune {
     // Return letter at given tile.
     // Return 0 if no letter on tile.
-    if tiles[vertical_tile_idx][horizontal_tile_idx].letter == 0 {
-        return nil
-    }
-    return string(tiles[vertical_tile_idx][horizontal_tile_idx].letter)
+    return tiles[vertical_tile_idx][horizontal_tile_idx].letter
 }
 
 func get_horizontal_word_at_tile(vertical_tile_idx int, horizontal_tile_idx int) string {
     // Get the horizontal word (read from left to right)
     // that the letter on the given tile is a part of (if any).
 
-    if get_letter_from_tile(vertical_tile_idx, horizontal_tile_idx) == nil {
+    if get_letter_from_tile(vertical_tile_idx, horizontal_tile_idx) == 0 {
         log.Fatal("Cannot retrieve horizontal word. Initial tile is empty.")
     }
 
@@ -68,7 +64,7 @@ func get_horizontal_word_at_tile(vertical_tile_idx int, horizontal_tile_idx int)
 
     // Go to left outer tile of horizontal word at this tile
     for horizontal_loop_idx := horizontal_tile_idx-1; horizontal_loop_idx >= 0; horizontal_loop_idx-- {
-        if get_letter_from_tile(vertical_tile_idx, horizontal_loop_idx) == nil {
+        if get_letter_from_tile(vertical_tile_idx, horizontal_loop_idx) == 0 {
             outer_left_tile_of_word = horizontal_loop_idx + 1
             break;
         }
@@ -76,7 +72,7 @@ func get_horizontal_word_at_tile(vertical_tile_idx int, horizontal_tile_idx int)
 
     // Go to right outer tile of horizontal word at given tile
     for horizontal_loop_idx := outer_left_tile_of_word+1; horizontal_loop_idx <= HORIZONTAL_TILES_AMOUNT; horizontal_loop_idx++ {
-        if get_letter_from_tile(vertical_tile_idx, horizontal_loop_idx) == nil {
+        if get_letter_from_tile(vertical_tile_idx, horizontal_loop_idx) == 0 {
             outer_right_tile_of_word = horizontal_loop_idx - 1
         }
     }
@@ -84,7 +80,7 @@ func get_horizontal_word_at_tile(vertical_tile_idx int, horizontal_tile_idx int)
     // Read word from outer left to outer right tile
     var word string;
     for loop_idx := outer_left_tile_of_word; loop_idx < outer_right_tile_of_word; loop_idx++ {
-        word += get_letter_from_tile(vertical_tile_idx, loop_idx)
+        word += string(get_letter_from_tile(vertical_tile_idx, loop_idx))
     }
 
     return word
@@ -95,7 +91,7 @@ func get_vertical_word_at_tile(vertical_tile_idx int, horizontal_tile_idx int) s
     // Get the vertical word (read from top to bottom)
     // that the letter on the given tile is a part of (if any).
 
-    if get_letter_from_tile(vertical_tile_idx, horizontal_tile_idx) == nil {
+    if get_letter_from_tile(vertical_tile_idx, horizontal_tile_idx) == 0 {
         log.Fatal("Cannot retrieve horizontal word. Initial tile is empty.")
     }
 
@@ -104,7 +100,7 @@ func get_vertical_word_at_tile(vertical_tile_idx int, horizontal_tile_idx int) s
 
     // Go to top outer tile of vertical word at this tile
     for vertical_loop_idx := vertical_tile_idx-1; vertical_loop_idx >= 0; vertical_loop_idx-- {
-        if get_letter_from_tile(vertical_loop_idx, horizontal_tile_idx) == nil {
+        if get_letter_from_tile(vertical_loop_idx, horizontal_tile_idx) == 0 {
             outer_top_tile_of_word = vertical_loop_idx + 1
             break;
         }
@@ -112,7 +108,7 @@ func get_vertical_word_at_tile(vertical_tile_idx int, horizontal_tile_idx int) s
 
     // Go to right outer tile of horizontal word at given tile
     for vertical_loop_idx := outer_top_tile_of_word+1; vertical_loop_idx <= VERTICAL_TILES_AMOUNT; vertical_loop_idx++ {
-        if get_letter_from_tile(vertical_loop_idx, horizontal_tile_idx) == nil {
+        if get_letter_from_tile(vertical_loop_idx, horizontal_tile_idx) == 0 {
             outer_bottom_tile_of_word = vertical_loop_idx - 1
         }
     }
@@ -120,7 +116,7 @@ func get_vertical_word_at_tile(vertical_tile_idx int, horizontal_tile_idx int) s
     // Read word from outer left to outer right tile
     var word string;
     for loop_idx := outer_top_tile_of_word; loop_idx < outer_bottom_tile_of_word; loop_idx++ {
-        word += get_letter_from_tile(loop_idx, horizontal_tile_idx)
+        word += string(get_letter_from_tile(loop_idx, horizontal_tile_idx))
     }
 
     return word
@@ -131,9 +127,14 @@ func place_letter(vertical_tile_idx int, horizontal_tile_idx int, letter rune) {
     // add a letter to the board.
     // throw an error if the letter cannot be placed there
     // (tile occupied)
-    if get_letter_from_tile != nil {
+    if get_letter_from_tile(vertical_tile_idx, horizontal_tile_idx) != 0 {
         log.Fatal("Cannot place letter. Tile occupied")
     }
+
+    if ! is_legal_letter(letter) {
+        log.Fatal("Cannot place letter. Character illegal.")
+    }
+
     tiles[vertical_tile_idx][horizontal_tile_idx].letter = letter
 }
 
@@ -145,8 +146,8 @@ func remove_letter(vertical_tile_idx int, horizontal_tile_idx int) {
 func lock_letters() {
     // lock all letters on the board so they cannot be
     // removed by the player anymore
-    for idx, column := range tiles {
-        for idx, tile := range column {
+    for _, column := range tiles {
+        for _, tile := range column {
             if tile.letter != 0 {
                 tile.locked = true
             }

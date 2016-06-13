@@ -57,5 +57,9 @@ func main() {
     add_player("mrman2")
     log.Println("Init letter set:", letter_set)
 
+    lock_letters()
     place_letter(2, 3, 'a')
+    place_letter(2, 4, 'x')
+    log.Println(string(get_letter_from_tile(2, 4)))
+
 }
