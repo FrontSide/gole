@@ -123,16 +123,32 @@ func get_vertical_word_at_tile(vertical_tile_idx int, horizontal_tile_idx int) s
 
 }
 
-func place_letter(vertical_tile_idx int, horizontal_tile_idx int, letter rune) {
-    // add a letter to the board.
-    // throw an error if the letter cannot be placed there
-    // (tile occupied)
+func is_legal_placement(vertical_tile_idx int, horizontal_tile_idx int, letter rune) (bool, string) {
+    // check whether the given letter can be placed on the given tile
+    // without actually placing it there.
+    //
+    // returns true if placement is possible, otherwise false
+    // returns a string as second parameter describing why the placement is
+    // illegal, otherwise emptystring.
+
     if get_letter_from_tile(vertical_tile_idx, horizontal_tile_idx) != 0 {
-        log.Fatal("Cannot place letter. Tile occupied")
+        return false, "Tile occupied"
     }
 
     if ! is_legal_letter(letter) {
-        log.Fatal("Cannot place letter. Character illegal.")
+        return false, "Character illegal."
+    }
+
+    return true, ""
+
+}
+
+func place_letter(vertical_tile_idx int, horizontal_tile_idx int, letter rune) {
+    // add a letter to the board.
+    // throw an error if placement of the leter is not legal
+
+    if isLegal, reason := is_legal_placement(vertical_tile_idx, horizontal_tile_idx, letter); !isLegal {
+        log.Fatal("Cannot place letter. ", reason)
     }
 
     tiles[vertical_tile_idx][horizontal_tile_idx].letter = letter
