@@ -2,64 +2,32 @@ package main
 
 import (
     "log"
-    "unicode/utf8"
 );
-
-type Player struct {
-    name string;
-    points int;
-    letters_in_hand string;
-}
-
-var MAX_NUMBER_OF_PLAYERS = 4
-var DEFAULT_NUMBER_OF_LETTERS_IN_HAND = 7
-var letter_set string;
-var players []Player;
-
-func add_player(player_name string) {
-    // Add a player to the list of players for the
-    // upcoming game play
-
-    if len(players) >= MAX_NUMBER_OF_PLAYERS {
-        log.Fatal("No more players can be added to the Game.")
-    }
-
-    player := Player{name: player_name}
-
-    for i := 0; i < DEFAULT_NUMBER_OF_LETTERS_IN_HAND; i++ {
-        player.letters_in_hand += pop_letter_from_set()
-    }
-
-    log.Println(player)
-
-}
-
-func pop_letter_from_set() string {
-    // Pop the last letter (right end) from the
-    // letter string. The letter will be returned and the
-    // occurrence will be removed from the string.
-    if len(letter_set) < 1 {
-        log.Fatal("Cannot pop letter from set. Empty.")
-    }
-    var letter_to_return = string(letter_set[utf8.RuneCountInString(letter_set)-1])
-    letter_set = letter_set[:len(letter_set)-1]
-    return letter_to_return
-}
 
 func init() {
     // Get the full english letter set
-    letter_set = get_full_letter_set()
-    log.Println("Init letter set:", letter_set)
+    letterSet = GetFullLetterSet()
+    log.Println("Init letter set:", letterSet)
 }
 
 func main() {
-    add_player("mrman")
-    add_player("mrman2")
-    log.Println("Init letter set:", letter_set)
 
-    lock_letters()
-    place_letter(2, 3, 'a')
-    place_letter(2, 4, 'x')
-    log.Println(string(get_letter_from_tile(2, 4)))
+    var game Game = Game{}
+
+    log.Println(game)
+
+    AddPlayer("mrman", &game.players)
+    AddPlayer("mrman2", &game.players)
+    log.Println("Init letter set:", letterSet)
+
+    log.Println(game)
+
+    LockLetters()
+    PlaceLetter(7, 7, 'a')
+    PlaceLetter(7, 8, 'x')
+    log.Println(string(GetLetterFromTile(7, 8)))
+    log.Println(string(GetVerticalWordAtTile(7, 8)))
+    log.Println("'" + string(GetHorizontalWordAtTile(7, 8)) + "'")
+    log.Println(HasLetterInHand(&game.players[0], 'e'))
 
 }

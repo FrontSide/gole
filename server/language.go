@@ -10,11 +10,11 @@ import (
 );
 
 type Letter struct {
-    occurrences, point_value int
+    occurrences, pointValue int
 }
 
-var letters_amount = 100
-var letter_distribution = map[rune]Letter {
+var lettersAmount = 100
+var letterDistribution = map[rune]Letter {
     ' ': {2, 0},
     'a': {9, 1},
     'b': {2, 3},
@@ -44,25 +44,35 @@ var letter_distribution = map[rune]Letter {
     'z': {1, 10},
 }
 
-func get_full_letter_set() string {
+func GetFullLetterSet() string {
     /* Return a randomly shuffled full initial set of letters. */
-    full_letter_set := ""
-    letter_count := 0
-    for letter, letter_properties := range letter_distribution {
-        letter_count += letter_properties.occurrences
-        for i := 0; i < letter_properties.occurrences; i++ {
-            full_letter_set += string(letter)
+    fullLetterSet := ""
+    letterCount := 0
+    for letter, letterProperties := range letterDistribution {
+        letterCount += letterProperties.occurrences
+        for i := 0; i < letterProperties.occurrences; i++ {
+            fullLetterSet += string(letter)
         }
     }
-    if letter_count != letters_amount {
-        log.Fatal("Letter distribution error! Is %d, expected %d\n", letter_count, letters_amount)
+    if letterCount != lettersAmount {
+        log.Fatal("Letter distribution error! Is %d, expected %d\n", letterCount, lettersAmount)
     }
     // Shuffle string
     rand.Seed(time.Now().UTC().UnixNano())
-    random_indices := rand.Perm(letter_count)
-    var full_shuffled_letter_set []uint8 = make([]uint8, letter_count)
-    for original_index, new_random_index := range random_indices {
-        full_shuffled_letter_set[new_random_index] = uint8(full_letter_set[original_index])
+    randomIndices := rand.Perm(letterCount)
+    var fullShuffledLetterSet []uint8 = make([]uint8, letterCount)
+    for originalIndex, newRandomIndex := range randomIndices {
+        fullShuffledLetterSet[newRandomIndex] = uint8(fullLetterSet[originalIndex])
     }
-    return string(full_shuffled_letter_set)
+    return string(fullShuffledLetterSet)
+}
+
+func IsLegalLetter(letter rune) bool {
+    // Check whether a given letter is an existing character in the letter set
+    for legalLetter, _ := range letterDistribution {
+        if rune(legalLetter) == letter {
+            return true
+        }
+    }
+    return false
 }
