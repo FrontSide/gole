@@ -22,15 +22,23 @@ const (
     NO_TILE_EFFECT
 )
 
-var tiles [][]Tile;
-
 func TileHasTripleWordEffect(verticalIdx int, horizontalIdx int) bool {
+    // Return a bool that indicates whether a tile at given
+    // index has a 'triple word' effect, according to the
+    // original scrabble board.
     return verticalIdx % 7 == 0 && horizontalIdx % 7 == 0 && !(verticalIdx == (VERTICAL_TILES_AMOUNT-1)/2 && horizontalIdx == (HORIZONTAL_TILES_AMOUNT-1)/2)
 }
 
-func init() {
-    /* Init board. Create tiles. */
-    tiles = make([][]Tile, VERTICAL_TILES_AMOUNT)
+func GetCleanTiles() [][]Tile {
+    // Create a initial 2-dimensional array of board tiles.
+    // Requires:
+    // - The constants required to create the tile array need to be availvable.
+    //   (VERTICAL_TILES_AMOUNT, HORIZONTAL_TILES_AMOUNT, etc.)
+    // Guarantees:
+    // - Return a 2-dimesnisonal array with elements of type 'Tile'
+    // - The tiles are empty, unlocked and are initiated with their tile effects
+
+    var tiles = make([][]Tile, VERTICAL_TILES_AMOUNT)
     for verticalIdx := 0; verticalIdx < VERTICAL_TILES_AMOUNT; verticalIdx++ {
         tiles[verticalIdx] = make([]Tile, HORIZONTAL_TILES_AMOUNT)
         for horizontalIdx := 0; horizontalIdx < HORIZONTAL_TILES_AMOUNT; horizontalIdx++ {
@@ -43,9 +51,10 @@ func init() {
             tiles[verticalIdx][horizontalIdx] = tile
         }
     }
+    return tiles
 }
 
-func GetLetterFromTile(verticalTileIdx int, horizontalTileIdx int) rune {
+func GetLetterFromTile(verticalTileIdx int, horizontalTileIdx int, tiles [][]Tile) rune {
     // Return letter at given tile.
     //
     // Guarantees:
@@ -59,11 +68,11 @@ func GetLetterFromTile(verticalTileIdx int, horizontalTileIdx int) rune {
     return tiles[verticalTileIdx][horizontalTileIdx].letter
 }
 
-func GetHorizontalWordAtTile(verticalTileIdx int, horizontalTileIdx int) string {
+func GetHorizontalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [][]Tile) []Tile {
     // Get the horizontal word (read from left to right)
     // that the letter on the given tile is a part of (if any).
 
-    if GetLetterFromTile(verticalTileIdx, horizontalTileIdx) == 0 {
+    if GetLetterFromTile(verticalTileIdx, horizontalTileIdx, tiles) == 0 {
         log.Fatal("Cannot retrieve horizontal word. Initial tile is empty.")
     }
 
@@ -72,7 +81,7 @@ func GetHorizontalWordAtTile(verticalTileIdx int, horizontalTileIdx int) string 
 
     // Go to left outer tile of horizontal word at this tile
     for horizontalLoopIdx := horizontalTileIdx-1; horizontalLoopIdx >= 0; horizontalLoopIdx-- {
-        if GetLetterFromTile(verticalTileIdx, horizontalLoopIdx) == 0 {
+        if GetLetterFromTile(verticalTileIdx, horizontalLoopIdx, tiles) == 0 {
             outerLeftTileOfWord = horizontalLoopIdx + 1
             break;
         }
@@ -80,26 +89,22 @@ func GetHorizontalWordAtTile(verticalTileIdx int, horizontalTileIdx int) string 
 
     // Go to right outer tile of horizontal word at given tile
     for horizontalLoopIdx := outerLeftTileOfWord+1; horizontalLoopIdx <= HORIZONTAL_TILES_AMOUNT; horizontalLoopIdx++ {
-        if GetLetterFromTile(verticalTileIdx, horizontalLoopIdx) == 0 {
+        if GetLetterFromTile(verticalTileIdx, horizontalLoopIdx, tiles) == 0 {
             outerRightTileOfWord = horizontalLoopIdx - 1
         }
     }
 
-    // Read word from outer left to outer right tile
-    var word string;
-    for loopIdx := outerLeftTileOfWord; loopIdx < outerRightTileOfWord; loopIdx++ {
-        word += string(GetLetterFromTile(verticalTileIdx, loopIdx))
-    }
+    var fullRow []Tile = tiles[verticalTileIdx]
 
-    return word
+    return fullRow[outerLeftTileOfWord:outerRightTileOfWord]
 
 }
 
-func GetVerticalWordAtTile(verticalTileIdx int, horizontalTileIdx int) string {
+func GetVerticalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [][]Tile) []Tile {
     // Get the vertical word (read from top to bottom)
     // that the letter on the given tile is a part of (if any).
 
-    if GetLetterFromTile(verticalTileIdx, horizontalTileIdx) == 0 {
+    if GetLetterFromTile(verticalTileIdx, horizontalTileIdx, tiles) == 0 {
         log.Fatal("Cannot retrieve horizontal word. Initial tile is empty.")
     }
 
@@ -108,7 +113,7 @@ func GetVerticalWordAtTile(verticalTileIdx int, horizontalTileIdx int) string {
 
     // Go to top outer tile of vertical word at this tile
     for verticalLoopIdx := verticalTileIdx-1; verticalLoopIdx >= 0; verticalLoopIdx-- {
-        if GetLetterFromTile(verticalLoopIdx, horizontalTileIdx) == 0 {
+        if GetLetterFromTile(verticalLoopIdx, horizontalTileIdx, tiles) == 0 {
             outerTopTileOfWord = verticalLoopIdx + 1
             break;
         }
@@ -116,22 +121,16 @@ func GetVerticalWordAtTile(verticalTileIdx int, horizontalTileIdx int) string {
 
     // Go to right outer tile of horizontal word at given tile
     for verticalLoopIdx := outerTopTileOfWord+1; verticalLoopIdx <= VERTICAL_TILES_AMOUNT; verticalLoopIdx++ {
-        if GetLetterFromTile(verticalLoopIdx, horizontalTileIdx) == 0 {
+        if GetLetterFromTile(verticalLoopIdx, horizontalTileIdx, tiles) == 0 {
             outerBottomTileOfWord = verticalLoopIdx - 1
         }
     }
 
-    // Read word from outer left to outer right tile
-    var word string;
-    for loopIdx := outerTopTileOfWord; loopIdx < outerBottomTileOfWord; loopIdx++ {
-        word += string(GetLetterFromTile(loopIdx, horizontalTileIdx))
-    }
-
-    return word
+    return tiles[outerTopTileOfWord:outerBottomTileOfWord][horizontalTileIdx]
 
 }
 
-func IsLegalPlacement(verticalTileIdx int, horizontalTileIdx int, letter rune) (bool, string) {
+func IsLegalPlacement(verticalTileIdx int, horizontalTileIdx int, letter rune, tiles [][]Tile) (bool, string) {
     // check whether the given letter can be placed on the given tile
     // without actually placing it there.
     //
@@ -143,17 +142,17 @@ func IsLegalPlacement(verticalTileIdx int, horizontalTileIdx int, letter rune) (
         return false, "Character illegal."
     }
 
-    if GetLetterFromTile(verticalTileIdx, horizontalTileIdx) != 0 {
+    if GetLetterFromTile(verticalTileIdx, horizontalTileIdx, tiles) != 0 {
         return false, "Tile occupied"
     }
 
     // Except for when the first letter is placed,
     // a new letter must always be adjacing at least one more.
     if !(verticalTileIdx == (VERTICAL_TILES_AMOUNT-1)/2 && horizontalTileIdx == (HORIZONTAL_TILES_AMOUNT-1)/2) &&
-       GetLetterFromTile(verticalTileIdx + 1 , horizontalTileIdx) +
-       GetLetterFromTile(verticalTileIdx, horizontalTileIdx + 1) +
-       GetLetterFromTile(verticalTileIdx - 1 , horizontalTileIdx) +
-       GetLetterFromTile(verticalTileIdx, horizontalTileIdx - 1) == 0 {
+       GetLetterFromTile(verticalTileIdx + 1 , horizontalTileIdx, tiles) +
+       GetLetterFromTile(verticalTileIdx, horizontalTileIdx + 1, tiles) +
+       GetLetterFromTile(verticalTileIdx - 1 , horizontalTileIdx, tiles) +
+       GetLetterFromTile(verticalTileIdx, horizontalTileIdx - 1, tiles) == 0 {
        return false, "Not connected to word"
    }
 
@@ -161,23 +160,23 @@ func IsLegalPlacement(verticalTileIdx int, horizontalTileIdx int, letter rune) (
 
 }
 
-func PlaceLetter(verticalTileIdx int, horizontalTileIdx int, letter rune) {
+func PlaceLetter(verticalTileIdx int, horizontalTileIdx int, letter rune, tiles [][]Tile) {
     // add a letter to the board.
     // throw an error if placement of the leter is not legal
 
-    if isLegal, reason := IsLegalPlacement(verticalTileIdx, horizontalTileIdx, letter); !isLegal {
+    if isLegal, reason := IsLegalPlacement(verticalTileIdx, horizontalTileIdx, letter, tiles); !isLegal {
         log.Fatal("Cannot place letter. ", reason)
     }
 
-    tiles[verticalTileIdx][horizontalTileIdx].letter = letter
+    tiles[verticalTileIdx][horizontalTileIdx].letter = GetLetterFromRune(letter)
 }
 
-func RemoveLetter(verticalTileIdx int, horizontalTileIdx int) {
+func RemoveLetter(verticalTileIdx int, horizontalTileIdx int, tiles [][]Tile) {
     // Remove one single letter from the board that has
     // not been locked yet
 }
 
-func LockLetters() {
+func LockLetters(tiles [][]Tile) {
     // lock all letters on the board so they cannot be
     // removed by the player anymore
     for _, column := range tiles {
@@ -187,10 +186,4 @@ func LockLetters() {
             }
         }
     }
-}
-
-func CheckAllWords() bool {
-    // Check whether all words on the board are
-    // in the dictionary
-    return false
 }
