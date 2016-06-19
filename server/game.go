@@ -3,18 +3,26 @@ package main
 import (
     "log"
     "unicode/utf8"
+    "os/exec"
+    "./golelibs"
 );
 
 type Game struct {
-    id string,
+    id string;
     players []Player;
+
+    // 2-dimensional array storing all tiles
+    // first index represents vertical, second index horizontal tiles
     tiles [][]Tile;
+
+    // String of all letters in the backlog
+    // i.e. that have not yet been handed to a player
+    letterSet string;
 }
 
 var MIN_NUMBER_OF_PLAYERS = 2
 var MAX_NUMBER_OF_PLAYERS = 4
 var DEFAULT_NUMBER_OF_LETTERS_IN_HAND = 7
-var letterSet string;
 
 func GetNewUUID() string {
     // Generate a new uuid for a new game.
@@ -26,37 +34,77 @@ func GetNewUUID() string {
     if err != nil {
         log.Fatal(err)
     }
-    return uuid
+    return string(uuid)
 }
 
-func PlayWord(word string, player Player)
-
-func AddPlayer(playerName string, players *[]Player) {
+func AddPlayer(playerName string, game *Game) {
     // Add a player to the list of players for the
     // upcoming game play
 
-    if len(*players) >= MAX_NUMBER_OF_PLAYERS {
+    if len(game.players) >= MAX_NUMBER_OF_PLAYERS {
         log.Fatal("No more players can be added to the Game.")
     }
 
     player := Player{name: playerName}
 
     for i := 0; i < DEFAULT_NUMBER_OF_LETTERS_IN_HAND; i++ {
-        player.lettersInHand += PopLetterFromSet()
+        player.lettersInHand += PopLetterFromSet(game)
     }
 
-    *players = append(*players, player)
+    game.players = append(game.players, player)
 
 }
 
-func PopLetterFromSet() string {
+func PopLetterFromSet(game *Game) string {
     // Pop the last letter (right end) from the
-    // letter string. The letter will be returned and the
-    // occurrence will be removed from the string.
-    if len(letterSet) < 1 {
+    // letter string of the passed game structure instance.
+    // The letter will be returned and the
+    // occurrence will be removed from the string and stored back to the game.
+    if len(game.letterSet) < 1 {
         log.Fatal("Cannot pop letter from set. Empty.")
     }
-    var letterToReturn = string(letterSet[utf8.RuneCountInString(letterSet)-1])
-    letterSet = letterSet[:len(letterSet)-1]
+    var letterToReturn = string(game.letterSet[utf8.RuneCountInString(game.letterSet)-1])
+    game.letterSet = game.letterSet[:len(game.letterSet)-1]
     return letterToReturn
+}
+
+func FinishTurn(game *Game) {
+
+    // Tiles that have already been respected for point calculation
+    // Tiles that already were were locked before this current turn
+    // may only be taken into account for rating once.
+    // Tiles that the player placed in this turn (i.e. currently unlocked)
+    // may be counted twice, if they were connected to two different tiles
+    var ratedTiles []Tile;
+    var points int;
+
+    // Get all unlocked tiles
+    for verticalIdx, column := range game.tiles {
+        for horizontalIdx, tile := range column {
+            if tile.letter != 0 && ! tile.locked {
+                var horizontalWord = GetHorizontalWordAtTile(verticalIdx, horizontalIdx, game.tiles)
+                var verticalWord = GetVerticalWordAtTile(verticalIdx, horizontalIdx, game.tiles)
+
+                // Check correctness
+                golelibs.IsAValidWord(horizontalWord)
+                golelibs.IsAValidWord(verticalWord)
+
+                var wordScore int
+                for tile := horizontalWord {
+                    if tile.locked {
+                        ratedTiles  = append(ratedTiles, tile)
+                    } else {
+                        tile.locked = True
+                    }
+                    wordScore += tile.letter.pointValue
+                    // Todo: take effects into account
+                }
+                for tile := verticalWord {
+                    tile.locked = True
+                }
+            }
+        }
+    }
+
+    golelibs.IsAValidWord("oasch")
 }

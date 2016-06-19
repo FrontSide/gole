@@ -76,3 +76,9 @@ func IsLegalLetter(letter rune) bool {
     }
     return false
 }
+
+func GetLetterFromRune(letter rune) Letter {
+    // Return the full letter struct for a letter
+    // passed as a rune
+    return letterDistribution[string(letter)]
+}
