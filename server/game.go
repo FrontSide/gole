@@ -68,6 +68,43 @@ func PopLetterFromSet(game *Game) string {
     return letterToReturn
 }
 
+func GetPointsForWord(wordTiles []Tile) int {
+
+    var word string
+    var wordPoints int
+    var wordPointMultiplicator int
+
+    for tile := wordTiles {
+
+        tile.locked = true
+        wordTiles += str(tile.letter)
+
+        var letterPoints = GetLetterAttributesFromRune(tile.letter)
+        if tile.effect == DOUBLE_LETTER_TILE_EFFECT {
+            letterPoints *= 2
+        } else if tile.effect == TRIPLE_LETTER_TILE_EFFECT {
+            letterPoints *= 3
+        } else if tile.effect == DOUBLE_WORD_TILE_EFFECT {
+            wordPointMultiplicator += 2
+        } else if tile.effect == TRIPLE_WORD_TILE_EFFECT {
+            wordPointMultiplicator += 3
+        }
+        wordPoints += letterPoints
+
+    }
+
+    wordPoints *= horizontalWordPointMultiplicator
+
+    if golelibs.IsAValidWord(horizontalWord) {
+        points += horizontalWordPoints
+    } else {
+        log.Fatalf("Not a valid word: %s", horizontalWord)
+    }
+
+    return wordPoints
+
+}
+
 func FinishTurn(game *Game) {
 
     // Tiles that have already been respected for point calculation
@@ -75,36 +112,40 @@ func FinishTurn(game *Game) {
     // may only be taken into account for rating once.
     // Tiles that the player placed in this turn (i.e. currently unlocked)
     // may be counted twice, if they were connected to two different tiles
-    var ratedTiles []Tile;
+    var confirmedWordTiles [][]Tile;
     var points int;
 
     // Get all unlocked tiles
     for verticalIdx, column := range game.tiles {
         for horizontalIdx, tile := range column {
             if tile.letter != 0 && ! tile.locked {
-                var horizontalWord = GetHorizontalWordAtTile(verticalIdx, horizontalIdx, game.tiles)
-                var verticalWord = GetVerticalWordAtTile(verticalIdx, horizontalIdx, game.tiles)
 
-                // Check correctness
-                golelibs.IsAValidWord(horizontalWord)
-                golelibs.IsAValidWord(verticalWord)
+                var horizontalWordTiles = GetHorizontalWordAtTile(verticalIdx, horizontalIdx, game.tiles)
+                var verticalWordTiles = GetVerticalWordAtTile(verticalIdx, horizontalIdx, game.tiles)
 
-                var wordScore int
-                for tile := horizontalWord {
-                    if tile.locked {
-                        ratedTiles  = append(ratedTiles, tile)
-                    } else {
-                        tile.locked = True
+                //Check if words have alreaddy been confirmed i.e. rated
+                var ignoreHorizontalWord bool
+                var ignoreVerticalWord bool
+                for wordTiles in confirmedWordTiles {
+                    if wordTiles == horizontalWordTiles {
+                        ignoreHorizontalWord = true
                     }
-                    wordScore += tile.letter.pointValue
-                    // Todo: take effects into account
+                    if wordTiles == verticalWordTiles {
+                        ignoreVerticalWord = true
+                    }
                 }
-                for tile := verticalWord {
-                    tile.locked = True
+
+                if ! ignoreHorizontalWord {
+                    points += GetPointsForWord(horizontalWordTiles)
+                    confirmedWordTiles = append(confirmedWordTiles, horizontalWordTiles)
+                }
+
+                if ! ignoreVerticalWord {
+                    points += GetPointsForWord(verticalWordTiles)
+                    confirmedWordTiles = append(confirmedWordTiles, verticalWordTiles)
                 }
             }
         }
     }
 
-    golelibs.IsAValidWord("oasch")
 }

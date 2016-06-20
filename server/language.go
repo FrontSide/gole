@@ -9,12 +9,12 @@ import (
     "time"
 );
 
-type Letter struct {
+type LetterAttributes struct {
     occurrences, pointValue int
 }
 
 var lettersAmount = 100
-var letterDistribution = map[rune]Letter {
+var letterDistribution = map[rune]LetterAttributes {
     ' ': {2, 0},
     'a': {9, 1},
     'b': {2, 3},
@@ -77,7 +77,7 @@ func IsLegalLetter(letter rune) bool {
     return false
 }
 
-func GetLetterFromRune(letter rune) Letter {
+func GetLetterAttributesFromRune(letter rune) Letter {
     // Return the full letter struct for a letter
     // passed as a rune
     return letterDistribution[string(letter)]
