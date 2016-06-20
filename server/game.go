@@ -147,5 +147,4 @@ func FinishTurn(game *Game) {
             }
         }
     }
-
 }
