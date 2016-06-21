@@ -4,6 +4,7 @@ import (
     "log"
     "unicode/utf8"
     "os/exec"
+    "reflect"
     "./golelibs"
 );
 
@@ -74,12 +75,12 @@ func GetPointsForWord(wordTiles []Tile) int {
     var wordPoints int
     var wordPointMultiplicator int
 
-    for tile := wordTiles {
+    for _, tile := range wordTiles {
 
         tile.locked = true
-        wordTiles += str(tile.letter)
+        word += string(tile.letter)
 
-        var letterPoints = GetLetterAttributesFromRune(tile.letter)
+        var letterPoints = GetLetterAttributesFromRune(tile.letter).pointValue
         if tile.effect == DOUBLE_LETTER_TILE_EFFECT {
             letterPoints *= 2
         } else if tile.effect == TRIPLE_LETTER_TILE_EFFECT {
@@ -93,12 +94,10 @@ func GetPointsForWord(wordTiles []Tile) int {
 
     }
 
-    wordPoints *= horizontalWordPointMultiplicator
+    wordPoints *= wordPointMultiplicator
 
-    if golelibs.IsAValidWord(horizontalWord) {
-        points += horizontalWordPoints
-    } else {
-        log.Fatalf("Not a valid word: %s", horizontalWord)
+    if ! golelibs.IsAValidWord(word) {
+        log.Fatalf("Not a valid word: %s", word)
     }
 
     return wordPoints
@@ -126,11 +125,11 @@ func FinishTurn(game *Game) {
                 //Check if words have alreaddy been confirmed i.e. rated
                 var ignoreHorizontalWord bool
                 var ignoreVerticalWord bool
-                for wordTiles in confirmedWordTiles {
-                    if wordTiles == horizontalWordTiles {
+                for _, wordTiles := range confirmedWordTiles {
+                    if reflect.DeepEqual(wordTiles, horizontalWordTiles) {
                         ignoreHorizontalWord = true
                     }
-                    if wordTiles == verticalWordTiles {
+                    if reflect.DeepEqual(wordTiles, verticalWordTiles) {
                         ignoreVerticalWord = true
                     }
                 }

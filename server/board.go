@@ -168,7 +168,7 @@ func PlaceLetter(verticalTileIdx int, horizontalTileIdx int, letter rune, tiles 
         log.Fatal("Cannot place letter. ", reason)
     }
 
-    tiles[verticalTileIdx][horizontalTileIdx].letter = GetLetterFromRune(letter)
+    tiles[verticalTileIdx][horizontalTileIdx].letter = letter
 }
 
 func RemoveLetter(verticalTileIdx int, horizontalTileIdx int, tiles [][]Tile) {
