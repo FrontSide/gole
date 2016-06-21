@@ -12,6 +12,9 @@ type Game struct {
     id string;
     players []Player;
 
+    // hold index of player who has the current turn
+    playerIdxWithTurn int;
+
     // 2-dimensional array storing all tiles
     // first index represents vertical, second index horizontal tiles
     tiles [][]Tile;
@@ -146,4 +149,8 @@ func FinishTurn(game *Game) {
             }
         }
     }
+
+    // Give turn to next player
+    game.playerIdxWithTurn = (game.playerIdxWithTurn + 1) % len(game.players)
+
 }

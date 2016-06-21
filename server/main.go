@@ -50,6 +50,9 @@ func StartNewGame(playerNames ...string) string {
 
     game.tiles = GetCleanTiles()
 
+    //First player in slice will have first turn
+    game.playerIdxWithTurn = 0
+
     games = append(games, game)
 
     return game.id
