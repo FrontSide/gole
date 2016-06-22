@@ -56,6 +56,9 @@ func StartNewGame(playerNames ...string) string {
 }
 
 func main() {
+
+    log.Fatal(http.ListenAndServe(":8080", nil))
+
     // Run web service // accept API calls
     gameUuid := StartNewGame("MrMan", "MrsWoman")
     //log.Println(GetGameByUUID(StartNewGame("MrMan", "MrsWoman")))
