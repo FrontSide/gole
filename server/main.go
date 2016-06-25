@@ -8,7 +8,7 @@ var games []Game
 
 func init() {}
 
-func GetGameByUUID(uuid string) *Game {
+func GetGameBy UUID(uuid string) *Game {
     // Return the game with the given ID if existent in games array.
     // Requires:
     // - a lower letter standard unix uuid as created for the games
@@ -59,6 +59,9 @@ func StartNewGame(playerNames ...string) string {
 }
 
 func main() {
+
+    log.Fatal(http.ListenAndServe(":8080", nil))
+
     // Run web service // accept API calls
     gameUuid := StartNewGame("MrMan", "MrsWoman")
     //log.Println(GetGameByUUID(StartNewGame("MrMan", "MrsWoman")))
