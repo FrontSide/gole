@@ -160,22 +160,6 @@ func IsLegalPlacement(verticalTileIdx int, horizontalTileIdx int, letter rune, t
 
 }
 
-func PlaceLetter(verticalTileIdx int, horizontalTileIdx int, letter rune, tiles [][]Tile) {
-    // add a letter to the board.
-    // throw an error if placement of the leter is not legal
-
-    if isLegal, reason := IsLegalPlacement(verticalTileIdx, horizontalTileIdx, letter, tiles); !isLegal {
-        log.Fatal("Cannot place letter. ", reason)
-    }
-
-    tiles[verticalTileIdx][horizontalTileIdx].letter = letter
-}
-
-func RemoveLetter(verticalTileIdx int, horizontalTileIdx int, tiles [][]Tile) {
-    // Remove one single letter from the board that has
-    // not been locked yet
-}
-
 func LockLetters(tiles [][]Tile) {
     // lock all letters on the board so they cannot be
     // removed by the player anymore

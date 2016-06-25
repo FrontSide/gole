@@ -72,7 +72,33 @@ func PopLetterFromSet(game *Game) string {
     return letterToReturn
 }
 
+func PlaceLetter(game *Game, verticalTileIdx int, horizontalTileIdx int, letter rune) {
+    // add a letter to the board.
+    // throw an error if placement of the leter is not legal
+
+    if isLegal, reason := IsLegalPlacement(verticalTileIdx, horizontalTileIdx, letter, game.tiles); !isLegal {
+        log.Fatal("Cannot place letter. ", reason)
+    }
+
+    game.tiles[verticalTileIdx][horizontalTileIdx].letter = letter
+}
+
+func RemoveLetter(game *Game, verticalTileIdx int, horizontalTileIdx int, tiles [][]Tile) {
+    // Remove one single letter from the board that has
+    // not been locked yet
+
+    if game.tiles[verticalTileIdx][horizontalTileIdx].isLocked {
+        log.Fatal("Cannot remove letter. Tile Locked")
+    }
+
+    game.tiles[verticalTileIdx][horizontalTileIdx].letter = 0
+
+}
+
 func GetPointsForWord(wordTiles []Tile) int {
+    // calculate the points for a series of
+    // tiles, with respect to the point value of a letter
+    // and the tile effects
 
     var word string
     var wordPoints int
