@@ -2,13 +2,15 @@ package main
 
 import (
     "log"
+    "errors"
+    "strings"
 );
 
 var games []Game
 
 func init() {}
 
-func GetGameBy UUID(uuid string) *Game {
+func GetGameByUUID(uuid string) (*Game, error) {
     // Return the game with the given ID if existent in games array.
     // Requires:
     // - a lower letter standard unix uuid as created for the games
@@ -16,12 +18,11 @@ func GetGameBy UUID(uuid string) *Game {
     // - Return game struct that has uuid set as game id
     // - log fatal if no game in array has the given uuid
     for _, game := range games {
-        if game.id == uuid {
-            return &game
+        if game.Id == strings.TrimSpace(uuid) {
+            return &game, nil
         }
     }
-    log.Fatalf("Game with uuid %s could not be found!", uuid)
-    return &Game{}
+    return &Game{}, errors.New("Game with uuid " + uuid + " could not be found!")
 }
 
 func StartNewGame(playerNames ...string) string {
@@ -37,36 +38,37 @@ func StartNewGame(playerNames ...string) string {
         log.Fatalf("%d is not a legal amount of players. Needs to be 2-3.", len(playerNames))
     }
 
-    var game Game = Game{}
-    game.id = GetNewUUID()
+    game := &Game{}
+    game.Id = GetNewUUID()
 
     // Letter set needs to be generated before Players are added
     // since letters need to be taken off the set.
-    game.letterSet = GetFullLetterSet()
+    game.LetterSet = GetFullLetterSet()
 
     for _, playerName := range playerNames {
-        AddPlayer(playerName, &game)
+        AddPlayer(playerName, game)
     }
 
-    game.tiles = GetCleanTiles()
+    game.Tiles = GetCleanTiles()
 
     //First player in slice will have first turn
-    game.playerIdxWithTurn = 0
+    game.PlayerIdxWithTurn = 0
 
-    games = append(games, game)
+    games = append(games, *game)
 
-    return game.id
+    return game.Id
 }
 
 func main() {
 
-    log.Fatal(http.ListenAndServe(":8080", nil))
+    StartWebServer()
 
     // Run web service // accept API calls
     gameUuid := StartNewGame("MrMan", "MrsWoman")
     //log.Println(GetGameByUUID(StartNewGame("MrMan", "MrsWoman")))
-    log.Println(GetGameByUUID(gameUuid))
-    FinishTurn(GetGameByUUID(gameUuid))
+    game, _ := GetGameByUUID(gameUuid)
+    log.Println(game)
+    FinishTurn(game)
     /*
     log.Println("Init letter set:", letterSet)
 

@@ -2,15 +2,16 @@ package main
 
 import (
     "log"
+    "encoding/json"
 )
 
 var VERTICAL_TILES_AMOUNT int = 15
 var HORIZONTAL_TILES_AMOUNT int = 15
 
 type Tile struct {
-    locked bool
-    letter rune
-    effect SpecialTileEffect
+    IsLocked bool
+    Letter rune
+    Effect SpecialTileEffect
 }
 
 type SpecialTileEffect int
@@ -44,9 +45,9 @@ func GetCleanTiles() [][]Tile {
         for horizontalIdx := 0; horizontalIdx < HORIZONTAL_TILES_AMOUNT; horizontalIdx++ {
             var tile Tile = Tile{}
             if TileHasTripleWordEffect(verticalIdx, horizontalIdx) {
-                tile.effect = TRIPLE_WORD_TILE_EFFECT
+                tile.Effect = TRIPLE_WORD_TILE_EFFECT
             } else {
-                tile.effect = NO_TILE_EFFECT
+                tile.Effect = NO_TILE_EFFECT
             }
             tiles[verticalIdx][horizontalIdx] = tile
         }
@@ -65,7 +66,7 @@ func GetLetterFromTile(verticalTileIdx int, horizontalTileIdx int, tiles [][]Til
         return 0
     }
 
-    return tiles[verticalTileIdx][horizontalTileIdx].letter
+    return tiles[verticalTileIdx][horizontalTileIdx].Letter
 }
 
 func GetHorizontalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [][]Tile) []Tile {
@@ -165,21 +166,24 @@ func LockLetters(tiles [][]Tile) {
     // removed by the player anymore
     for _, column := range tiles {
         for _, tile := range column {
-            if tile.letter != 0 {
-                tile.locked = true
+            if tile.Letter != 0 {
+                tile.IsLocked = true
             }
         }
     }
 }
 
-func (game Game) GetBoardAsJson() string {
+func GetBoardAsJson(game *Game) string {
     // Converts a given two-dimensional
     // slice of tiles into a json representation
     // of the board with all the information the tile
     // struct has as well.
-    boardJson, err := json.Marshal(game.tiles)
+    boardJson, err := json.Marshal(game.Tiles)
     if err != nil {
         log.Fatal(err)
     }
-    return boardJson
+    log.Println("G:", game)
+    log.Println("j", string(boardJson))
+
+    return string(boardJson)
 }

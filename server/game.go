@@ -5,23 +5,25 @@ import (
     "unicode/utf8"
     "os/exec"
     "reflect"
+    "strings"
+    "errors"
     "./golelibs"
 );
 
 type Game struct {
-    id string;
-    players []Player;
+    Id string;
+    Players []Player;
 
     // hold index of player who has the current turn
-    playerIdxWithTurn int;
+    PlayerIdxWithTurn int;
 
     // 2-dimensional array storing all tiles
     // first index represents vertical, second index horizontal tiles
-    tiles [][]Tile;
+    Tiles [][]Tile;
 
     // String of all letters in the backlog
     // i.e. that have not yet been handed to a player
-    letterSet string;
+    LetterSet string;
 }
 
 var MIN_NUMBER_OF_PLAYERS = 2
@@ -38,24 +40,39 @@ func GetNewUUID() string {
     if err != nil {
         log.Fatal(err)
     }
-    return string(uuid)
+    return strings.TrimSpace(string(uuid))
 }
 
-func AddPlayer(playerName string, game *Game) {
+func (game *Game) GetPlayerByName(playerName string*) (Player, error) {
+    // get a player from the given game by their name
+    for _, existingPlayer := range game.Players {
+        if existingPlayer.Name == strings.TrimSpace(playerName) {
+            return existingPlayer, nil
+        }
+    }
+    return Player{}, errors.New("Player with name does not exist in the game. " + playerName)
+}
+
+func AddPlayer(playerName string, game *Game) error {
     // Add a player to the list of players for the
     // upcoming game play
 
-    if len(game.players) >= MAX_NUMBER_OF_PLAYERS {
+    if len(game.Players) >= MAX_NUMBER_OF_PLAYERS {
         log.Fatal("No more players can be added to the Game.")
     }
 
-    player := Player{name: playerName}
-
-    for i := 0; i < DEFAULT_NUMBER_OF_LETTERS_IN_HAND; i++ {
-        player.lettersInHand += PopLetterFromSet(game)
+    err := GetPlayerByName(playerName)
+    if err == nil {
+        errors.New("A player with this name already exists.")
     }
 
-    game.players = append(game.players, player)
+    player := Player{Name: playerName}
+
+    for i := 0; i < DEFAULT_NUMBER_OF_LETTERS_IN_HAND; i++ {
+        player.LettersInHand += PopLetterFromSet(game)
+    }
+
+    game.Players = append(game.Players, player)
 
 }
 
@@ -64,38 +81,41 @@ func PopLetterFromSet(game *Game) string {
     // letter string of the passed game structure instance.
     // The letter will be returned and the
     // occurrence will be removed from the string and stored back to the game.
-    if len(game.letterSet) < 1 {
+    if len(game.LetterSet) < 1 {
         log.Fatal("Cannot pop letter from set. Empty.")
     }
-    var letterToReturn = string(game.letterSet[utf8.RuneCountInString(game.letterSet)-1])
-    game.letterSet = game.letterSet[:len(game.letterSet)-1]
+    var letterToReturn = string(game.LetterSet[utf8.RuneCountInString(game.LetterSet)-1])
+    game.LetterSet = game.LetterSet[:len(game.LetterSet)-1]
     return letterToReturn
 }
 
-func PlaceLetter(game *Game, verticalTileIdx int, horizontalTileIdx int, letter rune) {
+func PlaceLetter(game *Game, verticalTileIdx int, horizontalTileIdx int, letter rune) error {
     // add a letter to the board.
     // throw an error if placement of the leter is not legal
 
-    if isLegal, reason := IsLegalPlacement(verticalTileIdx, horizontalTileIdx, letter, game.tiles); !isLegal {
-        log.Fatal("Cannot place letter. ", reason)
+    // TODO: Has player who has turn the letter to be placed in hand?
+
+    if isLegal, reason := IsLegalPlacement(verticalTileIdx, horizontalTileIdx, letter, game.Tiles); !isLegal {
+        return errors.New("Cannot place letter. " + reason)
     }
 
-    game.tiles[verticalTileIdx][horizontalTileIdx].letter = letter
+    game.Tiles[verticalTileIdx][horizontalTileIdx].Letter = letter
+    return nil
 }
 
 func RemoveLetter(game *Game, verticalTileIdx int, horizontalTileIdx int, tiles [][]Tile) {
     // Remove one single letter from the board that has
     // not been locked yet
 
-    if game.tiles[verticalTileIdx][horizontalTileIdx].isLocked {
+    if game.Tiles[verticalTileIdx][horizontalTileIdx].IsLocked {
         log.Fatal("Cannot remove letter. Tile Locked")
     }
 
-    game.tiles[verticalTileIdx][horizontalTileIdx].letter = 0
+    game.Tiles[verticalTileIdx][horizontalTileIdx].Letter = 0
 
 }
 
-func GetPointsForWord(wordTiles []Tile) int {
+func GetPointsForWord(wordTiles []Tile) (int, error) {
     // calculate the points for a series of
     // tiles, with respect to the point value of a letter
     // and the tile effects
@@ -106,17 +126,17 @@ func GetPointsForWord(wordTiles []Tile) int {
 
     for _, tile := range wordTiles {
 
-        tile.locked = true
-        word += string(tile.letter)
+        tile.IsLocked = true
+        word += string(tile.Letter)
 
-        var letterPoints = GetLetterAttributesFromRune(tile.letter).pointValue
-        if tile.effect == DOUBLE_LETTER_TILE_EFFECT {
+        var letterPoints = GetLetterAttributesFromRune(tile.Letter).pointValue
+        if tile.Effect == DOUBLE_LETTER_TILE_EFFECT {
             letterPoints *= 2
-        } else if tile.effect == TRIPLE_LETTER_TILE_EFFECT {
+        } else if tile.Effect == TRIPLE_LETTER_TILE_EFFECT {
             letterPoints *= 3
-        } else if tile.effect == DOUBLE_WORD_TILE_EFFECT {
+        } else if tile.Effect == DOUBLE_WORD_TILE_EFFECT {
             wordPointMultiplicator += 2
-        } else if tile.effect == TRIPLE_WORD_TILE_EFFECT {
+        } else if tile.Effect == TRIPLE_WORD_TILE_EFFECT {
             wordPointMultiplicator += 3
         }
         wordPoints += letterPoints
@@ -126,14 +146,14 @@ func GetPointsForWord(wordTiles []Tile) int {
     wordPoints *= wordPointMultiplicator
 
     if ! golelibs.IsAValidWord(word) {
-        log.Fatalf("Not a valid word: %s", word)
+        errors.New("Not a valid word: " + word)
     }
 
-    return wordPoints
+    return wordPoints, nil
 
 }
 
-func FinishTurn(game *Game) {
+func FinishTurn(game *Game) error {
 
     // Tiles that have already been respected for point calculation
     // Tiles that already were were locked before this current turn
@@ -144,12 +164,12 @@ func FinishTurn(game *Game) {
     var points int;
 
     // Get all unlocked tiles
-    for verticalIdx, column := range game.tiles {
+    for verticalIdx, column := range game.Tiles {
         for horizontalIdx, tile := range column {
-            if tile.letter != 0 && ! tile.locked {
+            if tile.Letter != 0 && ! tile.IsLocked {
 
-                var horizontalWordTiles = GetHorizontalWordAtTile(verticalIdx, horizontalIdx, game.tiles)
-                var verticalWordTiles = GetVerticalWordAtTile(verticalIdx, horizontalIdx, game.tiles)
+                var horizontalWordTiles = GetHorizontalWordAtTile(verticalIdx, horizontalIdx, game.Tiles)
+                var verticalWordTiles = GetVerticalWordAtTile(verticalIdx, horizontalIdx, game.Tiles)
 
                 //Check if words have alreaddy been confirmed i.e. rated
                 var ignoreHorizontalWord bool
@@ -164,12 +184,20 @@ func FinishTurn(game *Game) {
                 }
 
                 if ! ignoreHorizontalWord {
-                    points += GetPointsForWord(horizontalWordTiles)
+                    horizontalWordPoints, err := GetPointsForWord(horizontalWordTiles)
+                    if err != nil {
+                        return err
+                    }
+                    points += horizontalWordPoints
                     confirmedWordTiles = append(confirmedWordTiles, horizontalWordTiles)
                 }
 
                 if ! ignoreVerticalWord {
-                    points += GetPointsForWord(verticalWordTiles)
+                    verticalWordPoints, err := GetPointsForWord(verticalWordTiles)
+                    if err != nil {
+                        return err
+                    }
+                    points += verticalWordPoints
                     confirmedWordTiles = append(confirmedWordTiles, verticalWordTiles)
                 }
             }
@@ -177,6 +205,6 @@ func FinishTurn(game *Game) {
     }
 
     // Give turn to next player
-    game.playerIdxWithTurn = (game.playerIdxWithTurn + 1) % len(game.players)
+    game.PlayerIdxWithTurn = (game.PlayerIdxWithTurn + 1) % len(game.Players)
 
 }
