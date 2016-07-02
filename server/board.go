@@ -21,6 +21,7 @@ const (
     DOUBLE_WORD_TILE_EFFECT
     TRIPLE_WORD_TILE_EFFECT
     NO_TILE_EFFECT
+    CENTER_TILE_EFFECT // not really an effect but a special tile
 )
 
 func TileHasTripleWordEffect(verticalIdx int, horizontalIdx int) bool {
@@ -28,6 +29,40 @@ func TileHasTripleWordEffect(verticalIdx int, horizontalIdx int) bool {
     // index has a 'triple word' effect, according to the
     // original scrabble board.
     return verticalIdx % 7 == 0 && horizontalIdx % 7 == 0 && !(verticalIdx == (VERTICAL_TILES_AMOUNT-1)/2 && horizontalIdx == (HORIZONTAL_TILES_AMOUNT-1)/2)
+}
+
+func TileHasDoubleWordEffect(verticalIdx int, horizontalIdx int) bool {
+    // Return a bool that indicates whether a tile at given
+    // index has a 'double word' effect, according to the
+    // original scrabble board.
+    return verticalIdx % 7 == 0 && horizontalIdx % 7 == 0 && !(verticalIdx == (VERTICAL_TILES_AMOUNT-1)/2 && horizontalIdx == (HORIZONTAL_TILES_AMOUNT-1)/2)
+}
+
+func TileHasTripleLetterEffect(verticalIdx int, horizontalIdx int) bool {
+    // Return a bool that indicates whether a tile at given
+    // index has a 'triple letter' effect, according to the
+    // original scrabble board.
+    return verticalIdx % 7 == 0 && horizontalIdx % 7 == 0 && !(verticalIdx == (VERTICAL_TILES_AMOUNT-1)/2 && horizontalIdx == (HORIZONTAL_TILES_AMOUNT-1)/2)
+}
+
+func TileHasDoubleLetterEffect(verticalIdx int, horizontalIdx int) bool {
+    // Return a bool that indicates whether a tile at given
+    // index has a 'double letter' effect, according to the
+    // original scrabble board.
+    if verticalIdx == 0 || verticalIdx == VERTICAL_TILES_AMOUNT-1 {
+        return horizontalIdx % 3 == 0 && !TileHasTripleLetterEffect(verticalIdx, horizontalIdx)
+    }
+
+    if horizontalIdx == 0 || horizontalIdx == HORIZONTAL_TILES_AMOUNT-1 {
+        return verticalIdx % 3 == 0 && !TileHasTripleLetterEffect(verticalIdx, horizontalIdx)
+    }
+
+}
+
+func TileIsCenterTile(verticalIdx int, horizontalIdx int) bool {
+    // Return a bool that indicates whether a tile at given
+    // index has it the oard's center tile
+    return (verticalTileIdx == (VERTICAL_TILES_AMOUNT-1)/2 && horizontalTileIdx == (HORIZONTAL_TILES_AMOUNT-1)/2)
 }
 
 func GetCleanTiles() [][]Tile {
@@ -46,7 +81,20 @@ func GetCleanTiles() [][]Tile {
             var tile Tile = Tile{}
             if TileHasTripleWordEffect(verticalIdx, horizontalIdx) {
                 tile.Effect = TRIPLE_WORD_TILE_EFFECT
-            } else {
+            }
+            else if TileHasDoubleWordEffect() {
+                tile.Effect = DOUBLE_WORD_TILE_EFFECT
+            }
+            else if TileHasTripleLetterEffect() {
+                tile.Effect = TRIPLE_LETTER_TILE_EFFECT
+            }
+            else if TileHasDoubleLetterEffect() {
+                tile.Effect = DOUBLE_LETTER_TILE_EFFECT
+            }
+            else if TileIsCenterTile() {
+                tile.Effect = CENTER_TILE_EFFECT
+            }
+            else {
                 tile.Effect = NO_TILE_EFFECT
             }
             tiles[verticalIdx][horizontalIdx] = tile
@@ -149,7 +197,7 @@ func IsLegalPlacement(verticalTileIdx int, horizontalTileIdx int, letter rune, t
 
     // Except for when the first letter is placed,
     // a new letter must always be adjacing at least one more.
-    if !(verticalTileIdx == (VERTICAL_TILES_AMOUNT-1)/2 && horizontalTileIdx == (HORIZONTAL_TILES_AMOUNT-1)/2) &&
+    if tiles[verticalTileIdx][horizontalTileIdx].Effect != CENTER_TILE_EFFECT &&
        GetLetterFromTile(verticalTileIdx + 1 , horizontalTileIdx, tiles) +
        GetLetterFromTile(verticalTileIdx, horizontalTileIdx + 1, tiles) +
        GetLetterFromTile(verticalTileIdx - 1 , horizontalTileIdx, tiles) +
@@ -173,6 +221,30 @@ func LockLetters(tiles [][]Tile) {
     }
 }
 
+
+func GetLegalPlacementMapAsJson(game *Game) string {
+    // Return a two-dimensional slice containing information,
+    // whether a letter can be placed on the tile of the according
+    // slice indices, as JSON.
+
+    var legalPlacementMap = make([][]bool, VERTICAL_TILES_AMOUNT)
+    for verticalIdx, tileRow := range game.Tiles {
+        var legalPlacementMapRow = make([]bool, HORIZONTAL_TILES_AMOUNT)
+        for horizontalIdx, _ := range tileRow {
+            legalPlacementMapRow[horizontalIdx], _ = IsLegalPlacement(verticalIdx, horizontalIdx, 'a',  game.Tiles)
+        }
+        legalPlacementMap[verticalIdx] = legalPlacementMapRow
+    }
+
+    legalPlacementMapJson, err := json.Marshal(legalPlacementMap)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    return string(legalPlacementMapJson)
+
+}
+
 func GetBoardAsJson(game *Game) string {
     // Converts a given two-dimensional
     // slice of tiles into a json representation
@@ -182,8 +254,6 @@ func GetBoardAsJson(game *Game) string {
     if err != nil {
         log.Fatal(err)
     }
-    log.Println("G:", game)
-    log.Println("j", string(boardJson))
 
     return string(boardJson)
 }

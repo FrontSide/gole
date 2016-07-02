@@ -43,7 +43,7 @@ func GetNewUUID() string {
     return strings.TrimSpace(string(uuid))
 }
 
-func (game *Game) GetPlayerByName(playerName string*) (Player, error) {
+func (game *Game) GetPlayerByName(playerName string) (Player, error) {
     // get a player from the given game by their name
     for _, existingPlayer := range game.Players {
         if existingPlayer.Name == strings.TrimSpace(playerName) {
@@ -61,7 +61,7 @@ func AddPlayer(playerName string, game *Game) error {
         log.Fatal("No more players can be added to the Game.")
     }
 
-    err := GetPlayerByName(playerName)
+    _, err := game.GetPlayerByName(playerName)
     if err == nil {
         errors.New("A player with this name already exists.")
     }
@@ -73,6 +73,8 @@ func AddPlayer(playerName string, game *Game) error {
     }
 
     game.Players = append(game.Players, player)
+
+    return nil
 
 }
 
@@ -204,7 +206,10 @@ func FinishTurn(game *Game) error {
         }
     }
 
+    // Add earned points to current player
+    game.Players[game.PlayerIdxWithTurn].Points += points
+
     // Give turn to next player
     game.PlayerIdxWithTurn = (game.PlayerIdxWithTurn + 1) % len(game.Players)
-
+    return nil
 }

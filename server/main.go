@@ -2,6 +2,7 @@ package main
 
 import (
     "log"
+    "fmt"
     "errors"
     "strings"
 );
@@ -25,7 +26,7 @@ func GetGameByUUID(uuid string) (*Game, error) {
     return &Game{}, errors.New("Game with uuid " + uuid + " could not be found!")
 }
 
-func StartNewGame(playerNames ...string) string {
+func StartNewGame(playerNames ...string) (string, error) {
     // Initiate a new game
     // Requires:
     // - A list of player names (2-4 players are legal)
@@ -35,7 +36,7 @@ func StartNewGame(playerNames ...string) string {
     // - Return the uuid of the game if successful
 
     if len(playerNames) < 2 || len(playerNames) > 4 {
-        log.Fatalf("%d is not a legal amount of players. Needs to be 2-3.", len(playerNames))
+        return "", errors.New(fmt.Sprintf("%d is not a legal amount of players. Needs to be 2-3.", len(playerNames)))
     }
 
     game := &Game{}
@@ -46,6 +47,7 @@ func StartNewGame(playerNames ...string) string {
     game.LetterSet = GetFullLetterSet()
 
     for _, playerName := range playerNames {
+        log.Printf("Add player %s to Game %s\n", playerName, game.Id)
         AddPlayer(playerName, game)
     }
 
@@ -56,29 +58,9 @@ func StartNewGame(playerNames ...string) string {
 
     games = append(games, *game)
 
-    return game.Id
+    return game.Id, nil
 }
 
 func main() {
-
     StartWebServer()
-
-    // Run web service // accept API calls
-    gameUuid := StartNewGame("MrMan", "MrsWoman")
-    //log.Println(GetGameByUUID(StartNewGame("MrMan", "MrsWoman")))
-    game, _ := GetGameByUUID(gameUuid)
-    log.Println(game)
-    FinishTurn(game)
-    /*
-    log.Println("Init letter set:", letterSet)
-
-    log.Println(game)
-
-    LockLetters()
-    PlaceLetter(7, 7, 'a')
-    PlaceLetter(7, 8, 'x')
-    log.Println(string(GetLetterFromTile(7, 8)))
-    log.Println(string(GetVerticalWordAtTile(7, 8)))
-    log.Println("'" + string(GetHorizontalWordAtTile(7, 8)) + "'")
-    log.Println(HasLetterInHand(&game.players[0], 'e'))*/
 }

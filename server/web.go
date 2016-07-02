@@ -3,6 +3,7 @@ package main
 import (
     "net/http"
     "github.com/gorilla/mux"
+    "github.com/gorilla/handlers"
     "encoding/json"
     "log"
 )
@@ -24,16 +25,27 @@ type ConfirmWordRequestBody struct {
 
 
 func CreateNewGameHandler(responseWriter http.ResponseWriter, request *http.Request) {
-
+    //Requires:
+    // - stringified json obect with one key 'PlayerNames'
+    //   that has an array of strings as value, with the player names
+    // Guarantees:
+    // - String response with new game ID
 
     requestBodyDecoder := json.NewDecoder(request.Body)
     var requestBody CreateNewGameRequestBody
-    err := requestBodyDecoder.Decode(&requestBody)
+    var err error
+    err = requestBodyDecoder.Decode(&requestBody)
     if err != nil {
-        http.Error(responseWriter, "Invalid body", 500)
+        http.Error(responseWriter, err.Error(), 500)
     }
 
-    responseWriter.Write([]byte(StartNewGame(requestBody.PlayerNames...)))
+    var gameId string
+    gameId, err = StartNewGame(requestBody.PlayerNames...)
+    if err != nil {
+        http.Error(responseWriter, err.Error(), 500)
+    }
+
+    responseWriter.Write([]byte(gameId))
 
 }
 
@@ -50,6 +62,20 @@ func GetBoardHandler(responseWriter http.ResponseWriter, request *http.Request){
     println(GetBoardAsJson(game))
 
     responseWriter.Write([]byte(GetBoardAsJson(game)))
+}
+
+func GetLegalPlacementsHandler(responseWriter http.ResponseWriter, request *http.Request){
+    id := mux.Vars(request)["id"]
+    game, err := GetGameByUUID(id)
+
+    if err != nil {
+        log.Println("Available ids are: ", games)
+        http.Error(responseWriter, err.Error(), 500)
+    }
+
+    println(GetLegalPlacementMapAsJson(game))
+
+    responseWriter.Write([]byte(GetLegalPlacementMapAsJson(game)))
 }
 
 func PlaceLetterHandler(responseWriter http.ResponseWriter, request *http.Request){
@@ -93,8 +119,7 @@ func ConfirmWordHandler(responseWriter http.ResponseWriter, request *http.Reques
         http.Error(responseWriter, err.Error(), 500)
     }
 
-    var points int
-    points, err = FinishTurn(game)
+    err = FinishTurn(game)
 
     if err != nil {
         log.Println("Available ids are: ", games)
@@ -102,9 +127,11 @@ func ConfirmWordHandler(responseWriter http.ResponseWriter, request *http.Reques
     }
 }
 
-func GetPointsOfPlayerHandler(responseWriter http.ResponseWriter, request *http.Request) {
+func GetHandOfPlayerHandler(responseWriter http.ResponseWriter, request *http.Request) {
     id := mux.Vars(request)["id"]
     playerName := mux.Vars(request)["playerName"]
+
+    var err error
     game, err := GetGameByUUID(id)
 
     if err != nil {
@@ -112,7 +139,39 @@ func GetPointsOfPlayerHandler(responseWriter http.ResponseWriter, request *http.
         http.Error(responseWriter, err.Error(), 500)
     }
 
-    responseWriter.Write([]byte(GetBoardAsJson(game)))
+    var player Player
+    player, err = game.GetPlayerByName(playerName)
+    if err != nil {
+        http.Error(responseWriter, err.Error(), 500)
+    }
+
+
+
+    responseWriter.Write([]byte(string(player.LettersInHand)))
+
+}
+
+func GetPointsOfPlayerHandler(responseWriter http.ResponseWriter, request *http.Request) {
+    id := mux.Vars(request)["id"]
+    playerName := mux.Vars(request)["playerName"]
+
+    var err error
+    game, err := GetGameByUUID(id)
+
+    if err != nil {
+        log.Println("Available ids are: ", games)
+        http.Error(responseWriter, err.Error(), 500)
+    }
+
+    var player Player
+    player, err = game.GetPlayerByName(playerName)
+    if err != nil {
+        http.Error(responseWriter, err.Error(), 500)
+    }
+
+
+
+    responseWriter.Write([]byte(string(player.Points)))
 
 }
 
@@ -120,8 +179,10 @@ func StartWebServer() {
     r := mux.NewRouter()
     r.HandleFunc("/new", CreateNewGameHandler).Methods("POST")
     r.HandleFunc("/{id}/board.json", GetBoardHandler).Methods("GET")
+    r.HandleFunc("/{id}/legalplacements.json", GetLegalPlacementsHandler).Methods("GET")
+    r.HandleFunc("/{id}/{playerName}/hand", GetHandOfPlayerHandler).Methods("GET")
     r.HandleFunc("/place", PlaceLetterHandler).Methods("POST")
     r.HandleFunc("/confirm", ConfirmWordHandler).Methods("POST")
     r.HandleFunc("/{id}/{playerName}/points", GetPointsOfPlayerHandler).Methods("GET")
-    log.Fatal(http.ListenAndServe(":8000", r))
+    log.Fatal(http.ListenAndServe(":8000", handlers.CORS()(r)))
 }
