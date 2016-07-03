@@ -2,6 +2,15 @@ body {
     background-color: #FAFAFA;
 }
 
+div.gole-game-container {
+    border: solid 1px #AAF;
+    margin-left: 20px;
+    margin-top: 20px;
+    text-align:center;
+    height: auto;
+    overflow: auto
+}
+
 div.gole-board-container {
     border: solid 1px #AAA;
     margin-left: 200px;
@@ -19,6 +28,9 @@ div.gole-board-tile {
     height: 50px;
     border: solid 1px #222;
     float:left;
+    font-size: 20px;
+    font-weight: bold;
+    padding-top: 10px;
 }
 
 div.gole-board-tile-effect-double-word {
@@ -37,12 +49,25 @@ div.gole-board-tile-effect-triple-letter {
     background-color: #FDD;
 }
 
+div.gole-board-tile-effect-center {
+    background-color: #FF0;
+}
+
 div.gole-board-tile-legal-placement:hover {
     background-color: #DFD;
 }
 
 div.gole-board-tile-illegal-placement:hover {
     background-color: #DDD;
+}
+
+div.gole-tile {
+    margin-left: auto;
+    margin-right: auto;
+    width: 45px;
+    height: 45px;
+    border: solid 1px #F22;
+    float:left
 }
 
 div.gole-tile-letter-character-container {
@@ -57,4 +82,19 @@ div.gole-tile-letter-value-container {
     height: 7px;
     color: #F00;
     font-size: 5px;
+}
+
+div.gole-active-player-container {
+    width: 200px;
+    border: solid #222 2px;
+    height: 200px;
+}
+
+div.gole-active-player-name-container {
+    width: 100%;
+    font-size: 30px;
+}
+
+div.gole-active-player-hand-container {
+    width: 100%;
 }

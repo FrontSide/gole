@@ -3,6 +3,7 @@ package main
 import (
     "log"
     "encoding/json"
+    "math"
 )
 
 var VERTICAL_TILES_AMOUNT int = 15
@@ -35,14 +36,38 @@ func TileHasDoubleWordEffect(verticalIdx int, horizontalIdx int) bool {
     // Return a bool that indicates whether a tile at given
     // index has a 'double word' effect, according to the
     // original scrabble board.
-    return verticalIdx % 7 == 0 && horizontalIdx % 7 == 0 && !(verticalIdx == (VERTICAL_TILES_AMOUNT-1)/2 && horizontalIdx == (HORIZONTAL_TILES_AMOUNT-1)/2)
+
+
+    if verticalIdx == horizontalIdx || verticalIdx == HORIZONTAL_TILES_AMOUNT-1-horizontalIdx {
+        return !(TileHasTripleWordEffect(verticalIdx, horizontalIdx) ||
+                 TileHasTripleLetterEffect(verticalIdx, horizontalIdx) ||
+                 TileHasDoubleLetterEffect(verticalIdx, horizontalIdx) ||
+                 TileIsCenterTile(verticalIdx, horizontalIdx))
+    }
+    return false
+
 }
 
 func TileHasTripleLetterEffect(verticalIdx int, horizontalIdx int) bool {
     // Return a bool that indicates whether a tile at given
     // index has a 'triple letter' effect, according to the
     // original scrabble board.
-    return verticalIdx % 7 == 0 && horizontalIdx % 7 == 0 && !(verticalIdx == (VERTICAL_TILES_AMOUNT-1)/2 && horizontalIdx == (HORIZONTAL_TILES_AMOUNT-1)/2)
+
+    if verticalIdx == 1 || verticalIdx == VERTICAL_TILES_AMOUNT - 2 {
+        return math.Abs(float64(horizontalIdx - (HORIZONTAL_TILES_AMOUNT-1)/2)) == 2
+    }
+
+    if horizontalIdx == 1 || horizontalIdx == HORIZONTAL_TILES_AMOUNT-2 {
+        log.Printf("v::%d,h::%d", verticalIdx, horizontalIdx)
+        log.Println(math.Abs(float64(verticalIdx - (VERTICAL_TILES_AMOUNT-1)/2)))
+        return math.Abs(float64(verticalIdx - (VERTICAL_TILES_AMOUNT-1)/2)) == 2
+    }
+
+
+
+    return math.Abs(float64(verticalIdx - (VERTICAL_TILES_AMOUNT-1)/2)) == 2 &&
+           math.Abs(float64(horizontalIdx - (HORIZONTAL_TILES_AMOUNT-1)/2)) == 2
+
 }
 
 func TileHasDoubleLetterEffect(verticalIdx int, horizontalIdx int) bool {
@@ -50,19 +75,43 @@ func TileHasDoubleLetterEffect(verticalIdx int, horizontalIdx int) bool {
     // index has a 'double letter' effect, according to the
     // original scrabble board.
     if verticalIdx == 0 || verticalIdx == VERTICAL_TILES_AMOUNT-1 {
-        return horizontalIdx % 3 == 0 && !TileHasTripleLetterEffect(verticalIdx, horizontalIdx)
+        return (horizontalIdx + 1) % 4 == 0 && !TileHasTripleLetterEffect(verticalIdx, horizontalIdx)
     }
 
     if horizontalIdx == 0 || horizontalIdx == HORIZONTAL_TILES_AMOUNT-1 {
-        return verticalIdx % 3 == 0 && !TileHasTripleLetterEffect(verticalIdx, horizontalIdx)
+        return (verticalIdx + 1) % 4 == 0 && !TileHasTripleLetterEffect(verticalIdx, horizontalIdx)
     }
+
+    //If the the column index is adjacent to the middle column
+    if math.Abs(float64(verticalIdx - (HORIZONTAL_TILES_AMOUNT-1)/2)) == 1 {
+        return math.Abs(float64(horizontalIdx - (VERTICAL_TILES_AMOUNT-1)/2)) == 1 ||
+               math.Abs(float64(horizontalIdx - (VERTICAL_TILES_AMOUNT-1)/2)) == 5
+    }
+
+    //If the the row index is adjacent to the middle row
+    if math.Abs(float64(horizontalIdx - (VERTICAL_TILES_AMOUNT-1)/2)) == 1 {
+        return math.Abs(float64(verticalIdx - (HORIZONTAL_TILES_AMOUNT-1)/2)) == 1 ||
+               math.Abs(float64(verticalIdx - (HORIZONTAL_TILES_AMOUNT-1)/2)) == 5
+    }
+
+    //If the the colum index is the middle
+    if verticalIdx == (VERTICAL_TILES_AMOUNT-1)/2 {
+        return math.Abs(float64(horizontalIdx - (VERTICAL_TILES_AMOUNT-1)/2)) == 3
+    }
+
+    //If the the row index is the middle
+    if horizontalIdx == (HORIZONTAL_TILES_AMOUNT-1)/2 {
+        return math.Abs(float64(verticalIdx - (HORIZONTAL_TILES_AMOUNT-1)/2)) == 3
+    }
+
+    return false
 
 }
 
 func TileIsCenterTile(verticalIdx int, horizontalIdx int) bool {
     // Return a bool that indicates whether a tile at given
     // index has it the oard's center tile
-    return (verticalTileIdx == (VERTICAL_TILES_AMOUNT-1)/2 && horizontalTileIdx == (HORIZONTAL_TILES_AMOUNT-1)/2)
+    return (verticalIdx == (VERTICAL_TILES_AMOUNT-1)/2 && horizontalIdx == (HORIZONTAL_TILES_AMOUNT-1)/2)
 }
 
 func GetCleanTiles() [][]Tile {
@@ -81,20 +130,15 @@ func GetCleanTiles() [][]Tile {
             var tile Tile = Tile{}
             if TileHasTripleWordEffect(verticalIdx, horizontalIdx) {
                 tile.Effect = TRIPLE_WORD_TILE_EFFECT
-            }
-            else if TileHasDoubleWordEffect() {
+            } else if TileHasDoubleWordEffect(verticalIdx, horizontalIdx) {
                 tile.Effect = DOUBLE_WORD_TILE_EFFECT
-            }
-            else if TileHasTripleLetterEffect() {
+            } else if TileHasTripleLetterEffect(verticalIdx, horizontalIdx) {
                 tile.Effect = TRIPLE_LETTER_TILE_EFFECT
-            }
-            else if TileHasDoubleLetterEffect() {
+            } else if TileHasDoubleLetterEffect(verticalIdx, horizontalIdx) {
                 tile.Effect = DOUBLE_LETTER_TILE_EFFECT
-            }
-            else if TileIsCenterTile() {
+            } else if TileIsCenterTile(verticalIdx, horizontalIdx) {
                 tile.Effect = CENTER_TILE_EFFECT
-            }
-            else {
+            } else {
                 tile.Effect = NO_TILE_EFFECT
             }
             tiles[verticalIdx][horizontalIdx] = tile

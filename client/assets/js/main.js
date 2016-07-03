@@ -20,11 +20,23 @@ function drawBoard() {
         $.each(column, function(yIdx, tile) {
 
             tileEffectColorClass = ""
+            tileEffectText = ""
             switch(tile.Effect) {
-                case 0: tileEffectColorClass = "gole-board-tile-effect-double-letter"; break;
-                case 1: tileEffectColorClass = "gole-board-tile-effect-triple-letter"; break;
-                case 2: tileEffectColorClass = "gole-board-tile-effect-double-word"; break;
-                case 3: tileEffectColorClass = "gole-board-tile-effect-triple-word"; break;
+                case 0: tileEffectColorClass = "gole-board-tile-effect-double-letter";
+                        tileEffectText = "DL"
+                        break;
+                case 1: tileEffectColorClass = "gole-board-tile-effect-triple-letter";
+                        tileEffectText = "TL"
+                        break;
+                case 2: tileEffectColorClass = "gole-board-tile-effect-double-word";
+                        tileEffectText = "DW"
+                        break;
+                case 3: tileEffectColorClass = "gole-board-tile-effect-triple-word";
+                        tileEffectText = "TW"
+                        break;
+                case 5: tileEffectColorClass = "gole-board-tile-effect-center";
+                        tileEffectText = '<i class="fa fa-star" aria-hidden="true"></i>'
+                        break;
             }
 
             tileLegalPlacementColorClass = ""
@@ -37,7 +49,16 @@ function drawBoard() {
             var tileDiv = $("<div>", {class: "gole-board-tile " + tileEffectColorClass + " " + tileLegalPlacementColorClass})
             $.data(tileDiv, "gole-tile-x-idx", xIdx)
             $.data(tileDiv, "gole-tile-y-idx", yIdx)
-            tileDiv.html(tile.Letter)
+
+            tileInscriptionText = ""
+            if (tile.Letter == 0 && tileEffectText) {
+                tileInscriptionText = tileEffectText
+            } else {
+                tileInscriptionText = tile.Letter
+            }
+
+            tileDiv.html(tileInscriptionText)
+
             $("div.gole-board-container").append(tileDiv)
         })
         $("div.gole-board-container").append("<div style='clear:both'></div>")
