@@ -13,8 +13,8 @@ div.gole-game-container {
 
 div.gole-board-container {
     border: solid 1px #AAA;
-    margin-left: 200px;
-    margin-top: 100px;
+    margin-left: 100px;
+    margin-top: 50px;
     text-align:center;
     height: auto;
     float: left;
@@ -24,8 +24,8 @@ div.gole-board-container {
 div.gole-board-tile {
     margin-left: auto;
     margin-right: auto;
-    width: 50px;
-    height: 50px;
+    width: 45px;
+    height: 45px;
     border: solid 1px #222;
     float:left;
     font-size: 20px;
@@ -66,7 +66,10 @@ div.gole-tile {
     margin-right: auto;
     width: 45px;
     height: 45px;
-    border: solid 1px #F22;
+    background-color: #FEFEFE;
+    box-shadow: 0px 0px 3px -2px #222;
+    border: solid 2px #222;
+
     float:left
 }
 
@@ -74,27 +77,44 @@ div.gole-tile-letter-character-container {
     width: 15px;
     height: 15px;
     color: #222;
-    font-size: 12px;
+    font-size: 30px;
 }
 
 div.gole-tile-letter-value-container {
     width: 7px;
     height: 7px;
-    color: #F00;
-    font-size: 5px;
+    color: #AAA;
+    font-size: 10px;
+    float: right;
+    vertical-align: bottom;
+    margin-right: 10px;
+    margin-top: 10px
 }
 
 div.gole-active-player-container {
-    width: 200px;
+    min-width: 300px;
     border: solid #222 2px;
-    height: 200px;
+    height: 100px;
+    float: right;
+    margin-top: 50px;
+    margin-right: 100px;
+    padding: 20px;
+    padding-top: 5px;
 }
 
 div.gole-active-player-name-container {
-    width: 100%;
-    font-size: 30px;
+    width: 50%;
+    font-size: 15px;
+    float: left
 }
 
 div.gole-active-player-hand-container {
     width: 100%;
+    clear: both;
+}
+
+div.gole-active-player-points-container {
+    font-size: 15px;
+    float: left;
+    width: 40%;
 }

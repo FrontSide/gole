@@ -11,8 +11,9 @@
 $(document).ready(function() {
     createNewGame(["oasch", "babab"])
     getBoard()
-    getLegalPlacementMap()
+    getActivePlayer()
     drawBoard()
+    drawPlayer()
 });
 
 function drawBoard() {
@@ -40,7 +41,7 @@ function drawBoard() {
             }
 
             tileLegalPlacementColorClass = ""
-            if (game.legalPlacements[yIdx][xIdx]) {
+            if (tile.PlayerIdxWithTurn) {
                 tileLegalPlacementColorClass = "gole-board-tile-legal-placement"
             } else {
                 tileLegalPlacementColorClass = "gole-board-tile-illegal-placement"
@@ -63,4 +64,29 @@ function drawBoard() {
         })
         $("div.gole-board-container").append("<div style='clear:both'></div>")
     })
+}
+
+function drawPlayer() {
+
+    var nameDiv = $("<div>", {class: "gole-active-player-name-container"})
+    nameDiv.html(activePlayer.Name)
+
+    var pointsDiv = $("<div>", {class: "gole-active-player-points-container"})
+    pointsDiv.html(activePlayer.Points)
+
+    var handContainerDiv = $("<div>", {class: "gole-active-player-hand-container"})
+
+    $.each(activePlayer.LettersInHand, function(idx, letter) {
+        var tileDiv = $("<div>", {class: "gole-tile"})
+        var letterDiv = $("<div>", {class: "gole-tile-letter-character-container"})
+        var letterValueDiv = $("<div>", {class: "gole-tile-letter-value-container"})
+        tileDiv.append(letterDiv)
+        tileDiv.append(letterValueDiv)
+        handContainerDiv.append(tileDiv)
+    })
+
+    $("div.gole-active-player-container").append(nameDiv)
+    $("div.gole-active-player-container").append(pointsDiv)
+    $("div.gole-active-player-container").append(handContainerDiv)
+
 }

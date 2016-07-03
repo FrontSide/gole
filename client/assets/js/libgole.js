@@ -7,13 +7,12 @@ var server = {
 var game = {
     id: null,
     board: null,
-    legalPlacements: null,
 }
 
 var activePlayer = {
-    name: null,
-    points: null,
-    hand: null
+    Name: null,
+    Points: null,
+    LettersInHand: null
 }
 
 function createNewGame(playerNames) {
@@ -59,40 +58,18 @@ function getBoard() {
         game.board = JSON.parse(board)
     });
 
-    console.log("Game Board:" + game.board);
-
 }
 
-function getLegalPlacementMap() {
-    //Get the two dimentional array
-    //that contains bools to describe whether
-    //a letter can be placed at the tile with given inices tile
-
-        $.ajax({
-            async: false,
-            method: "GET",
-            url: server.url + "/" + game.id + "/legalplacements.json",
-        })
-        .done(function(legalPlacements) {
-            game.legalPlacements = JSON.parse(legalPlacements)
-        });
-
-        console.log("Placements Map:" + game.legalPlacements);
-
-}
-
-function getPlayerHand() {
-    //Get the two dimentional array
-    //that contains bools to describe whether
-    //a letter can be placed at the tile with given inices tile
+function getActivePlayer() {
+    //Get the struct that describes the player that has their current turn
 
     $.ajax({
         async: false,
         method: "GET",
-        url: server.url + "/" + game.id + "/" + activePlayer.name + "/hand",
+        url: server.url + "/" + game.id + "/player.json",
     })
-    .done(function(hand) {
-        activePlayer.hand = hand
+    .done(function(player) {
+        activePlayer = JSON.parse(player)
     });
 
 }

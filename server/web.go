@@ -51,31 +51,25 @@ func CreateNewGameHandler(responseWriter http.ResponseWriter, request *http.Requ
 
 
 func GetBoardHandler(responseWriter http.ResponseWriter, request *http.Request){
+
     id := mux.Vars(request)["id"]
-    game, err := GetGameByUUID(id)
+
+    var err error
+    var game *Game
+    game, err = GetGameByUUID(id)
 
     if err != nil {
         log.Println("Available ids are: ", games)
         http.Error(responseWriter, err.Error(), 500)
     }
 
-    println(GetBoardAsJson(game))
-
-    responseWriter.Write([]byte(GetBoardAsJson(game)))
-}
-
-func GetLegalPlacementsHandler(responseWriter http.ResponseWriter, request *http.Request){
-    id := mux.Vars(request)["id"]
-    game, err := GetGameByUUID(id)
-
+    var boardJson []byte
+    boardJson, err = json.Marshal(game.Tiles)
     if err != nil {
-        log.Println("Available ids are: ", games)
         http.Error(responseWriter, err.Error(), 500)
     }
 
-    println(GetLegalPlacementMapAsJson(game))
-
-    responseWriter.Write([]byte(GetLegalPlacementMapAsJson(game)))
+    responseWriter.Write(boardJson)
 }
 
 func PlaceLetterHandler(responseWriter http.ResponseWriter, request *http.Request){
@@ -127,9 +121,8 @@ func ConfirmWordHandler(responseWriter http.ResponseWriter, request *http.Reques
     }
 }
 
-func GetHandOfPlayerHandler(responseWriter http.ResponseWriter, request *http.Request) {
+func GetActivePlayerHandler(responseWriter http.ResponseWriter, request *http.Request) {
     id := mux.Vars(request)["id"]
-    playerName := mux.Vars(request)["playerName"]
 
     var err error
     game, err := GetGameByUUID(id)
@@ -139,39 +132,15 @@ func GetHandOfPlayerHandler(responseWriter http.ResponseWriter, request *http.Re
         http.Error(responseWriter, err.Error(), 500)
     }
 
-    var player Player
-    player, err = game.GetPlayerByName(playerName)
+    player := game.Players[game.PlayerIdxWithTurn]
+
+    var playerJson []byte
+    playerJson, err = json.Marshal(player)
     if err != nil {
         http.Error(responseWriter, err.Error(), 500)
     }
 
-
-
-    responseWriter.Write([]byte(string(player.LettersInHand)))
-
-}
-
-func GetPointsOfPlayerHandler(responseWriter http.ResponseWriter, request *http.Request) {
-    id := mux.Vars(request)["id"]
-    playerName := mux.Vars(request)["playerName"]
-
-    var err error
-    game, err := GetGameByUUID(id)
-
-    if err != nil {
-        log.Println("Available ids are: ", games)
-        http.Error(responseWriter, err.Error(), 500)
-    }
-
-    var player Player
-    player, err = game.GetPlayerByName(playerName)
-    if err != nil {
-        http.Error(responseWriter, err.Error(), 500)
-    }
-
-
-
-    responseWriter.Write([]byte(string(player.Points)))
+    responseWriter.Write(playerJson)
 
 }
 
@@ -179,10 +148,8 @@ func StartWebServer() {
     r := mux.NewRouter()
     r.HandleFunc("/new", CreateNewGameHandler).Methods("POST")
     r.HandleFunc("/{id}/board.json", GetBoardHandler).Methods("GET")
-    r.HandleFunc("/{id}/legalplacements.json", GetLegalPlacementsHandler).Methods("GET")
-    r.HandleFunc("/{id}/{playerName}/hand", GetHandOfPlayerHandler).Methods("GET")
+    r.HandleFunc("/{id}/player.json", GetActivePlayerHandler).Methods("GET")
     r.HandleFunc("/place", PlaceLetterHandler).Methods("POST")
     r.HandleFunc("/confirm", ConfirmWordHandler).Methods("POST")
-    r.HandleFunc("/{id}/{playerName}/points", GetPointsOfPlayerHandler).Methods("GET")
     log.Fatal(http.ListenAndServe(":8000", handlers.CORS()(r)))
 }

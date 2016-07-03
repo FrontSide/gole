@@ -2,7 +2,6 @@ package main
 
 import (
     "log"
-    "unicode/utf8"
     "os/exec"
     "reflect"
     "strings"
@@ -21,9 +20,9 @@ type Game struct {
     // first index represents vertical, second index horizontal tiles
     Tiles [][]Tile;
 
-    // String of all letters in the backlog
+    // All letters in the backlog
     // i.e. that have not yet been handed to a player
-    LetterSet string;
+    LetterSet []Letter;
 }
 
 var MIN_NUMBER_OF_PLAYERS = 2
@@ -69,7 +68,11 @@ func AddPlayer(playerName string, game *Game) error {
     player := Player{Name: playerName}
 
     for i := 0; i < DEFAULT_NUMBER_OF_LETTERS_IN_HAND; i++ {
-        player.LettersInHand += PopLetterFromSet(game)
+        nextLetter, err := PopLetterFromSet(game)
+        if err != nil {
+            return err
+        }
+        player.LettersInHand = append(player.LettersInHand, nextLetter)
     }
 
     game.Players = append(game.Players, player)
@@ -78,17 +81,17 @@ func AddPlayer(playerName string, game *Game) error {
 
 }
 
-func PopLetterFromSet(game *Game) string {
+func PopLetterFromSet(game *Game) (Letter, error) {
     // Pop the last letter (right end) from the
     // letter string of the passed game structure instance.
     // The letter will be returned and the
     // occurrence will be removed from the string and stored back to the game.
     if len(game.LetterSet) < 1 {
-        log.Fatal("Cannot pop letter from set. Empty.")
+        return Letter{}, errors.New("Cannot pop letter from set. Empty.")
     }
-    var letterToReturn = string(game.LetterSet[utf8.RuneCountInString(game.LetterSet)-1])
+    var letterToReturn = game.LetterSet[len(game.LetterSet)-1]
     game.LetterSet = game.LetterSet[:len(game.LetterSet)-1]
-    return letterToReturn
+    return letterToReturn, nil
 }
 
 func PlaceLetter(game *Game, verticalTileIdx int, horizontalTileIdx int, letter rune) error {
@@ -101,19 +104,33 @@ func PlaceLetter(game *Game, verticalTileIdx int, horizontalTileIdx int, letter 
         return errors.New("Cannot place letter. " + reason)
     }
 
-    game.Tiles[verticalTileIdx][horizontalTileIdx].Letter = letter
+    letterStruct, err := GetLetterStructFromRune(letter)
+    if err != nil {
+        return err
+    }
+
+    game.Tiles[verticalTileIdx][horizontalTileIdx].Letter = letterStruct
+
+    // Update placement legality of whole board
+    game.UpdatePlacementLegalityOfAllTiles()
+
     return nil
 }
 
-func RemoveLetter(game *Game, verticalTileIdx int, horizontalTileIdx int, tiles [][]Tile) {
+func RemoveLetter(game *Game, verticalTileIdx int, horizontalTileIdx int, tiles [][]Tile) error {
     // Remove one single letter from the board that has
     // not been locked yet
 
     if game.Tiles[verticalTileIdx][horizontalTileIdx].IsLocked {
-        log.Fatal("Cannot remove letter. Tile Locked")
+        return errors.New("Cannot remove letter. Tile Locked")
     }
 
-    game.Tiles[verticalTileIdx][horizontalTileIdx].Letter = 0
+    game.Tiles[verticalTileIdx][horizontalTileIdx].Letter = Letter{}
+
+    // Update placement legality of whole board
+    game.UpdatePlacementLegalityOfAllTiles()
+
+    return nil
 
 }
 
@@ -129,9 +146,9 @@ func GetPointsForWord(wordTiles []Tile) (int, error) {
     for _, tile := range wordTiles {
 
         tile.IsLocked = true
-        word += string(tile.Letter)
+        word += string(tile.Letter.Character)
 
-        var letterPoints = GetLetterAttributesFromRune(tile.Letter).pointValue
+        var letterPoints = tile.Letter.Attributes.PointValue
         if tile.Effect == DOUBLE_LETTER_TILE_EFFECT {
             letterPoints *= 2
         } else if tile.Effect == TRIPLE_LETTER_TILE_EFFECT {
@@ -168,7 +185,7 @@ func FinishTurn(game *Game) error {
     // Get all unlocked tiles
     for verticalIdx, column := range game.Tiles {
         for horizontalIdx, tile := range column {
-            if tile.Letter != 0 && ! tile.IsLocked {
+            if tile.Letter != (Letter{}) && ! tile.IsLocked {
 
                 var horizontalWordTiles = GetHorizontalWordAtTile(verticalIdx, horizontalIdx, game.Tiles)
                 var verticalWordTiles = GetVerticalWordAtTile(verticalIdx, horizontalIdx, game.Tiles)

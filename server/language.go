@@ -4,13 +4,20 @@
 package main
 
 import (
-    "log"
     "math/rand"
     "time"
+    "errors"
+    "fmt"
 );
 
+
 type LetterAttributes struct {
-    occurrences, pointValue int
+    Occurrences, PointValue int
+}
+
+type Letter struct {
+    Character rune
+    Attributes LetterAttributes
 }
 
 var lettersAmount = 100
@@ -44,27 +51,31 @@ var letterDistribution = map[rune]LetterAttributes {
     'z': {1, 10},
 }
 
-func GetFullLetterSet() string {
+func GetFullLetterSet() ([]Letter, error) {
     /* Return a randomly shuffled full initial set of letters. */
-    fullLetterSet := ""
+    var fullLetterSet []Letter
     letterCount := 0
     for letter, letterProperties := range letterDistribution {
-        letterCount += letterProperties.occurrences
-        for i := 0; i < letterProperties.occurrences; i++ {
-            fullLetterSet += string(letter)
+        letterCount += letterProperties.Occurrences
+        for i := 0; i < letterProperties.Occurrences; i++ {
+            letterStruct, err := GetLetterStructFromRune(letter)
+            if err != nil {
+                return []Letter{Letter{}}, err
+            }
+            fullLetterSet = append(fullLetterSet, letterStruct)
         }
     }
     if letterCount != lettersAmount {
-        log.Fatal("Letter distribution error! Is %d, expected %d\n", letterCount, lettersAmount)
+        return []Letter{Letter{}}, errors.New(fmt.Sprintf("Letter distribution error! Is %d, expected %d\n", letterCount, lettersAmount))
     }
     // Shuffle string
     rand.Seed(time.Now().UTC().UnixNano())
     randomIndices := rand.Perm(letterCount)
-    var fullShuffledLetterSet []uint8 = make([]uint8, letterCount)
+    var fullShuffledLetterSet []Letter = make([]Letter, letterCount)
     for originalIndex, newRandomIndex := range randomIndices {
-        fullShuffledLetterSet[newRandomIndex] = uint8(fullLetterSet[originalIndex])
+        fullShuffledLetterSet[newRandomIndex] = fullLetterSet[originalIndex]
     }
-    return string(fullShuffledLetterSet)
+    return fullShuffledLetterSet, nil
 }
 
 func IsLegalLetter(letter rune) bool {
@@ -77,8 +88,14 @@ func IsLegalLetter(letter rune) bool {
     return false
 }
 
-func GetLetterAttributesFromRune(letter rune) LetterAttributes {
+func GetLetterStructFromRune(letter rune) (Letter, error) {
     // Return the full letter struct for a letter
     // passed as a rune
-    return letterDistribution[letter]
+    var letterStruct Letter
+    if _, ok := letterDistribution[letter]; !ok {
+        return Letter{}, errors.New("Letter could not be found.")
+    }
+    letterStruct.Attributes = letterDistribution[letter]
+    letterStruct.Character = letter
+    return letterStruct, nil
 }

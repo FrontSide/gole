@@ -2,8 +2,8 @@ package main
 
 import (
     "log"
-    "encoding/json"
     "math"
+    "errors"
 )
 
 var VERTICAL_TILES_AMOUNT int = 15
@@ -11,8 +11,9 @@ var HORIZONTAL_TILES_AMOUNT int = 15
 
 type Tile struct {
     IsLocked bool
-    Letter rune
+    Letter Letter
     Effect SpecialTileEffect
+    PlacementIsLegal bool
 }
 
 type SpecialTileEffect int
@@ -58,8 +59,6 @@ func TileHasTripleLetterEffect(verticalIdx int, horizontalIdx int) bool {
     }
 
     if horizontalIdx == 1 || horizontalIdx == HORIZONTAL_TILES_AMOUNT-2 {
-        log.Printf("v::%d,h::%d", verticalIdx, horizontalIdx)
-        log.Println(math.Abs(float64(verticalIdx - (VERTICAL_TILES_AMOUNT-1)/2)))
         return math.Abs(float64(verticalIdx - (VERTICAL_TILES_AMOUNT-1)/2)) == 2
     }
 
@@ -147,25 +146,32 @@ func GetCleanTiles() [][]Tile {
     return tiles
 }
 
-func GetLetterFromTile(verticalTileIdx int, horizontalTileIdx int, tiles [][]Tile) rune {
+func GetLetterFromTile(verticalTileIdx int, horizontalTileIdx int, tiles [][]Tile) (Letter, error) {
     // Return letter at given tile.
     //
     // Guarantees:
-    // - Returns 0 if tile is empty
-    // - Returns 0 if tile idx out of range
+    // - Returns empty letter struct and error if tile is empty
+    // - Returns empty letter struct and error if tile idx out of range
 
     if verticalTileIdx < 0 || horizontalTileIdx < 0 || verticalTileIdx > VERTICAL_TILES_AMOUNT-1 || horizontalTileIdx > HORIZONTAL_TILES_AMOUNT-1 {
-        return 0
+        return Letter{}, errors.New("Index out of bounds")
     }
 
-    return tiles[verticalTileIdx][horizontalTileIdx].Letter
+    letter := tiles[verticalTileIdx][horizontalTileIdx].Letter
+    if letter == (Letter{}) {
+        return letter, errors.New("No letter on tile")
+    }
+
+    return letter, nil
 }
 
 func GetHorizontalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [][]Tile) []Tile {
     // Get the horizontal word (read from left to right)
     // that the letter on the given tile is a part of (if any).
 
-    if GetLetterFromTile(verticalTileIdx, horizontalTileIdx, tiles) == 0 {
+    var err error
+    _, err = GetLetterFromTile(verticalTileIdx, horizontalTileIdx, tiles)
+    if err != nil {
         log.Fatal("Cannot retrieve horizontal word. Initial tile is empty.")
     }
 
@@ -174,7 +180,8 @@ func GetHorizontalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [
 
     // Go to left outer tile of horizontal word at this tile
     for horizontalLoopIdx := horizontalTileIdx-1; horizontalLoopIdx >= 0; horizontalLoopIdx-- {
-        if GetLetterFromTile(verticalTileIdx, horizontalLoopIdx, tiles) == 0 {
+        _, err = GetLetterFromTile(verticalTileIdx, horizontalLoopIdx, tiles)
+        if err != nil {
             outerLeftTileOfWord = horizontalLoopIdx + 1
             break;
         }
@@ -182,7 +189,8 @@ func GetHorizontalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [
 
     // Go to right outer tile of horizontal word at given tile
     for horizontalLoopIdx := outerLeftTileOfWord+1; horizontalLoopIdx <= HORIZONTAL_TILES_AMOUNT; horizontalLoopIdx++ {
-        if GetLetterFromTile(verticalTileIdx, horizontalLoopIdx, tiles) == 0 {
+        _, err := GetLetterFromTile(verticalTileIdx, horizontalLoopIdx, tiles)
+        if err != nil {
             outerRightTileOfWord = horizontalLoopIdx - 1
         }
     }
@@ -197,7 +205,9 @@ func GetVerticalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [][
     // Get the vertical word (read from top to bottom)
     // that the letter on the given tile is a part of (if any).
 
-    if GetLetterFromTile(verticalTileIdx, horizontalTileIdx, tiles) == 0 {
+    var err error
+    _, err = GetLetterFromTile(verticalTileIdx, horizontalTileIdx, tiles)
+    if err != nil {
         log.Fatal("Cannot retrieve horizontal word. Initial tile is empty.")
     }
 
@@ -206,7 +216,8 @@ func GetVerticalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [][
 
     // Go to top outer tile of vertical word at this tile
     for verticalLoopIdx := verticalTileIdx-1; verticalLoopIdx >= 0; verticalLoopIdx-- {
-        if GetLetterFromTile(verticalLoopIdx, horizontalTileIdx, tiles) == 0 {
+        _, err = GetLetterFromTile(verticalLoopIdx, horizontalTileIdx, tiles)
+        if err != nil {
             outerTopTileOfWord = verticalLoopIdx + 1
             break;
         }
@@ -214,7 +225,8 @@ func GetVerticalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [][
 
     // Go to right outer tile of horizontal word at given tile
     for verticalLoopIdx := outerTopTileOfWord+1; verticalLoopIdx <= VERTICAL_TILES_AMOUNT; verticalLoopIdx++ {
-        if GetLetterFromTile(verticalLoopIdx, horizontalTileIdx, tiles) == 0 {
+        _, err := GetLetterFromTile(verticalLoopIdx, horizontalTileIdx, tiles)
+        if err != nil {
             outerBottomTileOfWord = verticalLoopIdx - 1
         }
     }
@@ -235,17 +247,39 @@ func IsLegalPlacement(verticalTileIdx int, horizontalTileIdx int, letter rune, t
         return false, "Character illegal."
     }
 
-    if GetLetterFromTile(verticalTileIdx, horizontalTileIdx, tiles) != 0 {
+    var err error
+    _, err = GetLetterFromTile(verticalTileIdx, horizontalTileIdx, tiles)
+    if err == nil {
         return false, "Tile occupied"
+    }
+
+    var letterOnConnectedTiles bool
+    // Inspect all the tiles connected to the one at the given coordninates
+    // for placed letters.
+    _, err = GetLetterFromTile(verticalTileIdx + 1 , horizontalTileIdx, tiles)
+    if err == nil {
+        letterOnConnectedTiles = true
+    }
+
+    _, err = GetLetterFromTile(verticalTileIdx, horizontalTileIdx + 1, tiles)
+    if err == nil {
+        letterOnConnectedTiles = true
+    }
+
+    _, err = GetLetterFromTile(verticalTileIdx - 1 , horizontalTileIdx, tiles)
+    if err == nil {
+        letterOnConnectedTiles = true
+    }
+
+    _, err = GetLetterFromTile(verticalTileIdx, horizontalTileIdx - 1, tiles)
+    if err == nil {
+        letterOnConnectedTiles = true
     }
 
     // Except for when the first letter is placed,
     // a new letter must always be adjacing at least one more.
     if tiles[verticalTileIdx][horizontalTileIdx].Effect != CENTER_TILE_EFFECT &&
-       GetLetterFromTile(verticalTileIdx + 1 , horizontalTileIdx, tiles) +
-       GetLetterFromTile(verticalTileIdx, horizontalTileIdx + 1, tiles) +
-       GetLetterFromTile(verticalTileIdx - 1 , horizontalTileIdx, tiles) +
-       GetLetterFromTile(verticalTileIdx, horizontalTileIdx - 1, tiles) == 0 {
+       !letterOnConnectedTiles {
        return false, "Not connected to word"
    }
 
@@ -258,7 +292,7 @@ func LockLetters(tiles [][]Tile) {
     // removed by the player anymore
     for _, column := range tiles {
         for _, tile := range column {
-            if tile.Letter != 0 {
+            if tile.Letter.Character != 0 {
                 tile.IsLocked = true
             }
         }
@@ -266,38 +300,17 @@ func LockLetters(tiles [][]Tile) {
 }
 
 
-func GetLegalPlacementMapAsJson(game *Game) string {
-    // Return a two-dimensional slice containing information,
-    // whether a letter can be placed on the tile of the according
-    // slice indices, as JSON.
+func (game *Game) UpdatePlacementLegalityOfAllTiles() {
+    // Check all tiles for placement legality
+    // The PlacementIsLegal bool on every tile is updated
+    // Placement is legal on a tile if it is connected to another word
+    // or if it's the middle tile AND
+    // if it doesn't already have a latter on it
 
-    var legalPlacementMap = make([][]bool, VERTICAL_TILES_AMOUNT)
     for verticalIdx, tileRow := range game.Tiles {
-        var legalPlacementMapRow = make([]bool, HORIZONTAL_TILES_AMOUNT)
-        for horizontalIdx, _ := range tileRow {
-            legalPlacementMapRow[horizontalIdx], _ = IsLegalPlacement(verticalIdx, horizontalIdx, 'a',  game.Tiles)
+        for horizontalIdx, tile := range tileRow {
+            tile.PlacementIsLegal, _ = IsLegalPlacement(verticalIdx, horizontalIdx, 'a',  game.Tiles)
         }
-        legalPlacementMap[verticalIdx] = legalPlacementMapRow
     }
 
-    legalPlacementMapJson, err := json.Marshal(legalPlacementMap)
-    if err != nil {
-        log.Fatal(err)
-    }
-
-    return string(legalPlacementMapJson)
-
-}
-
-func GetBoardAsJson(game *Game) string {
-    // Converts a given two-dimensional
-    // slice of tiles into a json representation
-    // of the board with all the information the tile
-    // struct has as well.
-    boardJson, err := json.Marshal(game.Tiles)
-    if err != nil {
-        log.Fatal(err)
-    }
-
-    return string(boardJson)
 }

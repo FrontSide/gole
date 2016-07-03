@@ -44,7 +44,11 @@ func StartNewGame(playerNames ...string) (string, error) {
 
     // Letter set needs to be generated before Players are added
     // since letters need to be taken off the set.
-    game.LetterSet = GetFullLetterSet()
+    var err error
+    game.LetterSet, err = GetFullLetterSet()
+    if err != nil {
+        return "", err
+    }
 
     for _, playerName := range playerNames {
         log.Printf("Add player %s to Game %s\n", playerName, game.Id)
@@ -52,6 +56,9 @@ func StartNewGame(playerNames ...string) (string, error) {
     }
 
     game.Tiles = GetCleanTiles()
+
+    // Update placement legality of whole board
+    game.UpdatePlacementLegalityOfAllTiles()
 
     //First player in slice will have first turn
     game.PlayerIdxWithTurn = 0
