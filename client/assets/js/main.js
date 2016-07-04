@@ -11,6 +11,7 @@
 $(document).ready(function() {
     createNewGame(["oasch", "babab"])
     getBoard()
+    console.log(game.board)
     getActivePlayer()
     drawBoard()
     drawPlayer()
@@ -41,7 +42,7 @@ function drawBoard() {
             }
 
             tileLegalPlacementColorClass = ""
-            if (tile.PlayerIdxWithTurn) {
+            if (tile.PlacementIsLegal) {
                 tileLegalPlacementColorClass = "gole-board-tile-legal-placement"
             } else {
                 tileLegalPlacementColorClass = "gole-board-tile-illegal-placement"
@@ -52,7 +53,7 @@ function drawBoard() {
             $.data(tileDiv, "gole-tile-y-idx", yIdx)
 
             tileInscriptionText = ""
-            if (tile.Letter == 0 && tileEffectText) {
+            if (tile.Letter.Character == 0 && tileEffectText) {
                 tileInscriptionText = tileEffectText
             } else {
                 tileInscriptionText = tile.Letter
@@ -79,7 +80,9 @@ function drawPlayer() {
     $.each(activePlayer.LettersInHand, function(idx, letter) {
         var tileDiv = $("<div>", {class: "gole-tile"})
         var letterDiv = $("<div>", {class: "gole-tile-letter-character-container"})
+        letterDiv.html(letter.Character)
         var letterValueDiv = $("<div>", {class: "gole-tile-letter-value-container"})
+        letterValueDiv.html(letter.PointValue)
         tileDiv.append(letterDiv)
         tileDiv.append(letterValueDiv)
         handContainerDiv.append(tileDiv)

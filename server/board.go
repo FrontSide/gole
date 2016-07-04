@@ -308,8 +308,14 @@ func (game *Game) UpdatePlacementLegalityOfAllTiles() {
     // if it doesn't already have a latter on it
 
     for verticalIdx, tileRow := range game.Tiles {
-        for horizontalIdx, tile := range tileRow {
-            tile.PlacementIsLegal, _ = IsLegalPlacement(verticalIdx, horizontalIdx, 'a',  game.Tiles)
+        for horizontalIdx, _ := range tileRow {
+            // Since range copies the values of the data structure
+            // we are iterating over (not a reference anymore),
+            // we an not just simply make changes on the new structure.
+            // Instead we need to actually change the value on the original
+            // struct that we want to manipulate
+            game.Tiles[verticalIdx][horizontalIdx].PlacementIsLegal, _ =
+                IsLegalPlacement(verticalIdx, horizontalIdx, 'a',  game.Tiles)
         }
     }
 
