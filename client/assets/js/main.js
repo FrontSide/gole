@@ -78,11 +78,16 @@ function drawPlayer() {
     var handContainerDiv = $("<div>", {class: "gole-active-player-hand-container"})
 
     $.each(activePlayer.LettersInHand, function(idx, letter) {
-        var tileDiv = $("<div>", {class: "gole-tile"})
+        var tileDiv = $("<div>", {class: "gole-tile gole-tile-selectable gole-tile-margin"})
         var letterDiv = $("<div>", {class: "gole-tile-letter-character-container"})
-        letterDiv.html(letter.Character)
+
+        // Go returns the character of a letter tile as an int8 (rune) code
+        // so we need to convert to string and put it uppercase before printing
+        letterDiv.html(String.fromCharCode(letter.Character).toUpperCase())
+
         var letterValueDiv = $("<div>", {class: "gole-tile-letter-value-container"})
-        letterValueDiv.html(letter.PointValue)
+        letterValueDiv.html(letter.Attributes.PointValue)
+
         tileDiv.append(letterDiv)
         tileDiv.append(letterValueDiv)
         handContainerDiv.append(tileDiv)
@@ -93,3 +98,13 @@ function drawPlayer() {
     $("div.gole-active-player-container").append(handContainerDiv)
 
 }
+
+// stores information about the current game move
+var move = {
+    letter: null,
+    letterDiv: null
+}
+
+$("div.gole-tile").on("click", function(){
+    console.log(this)
+})
