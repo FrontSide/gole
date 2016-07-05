@@ -78,6 +78,16 @@ div.gole-tile-selectable:hover {
     box-shadow: 0px 0px 3px #222;
 }
 
+div.gole-tile-activated {
+    background-color: #AFFFAF;
+    box-shadow: 0px 0px 3px #000;
+}
+
+div.gole-tile-activated:hover {
+    background-color: #DFFFDF;
+    box-shadow: 0px 0px 3px #000;
+}
+
 div.gole-tile-margin {
     margin-right: 5px;
 }

@@ -15,6 +15,12 @@ var activePlayer = {
     LettersInHand: null
 }
 
+function Tile(id, letter) {
+    this.id = id
+    this.letter = letter
+    this.isActivated = false
+}
+
 function createNewGame(playerNames) {
 
     // Assign handlers immediately after making the request,

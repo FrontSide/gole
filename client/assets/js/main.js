@@ -78,19 +78,28 @@ function drawPlayer() {
     var handContainerDiv = $("<div>", {class: "gole-active-player-hand-container"})
 
     $.each(activePlayer.LettersInHand, function(idx, letter) {
+
+        // Assign a unique id to the tile div
+        // the id will consist of the the name of the player
+        // who initially owns, the unix timestamp at assignment of the ID
+        // + the index of the iteration
+        // and the letter code
+        tile_id = activePlayer.Name + "-" + (Date.now() + idx) + "-" + letter.Character
+        tile = new Tile(tile_id, letter)
+
         var tileDiv = $("<div>", {class: "gole-tile gole-tile-selectable gole-tile-margin"})
+        tileDiv.attr("id", tile_id)
+
+        // map the tile object to the id on a global mapping object
+        // this way it will be easy later to determine
+        // which tileDiv has which tile object which is necessary for the gameplay
+        divTileMapping[tile_id] = tile
+
         var letterDiv = $("<div>", {class: "gole-tile-letter-character-container"})
 
         // Go returns the character of a letter tile as an int8 (rune) code
         // so we need to convert to string and put it uppercase before printing
         letterDiv.html(String.fromCharCode(letter.Character).toUpperCase())
-
-        // Assign a unique id to the letter div
-        // the id will consist of the last part of the game uuid,
-        // the name of the player who initially owns it
-        // and the letter code
-        letterDiv.id = game.id
-
 
         var letterValueDiv = $("<div>", {class: "gole-tile-letter-value-container"})
         letterValueDiv.html(letter.Attributes.PointValue)
@@ -106,18 +115,49 @@ function drawPlayer() {
 
     //register tile click events
     $("div.gole-tile").click(function(){
-        console.log("c")
+        if (divTileMapping[this.id].isActivated) {
+            deactivate_tile(divTileMapping[this.id])
+        } else {
+            activate_tile(divTileMapping[this.id])
+        }
     });
 
 }
 
 // Stores the information about which div (identified by its ID)
-// has which letter on it, necessary for UI.
-// Structure {"div-id": "letterObject"}
-var divLetterMapping = {}
+// has which tile object on it, necessary for UI.
+// Structure {"div-id": "tileObject"}
+var divTileMapping = {}
 
-// stores information about the current game move
-var move = {
-    letter: null,
-    letterDiv: null
+// stores information about the currently activated tile
+// i.e. the tile that is to be moved
+var activatedTile = null
+
+// check whether the activated tile is moveable
+// and show the user where it can be moved to and that it is now active
+//
+// called when a player clicks on a tile while it is deactivated
+function activate_tile(tile) {
+
+    //Check first if a letter is already activated and deactivate it if so
+    if (activatedTile) {
+        deactivate_tile(activatedTile)
+    }
+
+    tile.isActivated = true
+    $("#" + tile.id).addClass("gole-tile-activated")
+    activatedTile = divTileMapping[tile.id]
+    console.log(activatedTile)
+    console.log("LetterToMove: " + activatedTile.letter.Character)
+}
+
+// deactivate a tile visually and on the tile instance
+//
+// called when a player clicks on a tile while it is activated
+// and when a letter is placed on a valid position on the board
+function deactivate_tile(tile) {
+    tile.isActivated = false
+    $("#" + tile.id).removeClass("gole-tile-activated")
+    activatedTile = null
+    console.log("LetterDEactivated: " + tile.letter.Character)
 }
