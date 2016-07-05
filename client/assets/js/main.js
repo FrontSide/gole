@@ -85,6 +85,13 @@ function drawPlayer() {
         // so we need to convert to string and put it uppercase before printing
         letterDiv.html(String.fromCharCode(letter.Character).toUpperCase())
 
+        // Assign a unique id to the letter div
+        // the id will consist of the last part of the game uuid,
+        // the name of the player who initially owns it
+        // and the letter code
+        letterDiv.id = game.id
+
+
         var letterValueDiv = $("<div>", {class: "gole-tile-letter-value-container"})
         letterValueDiv.html(letter.Attributes.PointValue)
 
@@ -97,14 +104,20 @@ function drawPlayer() {
     $("div.gole-active-player-container").append(pointsDiv)
     $("div.gole-active-player-container").append(handContainerDiv)
 
+    //register tile click events
+    $("div.gole-tile").click(function(){
+        console.log("c")
+    });
+
 }
+
+// Stores the information about which div (identified by its ID)
+// has which letter on it, necessary for UI.
+// Structure {"div-id": "letterObject"}
+var divLetterMapping = {}
 
 // stores information about the current game move
 var move = {
     letter: null,
     letterDiv: null
 }
-
-$("div.gole-tile").on("click", function(){
-    console.log(this)
-})
