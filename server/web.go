@@ -94,6 +94,8 @@ func PlaceLetterHandler(responseWriter http.ResponseWriter, request *http.Reques
         http.Error(responseWriter, err.Error(), 500)
     }
 
+    responseWriter.Write([]byte(game.Id))
+
 }
 
 func ConfirmWordHandler(responseWriter http.ResponseWriter, request *http.Request) {

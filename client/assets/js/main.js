@@ -18,8 +18,12 @@ $(document).ready(function() {
 });
 
 function drawBoard() {
-    $.each(game.board, function(xIdx, column) {
-        $.each(column, function(yIdx, tile) {
+
+    //Clear Board container
+    $("div.gole-board-container").html("")
+
+    $.each(game.board, function(yIdx, column) {
+        $.each(column, function(xIdx, tile) {
 
             tileEffectColorClass = ""
             tileEffectText = ""
@@ -49,18 +53,42 @@ function drawBoard() {
             }
 
             var tileDiv = $("<div>", {class: "gole-board-tile " + tileEffectColorClass + " " + tileLegalPlacementColorClass})
-            $.data(tileDiv, "gole-tile-x-idx", xIdx)
-            $.data(tileDiv, "gole-tile-y-idx", yIdx)
 
             tileInscriptionText = ""
             if (tile.Letter.Character == 0 && tileEffectText) {
                 tileInscriptionText = tileEffectText
-            } else {
-                tileInscriptionText = tile.Letter
+            } else if (tile.Letter.Character != 0) {
+                tileInscriptionText = String.fromCharCode(tile.Letter.Character).toUpperCase()
             }
 
             tileDiv.html(tileInscriptionText)
 
+            //register tile click events
+            tileDiv.click(function(){
+
+                if (activatedLetter) {
+
+                    // Check if the tile is activateable. i.e. if it's not already part
+                    // of a played word on the board.
+                    if (tile.Letter.Character != 0) {
+                        console.log("Cannot place letter. Occupied.")
+                    } else {
+                        placeLetterOnTile(xIdx, yIdx, tile)
+                    }
+
+                } else if (tile.Letter.Character != 0) {
+
+                    if (tile.IsLocked) {
+                        console.log("sorry locked")
+                    } else if (activatedLetter === tile.Letter) {
+                        deactivateLetter(tile.Letter, tileDiv)
+                    } else {
+                        activateLetter(tile.Letter, tileDiv)
+                    }
+
+                }
+
+            });
             $("div.gole-board-container").append(tileDiv)
         })
         $("div.gole-board-container").append("<div style='clear:both'></div>")
@@ -79,22 +107,7 @@ function drawPlayer() {
 
     $.each(activePlayer.LettersInHand, function(idx, letter) {
 
-        // Assign a unique id to the tile div
-        // the id will consist of the the name of the player
-        // who initially owns, the unix timestamp at assignment of the ID
-        // + the index of the iteration
-        // and the letter code
-        tile_id = activePlayer.Name + "-" + (Date.now() + idx) + "-" + letter.Character
-        tile = new Tile(tile_id, letter)
-
         var tileDiv = $("<div>", {class: "gole-tile gole-tile-selectable gole-tile-margin"})
-        tileDiv.attr("id", tile_id)
-
-        // map the tile object to the id on a global mapping object
-        // this way it will be easy later to determine
-        // which tileDiv has which tile object which is necessary for the gameplay
-        divTileMapping[tile_id] = tile
-
         var letterDiv = $("<div>", {class: "gole-tile-letter-character-container"})
 
         // Go returns the character of a letter tile as an int8 (rune) code
@@ -107,57 +120,94 @@ function drawPlayer() {
         tileDiv.append(letterDiv)
         tileDiv.append(letterValueDiv)
         handContainerDiv.append(tileDiv)
+
+        //register tile click event
+        tileDiv.click(function(){
+            if (activatedLetter === letter) {
+                deactivateLetter(letter, this)
+            } else {
+                activateLetter(letter, this)
+            }
+        });
+
     })
 
     $("div.gole-active-player-container").append(nameDiv)
     $("div.gole-active-player-container").append(pointsDiv)
     $("div.gole-active-player-container").append(handContainerDiv)
 
-    //register tile click events
-    $("div.gole-tile").click(function(){
-        if (divTileMapping[this.id].isActivated) {
-            deactivate_tile(divTileMapping[this.id])
-        } else {
-            activate_tile(divTileMapping[this.id])
-        }
-    });
-
 }
-
-// Stores the information about which div (identified by its ID)
-// has which tile object on it, necessary for UI.
-// Structure {"div-id": "tileObject"}
-var divTileMapping = {}
 
 // stores information about the currently activated tile
 // i.e. the tile that is to be moved
-var activatedTile = null
+var activatedLetter = null
 
-// check whether the activated tile is moveable
+// check whether the letter tile to be activates is moveable
 // and show the user where it can be moved to and that it is now active
 //
 // called when a player clicks on a tile while it is deactivated
-function activate_tile(tile) {
+function activateLetter(letter, tileDiv) {
 
-    //Check first if a letter is already activated and deactivate it if so
-    if (activatedTile) {
-        deactivate_tile(activatedTile)
+    //Check first if a letter is already activated and deactivate all if so
+    if (activatedLetter) {
+        deactivateLetter(activatedLetter)
     }
 
-    tile.isActivated = true
-    $("#" + tile.id).addClass("gole-tile-activated")
-    activatedTile = divTileMapping[tile.id]
-    console.log(activatedTile)
-    console.log("LetterToMove: " + activatedTile.letter.Character)
+    console.log(tileDiv)
+    $(tileDiv).addClass("gole-tile-activated")
+    activatedLetter = letter
+    console.log(activatedLetter)
+    console.log("LetterToMove: " + activatedLetter.Character)
+
+    showLegalPlacements()
+
 }
 
-// deactivate a tile visually and on the tile instance
+// deactivate a letter tile
 //
-// called when a player clicks on a tile while it is activated
-// and when a letter is placed on a valid position on the board
-function deactivate_tile(tile) {
-    tile.isActivated = false
-    $("#" + tile.id).removeClass("gole-tile-activated")
-    activatedTile = null
-    console.log("LetterDEactivated: " + tile.letter.Character)
+// called when a player clicks on a letter tile while it is activated
+function deactivateLetter(letter, tileDiv) {
+
+    //If no tile div is given deactivate all visualy
+    if (!tileDiv) {
+        $(".gole-tile").removeClass("gole-tile-activated")
+    } else {
+        $(tileDiv).removeClass("gole-tile-activated")
+    }
+
+    activatedLetter = null
+    hideLegalPlacements()
+    console.log("LetterDEactivated: " + letter.Character)
+
+}
+
+function showLegalPlacements() {
+    $(".gole-board-tile-illegal-placement, .gole-board-tile-legal-placement").addClass("gole-board-tile-legal-placement-show")
+}
+
+function hideLegalPlacements() {
+    $(".gole-board-tile-illegal-placement, .gole-board-tile-legal-placement").removeClass("gole-board-tile-legal-placement-show")
+}
+
+function placeLetterOnTile(xIdx, yIdx, board_tile) {
+    console.log("Place letter on tile. Tile:")
+    console.log(board_tile)
+
+    if (!activatedLetter) {
+        console.log("No letter activated. Cannot place letter.")
+        return
+    }
+
+    if (!board_tile.PlacementIsLegal) {
+        console.log("Placement not Legal. Abort.")
+        return
+    }
+
+    //Call libgole API request
+    placeLetter(xIdx, yIdx, activatedLetter.Character)
+
+
+    getBoard()
+    drawBoard()
+
 }

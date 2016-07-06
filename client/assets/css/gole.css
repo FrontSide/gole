@@ -53,11 +53,11 @@ div.gole-board-tile-effect-center {
     background-color: #FF0;
 }
 
-div.gole-board-tile-legal-placement:hover {
+div.gole-board-tile-legal-placement.gole-board-tile-legal-placement-show {
     background-color: #DFD;
 }
 
-div.gole-board-tile-illegal-placement:hover {
+div.gole-board-tile-illegal-placement.gole-board-tile-legal-placement-show {
     background-color: #DDD;
 }
 

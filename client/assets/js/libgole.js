@@ -15,11 +15,11 @@ var activePlayer = {
     LettersInHand: null
 }
 
-function Tile(id, letter) {
-    this.id = id
-    this.letter = letter
-    this.isActivated = false
-}
+//function Tile(letter) {
+//    this.letter = letter
+//    this.isActivated = false
+//    this.isLocked = false
+//}
 
 function createNewGame(playerNames) {
 
@@ -46,7 +46,22 @@ function createNewGame(playerNames) {
 
 function placeLetter(tilesXCoordinate, tilesYCoordinate, letter) {
 
-    letterASCIICode = "a"//get letter ascii code (server expects rune)
+    $.ajax({
+        async: false,
+        method: "POST",
+        url: server.url + "/place",
+        data: JSON.stringify(
+            {
+                "TileXCoordinate": tilesXCoordinate,
+                "TileYCoordinate": tilesYCoordinate,
+                "Letter": letter,
+                "GameId": game.id
+            }
+        ),
+    })
+    .done(function(id) {
+        console.log("Letter Placed")
+    });
 
 }
 
