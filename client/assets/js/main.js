@@ -9,13 +9,36 @@
 // since board has been loaded completely before
 
 $(document).ready(function() {
-    createNewGame(["oasch", "babab"])
+
+    if (Cookies.get('golegameid') == null) {
+        promptNewGame(initNewGame)
+        return
+    }
+
+    // Get the game id from the cookie and assign it to the in-memory game id
+    game.id = Cookies.get('golegameid')
+    reload()
+});
+
+function initNewGame() {
+    // to be called AFTER the new player names have been set by the user
+    // Ideally as callback for the new game prompt
+    // Initiates the new game
+
+    // Ineract with gole server to create new game
+    createNewGame()
+    reload()
+}
+
+function reload() {
     getBoard()
-    console.log(game.board)
+    if (game.board == null) {
+        promptError("There has been a connection issue. The current game could not be restored.", "Start new Game", promptNewGame, initNewGame)
+    }
     getActivePlayer()
     drawBoard()
     drawPlayer()
-});
+}
 
 function drawBoard() {
 
@@ -45,26 +68,50 @@ function drawBoard() {
                         break;
             }
 
+            var boardTileDiv = $("<div>", {class: "gole-board-tile " + tileEffectColorClass})
+
             tileLegalPlacementColorClass = ""
             if (tile.PlacementIsLegal) {
-                tileLegalPlacementColorClass = "gole-board-tile-legal-placement"
+                boardTileDiv.droppable()
+                boardTileDiv.addClass("gole-board-tile-legal-placement")
             } else {
-                tileLegalPlacementColorClass = "gole-board-tile-illegal-placement"
+                boardTileDiv.addClass("gole-board-tile-illegal-placement")
             }
-
-            var tileDiv = $("<div>", {class: "gole-board-tile " + tileEffectColorClass + " " + tileLegalPlacementColorClass})
 
             tileInscriptionText = ""
             if (tile.Letter.Character == 0 && tileEffectText) {
-                tileInscriptionText = tileEffectText
+                boardTileDiv.html(tileEffectText)
+                boardTileDiv.addClass("gole-board-tile-no-tile")
             } else if (tile.Letter.Character != 0) {
-                tileInscriptionText = String.fromCharCode(tile.Letter.Character).toUpperCase()
+
+                var tileDiv = $("<div>", {class: "gole-tile gole-tile-selectable gole-tile-margin"})
+                var letterDiv = $("<div>", {class: "gole-tile-letter-character-container"})
+
+                letterDiv.html(String.fromCharCode(tile.Letter.Character).toUpperCase())
+
+                var letterValueDiv = $("<div>", {class: "gole-tile-letter-value-container"})
+                letterValueDiv.html(tile.Letter.Attributes.PointValue)
+
+                tileDiv.append(letterDiv)
+                tileDiv.append(letterValueDiv)
+                boardTileDiv.append(tileDiv)
+
+                if (!tile.IsLocked) {
+
+                    tileDiv.draggable({
+                        snap: ".gole-board-tile",
+                        snapMode: "inner",
+                        revert: "invalid"
+                    })
+
+                }
+
             }
 
-            tileDiv.html(tileInscriptionText)
-
             //register tile click events
-            tileDiv.click(function(){
+            boardTileDiv.on("drop", function(){
+
+                console.log("drop action")
 
                 if (activatedLetter) {
 
@@ -89,26 +136,44 @@ function drawBoard() {
                 }
 
             });
-            $("div.gole-board-container").append(tileDiv)
+            $("div.gole-board-container").append(boardTileDiv)
         })
         $("div.gole-board-container").append("<div style='clear:both'></div>")
     })
+
+    var startNewGameButton = $("<button>", {class: "gole-gameplay-button"})
+    startNewGameButton.html("Start New Game")
+    startNewGameButton.click(function(){
+        console.log("new game button pressed")
+        promptNewGame(initNewGame)
+    })
+    $("div.gole-board-container").append(startNewGameButton)
 }
 
 function drawPlayer() {
+
+    $("div.gole-active-player-container").html("")
 
     var nameDiv = $("<div>", {class: "gole-active-player-name-container"})
     nameDiv.html(activePlayer.Name)
 
     var pointsDiv = $("<div>", {class: "gole-active-player-points-container"})
-    pointsDiv.html(activePlayer.Points)
+    pointsDiv.html(activePlayer.Points +  " Points")
 
     var handContainerDiv = $("<div>", {class: "gole-active-player-hand-container"})
+    handContainerDiv.sortable()
 
     $.each(activePlayer.LettersInHand, function(idx, letter) {
 
         var tileDiv = $("<div>", {class: "gole-tile gole-tile-selectable gole-tile-margin"})
         var letterDiv = $("<div>", {class: "gole-tile-letter-character-container"})
+
+        tileDiv.draggable({
+           snap: ".gole-board-tile",
+           snapMode: "inner",
+           revert: "invalid",
+           connectToSortable: ".gole-active-player-hand-container"
+        })
 
         // Go returns the character of a letter tile as an int8 (rune) code
         // so we need to convert to string and put it uppercase before printing
@@ -121,20 +186,29 @@ function drawPlayer() {
         tileDiv.append(letterValueDiv)
         handContainerDiv.append(tileDiv)
 
-        //register tile click event
-        tileDiv.click(function(){
-            if (activatedLetter === letter) {
-                deactivateLetter(letter, this)
-            } else {
-                activateLetter(letter, this)
-            }
-        });
+        tileDiv.on("dragstart", function(){
+            console.log("enter drag")
+            activateLetter(letter, this)
+        })
 
+        tileDiv.on("dragstop", function(){
+            console.log("leave drag")
+            deactivateLetter(letter, this)
+        })
+
+    })
+
+    var confirmWordButton = $("<button>", {class: "gole-gameplay-button"})
+    confirmWordButton.html("Confirm Word")
+    confirmWordButton.click(function(){
+        confirmWord()
+        reload()
     })
 
     $("div.gole-active-player-container").append(nameDiv)
     $("div.gole-active-player-container").append(pointsDiv)
     $("div.gole-active-player-container").append(handContainerDiv)
+    $("div.gole-active-player-container").append(confirmWordButton)
 
 }
 
@@ -205,9 +279,6 @@ function placeLetterOnTile(xIdx, yIdx, board_tile) {
 
     //Call libgole API request
     placeLetter(xIdx, yIdx, activatedLetter.Character)
-
-
-    getBoard()
-    drawBoard()
+    reload()
 
 }

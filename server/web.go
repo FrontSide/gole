@@ -121,6 +121,9 @@ func ConfirmWordHandler(responseWriter http.ResponseWriter, request *http.Reques
         log.Println("Available ids are: ", games)
         http.Error(responseWriter, err.Error(), 500)
     }
+
+    responseWriter.Write([]byte("OK"))
+
 }
 
 func GetActivePlayerHandler(responseWriter http.ResponseWriter, request *http.Request) {
