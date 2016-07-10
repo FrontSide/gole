@@ -3,4 +3,4 @@ build:
 
 start:
 	server/server &
-	open client/game.html
+	open client/game.html || xdg-open client/game.html
