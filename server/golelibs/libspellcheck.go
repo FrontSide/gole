@@ -1,48 +1,24 @@
 package golelibs
 
 import (
-    "net/http"
-    "encoding/json"
+    "github.com/ddliu/go-dict"
     "log"
 )
 
-var API_KEY string = "kmfwT9XfBcmshv8f6039EtD4q6rOp1VmG7kjsnicKoIphlUcHA"
-var API_ENDPOINT string = "https://montanaflynn-spellcheck.p.mashape.com/check/?text="
-//var API_ENDPOINT string = "https://google.com"
-
-func IsAValidWord(word string) bool {
+func IsAValidWord(word string) (bool) {
     // Return whether a word is a legitimate english word.
-    // Utilized the spellcheck API
+    // Utilize the go-dict library which makes use of
+    // the locally stored dict on the computer
+    //
+    // requires:
+    // - the existance of a file with a list of words at
+    //   /usr/share/dict/words
+    //   this restricts the use of this software to unix systems
 
-    client := &http.Client{}
-
-    request, err := http.NewRequest("GET", API_ENDPOINT + word, nil)
-    request.Header.Add("X-Mashape-Key", API_KEY)
-    request.Header.Add("Accept", "application/json")
-    response, err := client.Do(request)
-    defer response.Body.Close()
-
-    if err != nil {
-        log.Fatal(err)
-    }
-
-    if response.StatusCode != 200 {
-        log.Fatal("Request to Dictionary service failed. Response Code: %d", response.StatusCode)
-    }
-
-    // Following struct represents the structure, i.e., the keys
-    // of the responded JSON. Note that even though the keys
-    // in the actual JSON string are lower-case, they need to be
-    // defined in upper case in the struct.
-    // Otherwise the encoding/json package won't be able to access them
-    // since they won't be accessible outside the package they are in.
-    type ResponseJsonContainer struct {
-        Original, Suggestion, Corrections string
-    }
-
-    responseJson := ResponseJsonContainer{}
-    json.NewDecoder(response.Body).Decode(&responseJson)
-
-    return responseJson.Suggestion == responseJson.Original
+    log.Println("Call spell check dictionsry for word: " + word)
+    dict := dict.NewDict()
+    dict.Load("/usr/share/dict/words")
+    _, wordExists := dict.Get(word)
+    return wordExists
 
 }

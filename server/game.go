@@ -143,6 +143,12 @@ func GetPointsForWord(wordTiles []Tile) (int, error) {
     // calculate the points for a series of
     // tiles, with respect to the point value of a letter
     // and the tile effects
+    // Return an error if the word is invalid
+    // that inclused if the word consists of only one letter
+
+    //if len(wordTiles) < 2 {
+    //    return -1, errors.New("Can not get points for word. Too short.")
+    //}
 
     var word string
     var wordPoints int
@@ -167,10 +173,12 @@ func GetPointsForWord(wordTiles []Tile) (int, error) {
 
     }
 
+    log.Println("Word to check: " + word)
+
     wordPoints *= wordPointMultiplicator
 
     if ! golelibs.IsAValidWord(word) {
-        errors.New("Not a valid word: " + word)
+        return -1, errors.New("Not a valid word: " + word)
     }
 
     return wordPoints, nil
@@ -195,14 +203,18 @@ func FinishTurn(game *Game) error {
                 var horizontalWordTiles = GetHorizontalWordAtTile(verticalIdx, horizontalIdx, game.Tiles)
                 var verticalWordTiles = GetVerticalWordAtTile(verticalIdx, horizontalIdx, game.Tiles)
 
+                log.Println("horizontailTiles: " + TileSliceToString(horizontalWordTiles))
+                log.Println("verticalTiles: " + TileSliceToString(verticalWordTiles))
+
                 //Check if words have alreaddy been confirmed i.e. rated
-                var ignoreHorizontalWord bool
-                var ignoreVerticalWord bool
+                var ignoreHorizontalWord, ignoreVerticalWord bool
                 for _, wordTiles := range confirmedWordTiles {
                     if reflect.DeepEqual(wordTiles, horizontalWordTiles) {
+                        log.Println("Ignore horizontal word on tiles")
                         ignoreHorizontalWord = true
                     }
                     if reflect.DeepEqual(wordTiles, verticalWordTiles) {
+                        log.Println("Ignore vertical word on tiles")
                         ignoreVerticalWord = true
                     }
                 }
@@ -210,7 +222,7 @@ func FinishTurn(game *Game) error {
                 if ! ignoreHorizontalWord {
                     horizontalWordPoints, err := GetPointsForWord(horizontalWordTiles)
                     if err != nil {
-                        return err
+                        log.Fatal(err.Error())
                     }
                     points += horizontalWordPoints
                     confirmedWordTiles = append(confirmedWordTiles, horizontalWordTiles)
@@ -219,7 +231,7 @@ func FinishTurn(game *Game) error {
                 if ! ignoreVerticalWord {
                     verticalWordPoints, err := GetPointsForWord(verticalWordTiles)
                     if err != nil {
-                        return err
+                        log.Fatal(err.Error())
                     }
                     points += verticalWordPoints
                     confirmedWordTiles = append(confirmedWordTiles, verticalWordTiles)

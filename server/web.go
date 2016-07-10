@@ -100,6 +100,8 @@ func PlaceLetterHandler(responseWriter http.ResponseWriter, request *http.Reques
 
 func ConfirmWordHandler(responseWriter http.ResponseWriter, request *http.Request) {
 
+    log.Println("Confirming word")
+
     requestBodyDecoder := json.NewDecoder(request.Body)
     var requestBody ConfirmWordRequestBody
     err := requestBodyDecoder.Decode(&requestBody)

@@ -4,6 +4,7 @@ import (
     "log"
     "math"
     "errors"
+    "encoding/json"
 )
 
 var VERTICAL_TILES_AMOUNT int = 15
@@ -14,6 +15,16 @@ type Tile struct {
     Letter Letter
     Effect SpecialTileEffect
     PlacementIsLegal bool
+}
+
+func TileSliceToString(tiles []Tile) string {
+
+    tilesJson, err := json.Marshal(tiles)
+    if err != nil {
+        log.Fatal("Could not convert tiles slice to Json")
+    }
+    return string(tilesJson)
+
 }
 
 type SpecialTileEffect int
@@ -183,7 +194,7 @@ func GetHorizontalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [
         _, err = GetLetterFromTile(verticalTileIdx, horizontalLoopIdx, tiles)
         if err != nil {
             outerLeftTileOfWord = horizontalLoopIdx + 1
-            break;
+            break
         }
     }
 
@@ -191,7 +202,8 @@ func GetHorizontalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [
     for horizontalLoopIdx := outerLeftTileOfWord+1; horizontalLoopIdx <= HORIZONTAL_TILES_AMOUNT; horizontalLoopIdx++ {
         _, err := GetLetterFromTile(verticalTileIdx, horizontalLoopIdx, tiles)
         if err != nil {
-            outerRightTileOfWord = horizontalLoopIdx - 1
+            outerRightTileOfWord = horizontalLoopIdx
+            break;
         }
     }
 
@@ -205,6 +217,8 @@ func GetVerticalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [][
     // Get the vertical word (read from top to bottom)
     // that the letter on the given tile is a part of (if any).
 
+    log.Printf("Get vertical word at tile %d,%d", verticalTileIdx, horizontalTileIdx)
+
     var err error
     _, err = GetLetterFromTile(verticalTileIdx, horizontalTileIdx, tiles)
     if err != nil {
@@ -215,23 +229,34 @@ func GetVerticalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [][
     var outerBottomTileOfWord int = VERTICAL_TILES_AMOUNT-1
 
     // Go to top outer tile of vertical word at this tile
-    for verticalLoopIdx := verticalTileIdx-1; verticalLoopIdx >= 0; verticalLoopIdx-- {
+    for verticalLoopIdx := verticalTileIdx; verticalLoopIdx >= 0; verticalLoopIdx-- {
         _, err = GetLetterFromTile(verticalLoopIdx, horizontalTileIdx, tiles)
         if err != nil {
             outerTopTileOfWord = verticalLoopIdx + 1
-            break;
+            break
         }
     }
 
-    // Go to right outer tile of horizontal word at given tile
-    for verticalLoopIdx := outerTopTileOfWord+1; verticalLoopIdx <= VERTICAL_TILES_AMOUNT; verticalLoopIdx++ {
+    log.Printf("The outer top tile is: %d", outerTopTileOfWord)
+
+    // Go to bottom outer tile of horizontal word at given tile
+    for verticalLoopIdx := outerTopTileOfWord; verticalLoopIdx < VERTICAL_TILES_AMOUNT; verticalLoopIdx++ {
         _, err := GetLetterFromTile(verticalLoopIdx, horizontalTileIdx, tiles)
         if err != nil {
             outerBottomTileOfWord = verticalLoopIdx - 1
+            break
         }
     }
 
-    return tiles[outerTopTileOfWord:outerBottomTileOfWord][horizontalTileIdx]
+    log.Printf("The outer bottom tile is: %d", outerBottomTileOfWord)
+
+
+    var verticalWordTiles []Tile
+    for _, horizontalTiles := range tiles[outerTopTileOfWord:outerBottomTileOfWord] {
+        verticalWordTiles = append(verticalWordTiles, horizontalTiles[horizontalTileIdx])
+        log.Printf("Append letter %c", horizontalTiles[horizontalTileIdx].Letter.Character)
+    }
+    return verticalWordTiles
 
 }
 
