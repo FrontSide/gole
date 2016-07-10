@@ -98,13 +98,18 @@ func PlaceLetter(game *Game, verticalTileIdx int, horizontalTileIdx int, letter 
     // add a letter to the board.
     // throw an error if placement of the leter is not legal
 
-    // TODO: Has player who has turn the letter to be placed in hand?
+    var err error
+    err = game.Players[game.PlayerIdxWithTurn].RemoveLetterFromHand(letter)
+    if err != nil {
+        return err
+    }
 
     if isLegal, reason := IsLegalPlacement(verticalTileIdx, horizontalTileIdx, letter, game.Tiles); !isLegal {
         return errors.New("Cannot place letter. " + reason)
     }
 
-    letterStruct, err := GetLetterStructFromRune(letter)
+    var letterStruct Letter
+    letterStruct, err = GetLetterStructFromRune(letter)
     if err != nil {
         return err
     }

@@ -7,6 +7,10 @@ var server = {
 var game = {
     id: null,
     board: null,
+    // The player names will only be needed at the beginning when they are
+    // passed over by the user via the new game form
+    // Needs to be an Array of strings (2-4 players are allowed)
+    playerNames: new Array(),
 }
 
 var activePlayer = {
@@ -21,22 +25,26 @@ var activePlayer = {
 //    this.isLocked = false
 //}
 
-function createNewGame(playerNames) {
+function createNewGame() {
 
     // Assign handlers immediately after making the request,
     // and remember the jqxhr object for this request
 
     //requires:
-    // - Array of strings for player Names
+    // - That the array at game.playerNames is set as a string array
+    //   defining the names of the players for the new game
+
+    console.log("Start Game with players: " + game.playerNames)
 
     $.ajax({
         async: false,
         method: "POST",
         url: server.url + "/new",
-        data: JSON.stringify({ "PlayerNames": playerNames }),
+        data: JSON.stringify({ "PlayerNames": game.playerNames }),
     })
     .done(function(id) {
         game.id = id
+        Cookies.set('golegameid', game.id);
     });
 
     console.log("New Game ID:" + game.id);
@@ -98,4 +106,19 @@ function getActivePlayer() {
 function confirmWord() {
     // called after a player has placed
     // all tiles for the current turn
+
+    $.ajax({
+        async: false,
+        method: "POST",
+        url: server.url + "/confirm",
+        data: JSON.stringify(
+            {
+                "GameId": game.id
+            }
+        ),
+    })
+    .done(function(id) {
+        console.log("Word confirmed");
+    });
+
 }
