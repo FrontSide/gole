@@ -37,12 +37,14 @@ func CreateNewGameHandler(responseWriter http.ResponseWriter, request *http.Requ
     err = requestBodyDecoder.Decode(&requestBody)
     if err != nil {
         http.Error(responseWriter, err.Error(), 500)
+        return
     }
 
     var gameId string
     gameId, err = StartNewGame(requestBody.PlayerNames...)
     if err != nil {
         http.Error(responseWriter, err.Error(), 500)
+        return
     }
 
     responseWriter.Write([]byte(gameId))
@@ -61,12 +63,14 @@ func GetBoardHandler(responseWriter http.ResponseWriter, request *http.Request){
     if err != nil {
         log.Println("Available ids are: ", games)
         http.Error(responseWriter, err.Error(), 500)
+        return
     }
 
     var boardJson []byte
     boardJson, err = json.Marshal(game.Tiles)
     if err != nil {
         http.Error(responseWriter, err.Error(), 500)
+        return
     }
 
     responseWriter.Write(boardJson)
@@ -86,12 +90,14 @@ func PlaceLetterHandler(responseWriter http.ResponseWriter, request *http.Reques
     if err != nil {
         log.Println("Available ids are: ", games)
         http.Error(responseWriter, err.Error(), 500)
+        return
     }
 
     err = PlaceLetter(game, requestBody.TileYCoordinate, requestBody.TileXCoordinate, requestBody.Letter)
 
     if err != nil {
         http.Error(responseWriter, err.Error(), 500)
+        return
     }
 
     responseWriter.Write([]byte(game.Id))
@@ -107,6 +113,7 @@ func ConfirmWordHandler(responseWriter http.ResponseWriter, request *http.Reques
     err := requestBodyDecoder.Decode(&requestBody)
     if err != nil {
         http.Error(responseWriter, "Invalid body", 500)
+        return
     }
 
     var game *Game
@@ -115,6 +122,7 @@ func ConfirmWordHandler(responseWriter http.ResponseWriter, request *http.Reques
     if err != nil {
         log.Println("Available ids are: ", games)
         http.Error(responseWriter, err.Error(), 500)
+        return
     }
 
     err = FinishTurn(game)
@@ -122,6 +130,7 @@ func ConfirmWordHandler(responseWriter http.ResponseWriter, request *http.Reques
     if err != nil {
         log.Println("Available ids are: ", games)
         http.Error(responseWriter, err.Error(), 500)
+        return
     }
 
     responseWriter.Write([]byte("OK"))
@@ -137,14 +146,32 @@ func GetActivePlayerHandler(responseWriter http.ResponseWriter, request *http.Re
     if err != nil {
         log.Println("Available ids are: ", games)
         http.Error(responseWriter, err.Error(), 500)
+        return
     }
 
-    player := game.Players[game.PlayerIdxWithTurn]
+    var playerList []byte
+    playerList, err = json.Marshal(game.Players)
+    if err != nil {
+        http.Error(responseWriter, err.Error(), 500)
+        return
+    }
+    log.Println(string(playerList))
+
+    var player Player
+    log.Println("Get Player with index " + string(game.PlayerIdxWithTurn))
+    if game.PlayerIdxWithTurn < len(game.Players) && game.PlayerIdxWithTurn >= 0 {
+        player = game.Players[game.PlayerIdxWithTurn]
+    } else {
+        log.Println("Player with index " + string(game.PlayerIdxWithTurn) + " is not available.")
+        http.Error(responseWriter, "Error when trying to retrieve player.", 500)
+        return
+    }
 
     var playerJson []byte
     playerJson, err = json.Marshal(player)
     if err != nil {
         http.Error(responseWriter, err.Error(), 500)
+        return
     }
 
     responseWriter.Write(playerJson)
