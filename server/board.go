@@ -176,14 +176,36 @@ func GetLetterFromTile(verticalTileIdx int, horizontalTileIdx int, tiles [][]Til
     return letter, nil
 }
 
-func GetHorizontalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [][]Tile) []Tile {
+func GetHorizontalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [][]Tile) (bool, []Tile) {
     // Get the horizontal word (read from left to right)
     // that the letter on the given tile is a part of (if any).
+    // Requires:
+    // - valid vertical and horizontal index of tile on board
+    // - two-dimensional array of tiles from board
+    // Guarantees:
+    // - return boolean (1st value) that describes whether there is
+    //   a series (>0) of horizontal letters around the given tile.
+    // - return a tile-array (2nd value) with the letters around the tile
+    //   in same order as appearing on the board from left to right
+    //   (including the letter on the given tile) if existing.
+    // - return false (1st value) and an empty tile array (2nd value)
+    //   if there are no tiles horizontally adjacent to the given tile or
+    //   if the given tile is already empty.
 
+    // Make sure the
     var err error
     _, err = GetLetterFromTile(verticalTileIdx, horizontalTileIdx, tiles)
     if err != nil {
-        log.Fatal("Cannot retrieve horizontal word. Initial tile is empty.")
+        log.Printf("Cannot retrieve horizontal word. Initial tile is empty. v:%d,h:%d", verticalTileIdx, horizontalTileIdx)
+        return false, []Tile{}
+    }
+
+    //Make sure there are vertically adjacent non-empty tiles around the given tile
+    _, noTileLeftErr := GetLetterFromTile(verticalTileIdx, horizontalTileIdx-1, tiles)
+    _, noTileRightErr := GetLetterFromTile(verticalTileIdx, horizontalTileIdx+1, tiles)
+    if noTileLeftErr != nil && noTileRightErr != nil {
+        log.Printf("Cannot retrieve vertical word. Adjacent tiles empty. v:%d,h:%d", verticalTileIdx, horizontalTileIdx)
+        return false, []Tile{}
     }
 
     var outerLeftTileOfWord int = 0
@@ -209,20 +231,42 @@ func GetHorizontalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [
 
     var fullRow []Tile = tiles[verticalTileIdx]
 
-    return fullRow[outerLeftTileOfWord:outerRightTileOfWord]
+    return true, fullRow[outerLeftTileOfWord:outerRightTileOfWord]
 
 }
 
-func GetVerticalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [][]Tile) []Tile {
+func GetVerticalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [][]Tile) (bool, []Tile) {
     // Get the vertical word (read from top to bottom)
     // that the letter on the given tile is a part of (if any).
+    // Requires:
+    // - valid vertical and horizontal index of tile on board
+    // - two-dimensional array of tiles from board
+    // Guarantees:
+    // - return boolean (1st value) that describes whether there is a
+    //   series (>0) of vertical letters around the given tile.
+    // - return a tile-array (2nd value) with the letters around the tile
+    //   in same order as appearing on the board from top to bottom
+    //   (including the letter on the given tile) if existing.
+    // - return false (1st value) and an empty tile array (2nd value)
+    //   if there are no tiles vertically adjacent to the given tile
+    //   or if the given tile is already empty.
 
     log.Printf("Get vertical word at tile %d,%d", verticalTileIdx, horizontalTileIdx)
 
+    // Make sure the initial tile is not empty
     var err error
     _, err = GetLetterFromTile(verticalTileIdx, horizontalTileIdx, tiles)
     if err != nil {
-        log.Fatal("Cannot retrieve horizontal word. Initial tile is empty.")
+        log.Printf("Cannot retrieve vertical word. Initial tile is empty. v:%d,h:%d", verticalTileIdx, horizontalTileIdx)
+        return false, []Tile{}
+    }
+
+    //Make sure there are vertically adjacent non-empty tiles around the given tile
+    _, noTileAboveErr := GetLetterFromTile(verticalTileIdx-1, horizontalTileIdx, tiles)
+    _, noTileBelowErr := GetLetterFromTile(verticalTileIdx+1, horizontalTileIdx, tiles)
+    if noTileAboveErr != nil && noTileBelowErr != nil {
+        log.Printf("Cannot retrieve vertical word. Adjacent tiles empty. v:%d,h:%d", verticalTileIdx, horizontalTileIdx)
+        return false, []Tile{}
     }
 
     var outerTopTileOfWord int = 0
@@ -256,7 +300,7 @@ func GetVerticalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [][
         verticalWordTiles = append(verticalWordTiles, horizontalTiles[horizontalTileIdx])
         log.Printf("Append letter %c", horizontalTiles[horizontalTileIdx].Letter.Character)
     }
-    return verticalWordTiles
+    return true, verticalWordTiles
 
 }
 

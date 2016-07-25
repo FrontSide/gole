@@ -16,11 +16,11 @@ func GetGameByUUID(uuid string) (*Game, error) {
     // Requires:
     // - a lower letter standard unix uuid as created for the games
     // Guarantees:
-    // - Return game struct that has uuid set as game id
+    // - Return reference to game struct that has uuid set as game id
     // - log fatal if no game in array has the given uuid
-    for _, game := range games {
-        if game.Id == strings.TrimSpace(uuid) {
-            return &game, nil
+    for idx, _ := range games {
+        if games[idx].Id == strings.TrimSpace(uuid) {
+            return &games[idx], nil
         }
     }
     return &Game{}, errors.New("Game with uuid " + uuid + " could not be found!")

@@ -57,12 +57,12 @@ func AddPlayer(playerName string, game *Game) error {
     // upcoming game play
 
     if len(game.Players) >= MAX_NUMBER_OF_PLAYERS {
-        log.Fatal("No more players can be added to the Game.")
+        return errors.New("No more players can be added to the Game.")
     }
 
     _, err := game.GetPlayerByName(playerName)
     if err == nil {
-        errors.New("A player with this name already exists.")
+        return errors.New("A player with this name already exists.")
     }
 
     player := Player{Name: playerName}
@@ -200,8 +200,8 @@ func FinishTurn(game *Game) error {
         for horizontalIdx, tile := range column {
             if tile.Letter != (Letter{}) && ! tile.IsLocked {
 
-                var horizontalWordTiles = GetHorizontalWordAtTile(verticalIdx, horizontalIdx, game.Tiles)
-                var verticalWordTiles = GetVerticalWordAtTile(verticalIdx, horizontalIdx, game.Tiles)
+                hasHorizontalWord, horizontalWordTiles := GetHorizontalWordAtTile(verticalIdx, horizontalIdx, game.Tiles)
+                hasVerticalWord, verticalWordTiles := GetVerticalWordAtTile(verticalIdx, horizontalIdx, game.Tiles)
 
                 log.Println("horizontailTiles: " + TileSliceToString(horizontalWordTiles))
                 log.Println("verticalTiles: " + TileSliceToString(verticalWordTiles))
@@ -209,29 +209,27 @@ func FinishTurn(game *Game) error {
                 //Check if words have alreaddy been confirmed i.e. rated
                 var ignoreHorizontalWord, ignoreVerticalWord bool
                 for _, wordTiles := range confirmedWordTiles {
-                    if reflect.DeepEqual(wordTiles, horizontalWordTiles) {
-                        log.Println("Ignore horizontal word on tiles")
+                    if hasHorizontalWord && reflect.DeepEqual(wordTiles, horizontalWordTiles) {
                         ignoreHorizontalWord = true
                     }
-                    if reflect.DeepEqual(wordTiles, verticalWordTiles) {
-                        log.Println("Ignore vertical word on tiles")
+                    if hasVerticalWord && reflect.DeepEqual(wordTiles, verticalWordTiles) {
                         ignoreVerticalWord = true
                     }
                 }
 
-                if ! ignoreHorizontalWord {
+                if ! ignoreHorizontalWord && hasHorizontalWord {
                     horizontalWordPoints, err := GetPointsForWord(horizontalWordTiles)
                     if err != nil {
-                        log.Fatal(err.Error())
+                        return err
                     }
                     points += horizontalWordPoints
                     confirmedWordTiles = append(confirmedWordTiles, horizontalWordTiles)
                 }
 
-                if ! ignoreVerticalWord {
+                if ! ignoreVerticalWord && hasVerticalWord {
                     verticalWordPoints, err := GetPointsForWord(verticalWordTiles)
                     if err != nil {
-                        log.Fatal(err.Error())
+                        return err
                     }
                     points += verticalWordPoints
                     confirmedWordTiles = append(confirmedWordTiles, verticalWordTiles)
@@ -245,5 +243,6 @@ func FinishTurn(game *Game) error {
 
     // Give turn to next player
     game.PlayerIdxWithTurn = (game.PlayerIdxWithTurn + 1) % len(game.Players)
+    log.Printf("Index of player with turn is now: %d", game.PlayerIdxWithTurn)
     return nil
 }
