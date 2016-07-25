@@ -31,6 +31,7 @@ function initNewGame() {
 }
 
 function reload() {
+    console.log("reload")
     getBoard()
     if (game.board == null) {
         promptError("There has been a connection issue. The current game could not be restored.", "Start new Game", promptNewGame, initNewGame)

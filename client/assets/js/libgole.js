@@ -119,6 +119,8 @@ function confirmWord() {
     })
     .done(function(id) {
         console.log("Word confirmed");
+        return true;
     });
+    return false;
 
 }

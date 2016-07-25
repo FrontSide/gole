@@ -243,7 +243,7 @@ func GetVerticalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [][
     for verticalLoopIdx := outerTopTileOfWord; verticalLoopIdx < VERTICAL_TILES_AMOUNT; verticalLoopIdx++ {
         _, err := GetLetterFromTile(verticalLoopIdx, horizontalTileIdx, tiles)
         if err != nil {
-            outerBottomTileOfWord = verticalLoopIdx - 1
+            outerBottomTileOfWord = verticalLoopIdx
             break
         }
     }
