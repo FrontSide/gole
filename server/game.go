@@ -152,7 +152,7 @@ func GetPointsForWord(wordTiles []Tile) (int, error) {
 
     var word string
     var wordPoints int
-    var wordPointMultiplicator int
+    wordPointMultiplicator := 1
 
     for _, tile := range wordTiles {
 
