@@ -32,12 +32,23 @@ function initNewGame() {
 
 function reload() {
     console.log("reload")
+    reloadBoard()
+    reloadPlayer()
+}
+
+function reloadBoard() {
     getBoard()
     if (game.board == null) {
         promptError("There has been a connection issue. The current game could not be restored.", "Start new Game", promptNewGame, initNewGame)
     }
-    getActivePlayer()
     drawBoard()
+}
+
+function reloadPlayer() {
+    if (game.board == null) {
+        promptError("There has been a connection issue. The current game could not be restored.", "Start new Game", promptNewGame, initNewGame)
+    }
+    getActivePlayer()
     drawPlayer()
 }
 
@@ -102,7 +113,18 @@ function drawBoard() {
                     tileDiv.draggable({
                         snap: ".gole-board-tile",
                         snapMode: "inner",
-                        revert: "invalid"
+                        revert: "invalid",
+                        connectToSortable: ".gole-active-player-hand-container"
+                    })
+
+                    tileDiv.on("dragstart", function(){
+                        console.log("enter drag")
+                        console.log("remove letter from bord")
+                        removeLetter(yIdx, xIdx)
+                        reload()
+                    })
+
+                    tileDiv.on("dragstop", function(e, ui){
                     })
 
                 }
@@ -151,6 +173,13 @@ function drawBoard() {
     $("div.gole-board-container").append(startNewGameButton)
 }
 
+// The div that represents the container for the
+// players hand i.e. the tiles the player owns and has not yet
+// playes. Tiles can be moved from this container to specific
+// places on the board and from specific places on the board
+// back to the hand.
+var handContainerDiv = null
+
 function drawPlayer() {
 
     $("div.gole-active-player-container").html("")
@@ -161,8 +190,12 @@ function drawPlayer() {
     var pointsDiv = $("<div>", {class: "gole-active-player-points-container"})
     pointsDiv.html(activePlayer.Points +  " Points")
 
-    var handContainerDiv = $("<div>", {class: "gole-active-player-hand-container"})
+    handContainerDiv = $("<div>", {class: "gole-active-player-hand-container"})
     handContainerDiv.sortable()
+
+    handContainerDiv.on("drop", function() {
+        console.log("hand drop action")
+    })
 
     $.each(activePlayer.LettersInHand, function(idx, letter) {
 
@@ -192,8 +225,10 @@ function drawPlayer() {
             activateLetter(letter, this)
         })
 
-        tileDiv.on("dragstop", function(){
+        tileDiv.on("dragstop", function(e, ui){
             console.log("leave drag")
+            console.log(e)
+            consol.log(ui)
             deactivateLetter(letter, this)
         })
 

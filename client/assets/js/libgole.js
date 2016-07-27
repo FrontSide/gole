@@ -73,6 +73,26 @@ function placeLetter(tilesXCoordinate, tilesYCoordinate, letter) {
 
 }
 
+function removeLetter(tilesXCoordinate, tilesYCoordinate) {
+
+    $.ajax({
+        async: false,
+        method: "POST",
+        url: server.url + "/remove",
+        data: JSON.stringify(
+            {
+                "TileXCoordinate": tilesXCoordinate,
+                "TileYCoordinate": tilesYCoordinate,
+                "GameId": game.id
+            }
+        ),
+    })
+    .done(function(id) {
+        console.log("Letter Removed")
+    });
+
+}
+
 function getBoard() {
     //Get the complete board with all properties
     //so that the function requesting it in the

@@ -122,7 +122,7 @@ func PlaceLetter(game *Game, verticalTileIdx int, horizontalTileIdx int, letter 
     return nil
 }
 
-func RemoveLetter(game *Game, verticalTileIdx int, horizontalTileIdx int, tiles [][]Tile) error {
+func RemoveLetter(game *Game, verticalTileIdx int, horizontalTileIdx int) error {
     // Remove one single letter from the board that has
     // not been locked yet
 
