@@ -308,15 +308,25 @@ func IsLegalPlacement(verticalTileIdx int, horizontalTileIdx int, letter rune, t
     // check whether the given letter can be placed on the given tile
     // without actually placing it there.
     //
-    // returns true if placement is possible, otherwise false
-    // returns a string as second parameter describing why the placement is
-    // illegal, otherwise emptystring.
+    // Guarantees:
+    // - Return true if placement is possible, otherwise false
+    // - Returns a string as second parameter describing why the placement is
+    //   illegal, otherwise emptystring.
 
     if ! IsLegalLetter(letter) {
         return false, "Character illegal."
     }
 
-    var err error
+    // If the center tile is empty, it is the only tile
+    // onto which a letter can be placed.
+    _, err := GetLetterFromTile((VERTICAL_TILES_AMOUNT-1)/2, (HORIZONTAL_TILES_AMOUNT-1)/2, tiles)
+    if err != nil {
+        if TileIsCenterTile(verticalTileIdx, horizontalTileIdx) {
+            return true, ""
+        }
+        return false, "Center Tile empty. No other placements legal."
+    }
+
     _, err = GetLetterFromTile(verticalTileIdx, horizontalTileIdx, tiles)
     if err == nil {
         return false, "Tile occupied"
