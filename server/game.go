@@ -27,7 +27,7 @@ type Game struct {
 
 var MIN_NUMBER_OF_PLAYERS = 2
 var MAX_NUMBER_OF_PLAYERS = 4
-var DEFAULT_NUMBER_OF_LETTERS_IN_HAND = 7
+var MAX_NUMBER_OF_LETTERS_IN_HAND = 7
 
 func GetNewUUID() string {
     // Generate a new uuid for a new game.
@@ -67,12 +67,15 @@ func AddPlayer(playerName string, game *Game) error {
 
     player := Player{Name: playerName}
 
-    for i := 0; i < DEFAULT_NUMBER_OF_LETTERS_IN_HAND; i++ {
+    for i := 0; i < MAX_NUMBER_OF_LETTERS_IN_HAND; i++ {
         nextLetter, err := PopLetterFromSet(game)
         if err != nil {
             return err
         }
-        player.LettersInHand = append(player.LettersInHand, nextLetter)
+        err = player.AddLetterToHand(nextLetter)
+        if err != nil {
+            return err
+        }
     }
 
     game.Players = append(game.Players, player)
@@ -126,10 +129,24 @@ func RemoveLetter(game *Game, verticalTileIdx int, horizontalTileIdx int) error 
     // Remove one single letter from the board that has
     // not been locked yet
 
+    _, err := GetLetterFromTile(verticalTileIdx, horizontalTileIdx, game.Tiles)
+
+    if err != nil {
+        return errors.New("Cannot remove letter. Tile empty")
+    }
+
     if game.Tiles[verticalTileIdx][horizontalTileIdx].IsLocked {
         return errors.New("Cannot remove letter. Tile Locked")
     }
 
+    // Hand letter back to player
+    err = game.Players[game.PlayerIdxWithTurn].AddLetterToHand(game.Tiles[verticalTileIdx][horizontalTileIdx].Letter)
+
+    if err != nil {
+        return err
+    }
+
+    // Overwrite letter on  tile with empty letter struct
     game.Tiles[verticalTileIdx][horizontalTileIdx].Letter = Letter{}
 
     // Update placement legality of whole board
@@ -240,6 +257,19 @@ func FinishTurn(game *Game) error {
 
     // Add earned points to current player
     game.Players[game.PlayerIdxWithTurn].Points += points
+
+    // Fill up player hand with new letters
+    numberOflettersToAdd := MAX_NUMBER_OF_LETTERS_IN_HAND - len(game.Players[game.PlayerIdxWithTurn].LettersInHand)
+    for addLetterCounter := 0; addLetterCounter < numberOflettersToAdd; addLetterCounter++ {
+        newLetter, err := PopLetterFromSet(game)
+        if err != nil {
+            return err
+        }
+        err = game.Players[game.PlayerIdxWithTurn].AddLetterToHand(newLetter)
+        if err != nil {
+            return err
+        }
+    }
 
     // Give turn to next player
     game.PlayerIdxWithTurn = (game.PlayerIdxWithTurn + 1) % len(game.Players)

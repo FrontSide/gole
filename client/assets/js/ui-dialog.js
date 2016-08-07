@@ -55,10 +55,17 @@ function promptError(message, acceptButtonText, onAcceptCallback, onAcceptCallba
 
     var buttonsToDisplay = new Array()
     var acceptButton = $("<button>", {class: "gole-prompt-dialog-button gole-prompt-dialog-neutral-button"})
+
+    if (!acceptButtonText) {
+        acceptButtonText = "OK"
+    }
+
     acceptButton.html(acceptButtonText)
     acceptButton.click(function(){
         closePrompt()
-        onAcceptCallback(onAcceptCallbackArguments)
+        if (onAcceptCallback) {
+            onAcceptCallback(onAcceptCallbackArguments)
+        }
     })
     buttonsToDisplay.push(acceptButton)
 
@@ -100,7 +107,15 @@ function promptNewGame(onStartCallback, onStartCallbackArguments) {
 
         onStartCallback(onStartCallbackArguments)
     })
+
+    var dismissButton = $("<button>", {class: "gole-prompt-dialog-button"})
+    dismissButton.html("Cancel")
+    dismissButton.click(function(){
+        closePrompt()
+    })
+
     buttonsToDisplay.push(startButton)
+    buttonsToDisplay.push(dismissButton)
 
     prompt("Please enter your player names (2 - 4 players)...", "gole-prompt-neutral-text-container", buttonsToDisplay, nameTextFieldsContainer)
 

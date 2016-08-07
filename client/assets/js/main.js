@@ -92,8 +92,10 @@ function drawBoard() {
 
             tileInscriptionText = ""
             if (tile.Letter.Character == 0 && tileEffectText) {
+
                 boardTileDiv.html(tileEffectText)
                 boardTileDiv.addClass("gole-board-tile-no-tile")
+
             } else if (tile.Letter.Character != 0) {
 
                 var tileDiv = $("<div>", {class: "gole-tile gole-tile-selectable gole-tile-margin"})
@@ -119,12 +121,11 @@ function drawBoard() {
 
                     tileDiv.on("dragstart", function(){
                         console.log("enter drag")
-                        console.log("remove letter from bord")
-                        removeLetter(yIdx, xIdx)
-                        reload()
                     })
 
                     tileDiv.on("dragstop", function(e, ui){
+                        console.log("remove letter from bord")
+                        removeLetter(xIdx, yIdx, reload, promptError)
                     })
 
                 }
@@ -228,7 +229,7 @@ function drawPlayer() {
         tileDiv.on("dragstop", function(e, ui){
             console.log("leave drag")
             console.log(e)
-            consol.log(ui)
+            console.log(ui)
             deactivateLetter(letter, this)
         })
 
@@ -237,8 +238,7 @@ function drawPlayer() {
     var confirmWordButton = $("<button>", {class: "gole-gameplay-button"})
     confirmWordButton.html("Confirm Word")
     confirmWordButton.click(function(){
-        confirmWord()
-        reload()
+        confirmWord(reload, promptError)
     })
 
     $("div.gole-active-player-container").append(nameDiv)
@@ -314,7 +314,8 @@ function placeLetterOnTile(xIdx, yIdx, board_tile) {
     }
 
     //Call libgole API request
-    placeLetter(xIdx, yIdx, activatedLetter.Character)
+    var ok = placeLetter(xIdx, yIdx, activatedLetter.Character)
+
     reload()
 
 }

@@ -53,6 +53,10 @@ function createNewGame() {
 }
 
 function placeLetter(tilesXCoordinate, tilesYCoordinate, letter) {
+    // Guarantees:
+    // - Send letterPlacement request to gole server
+    // - Return null if operation was successfult and server returned with HTTP ok
+    // - Return error message if operation was unsuccesful
 
     $.ajax({
         async: false,
@@ -69,11 +73,29 @@ function placeLetter(tilesXCoordinate, tilesYCoordinate, letter) {
     })
     .done(function(id) {
         console.log("Letter Placed")
-    });
+        return null
+    })
+    .fail(function(response) {
+        return response
+    })
 
 }
 
-function removeLetter(tilesXCoordinate, tilesYCoordinate) {
+function removeLetter(tilesXCoordinate, tilesYCoordinate, fSuccessCallback, fErrorCallback) {
+    // Requires:
+    // - The x and y coordinates of the tile from which the letter
+    //   is to be removed
+    // - A callback function fSuccessCallback
+    //   to be called if the request succeeded
+    // - A callback function fErrorCallback
+    //   to be called if the request failed
+    // Guarantees:
+    // - Send request to remove letter to gole server
+    // - Trigger fErrorCallback callback function if request failed
+    //   (non 200 response from gole server) with response text
+    //   as first argument
+    // - Trigger fSuccessCallbak callback function if request succeeded
+    //   (200 response from gole server) without arguments
 
     $.ajax({
         async: false,
@@ -89,7 +111,12 @@ function removeLetter(tilesXCoordinate, tilesYCoordinate) {
     })
     .done(function(id) {
         console.log("Letter Removed")
-    });
+        fSuccessCallback()
+
+    })
+    .fail(function(response){
+        fErrorCallback(response.responseText)
+    })
 
 }
 
@@ -123,9 +150,21 @@ function getActivePlayer() {
 
 }
 
-function confirmWord() {
+function confirmWord(fSuccessCallback, fErrorCallback) {
     // called after a player has placed
     // all tiles for the current turn
+    // Requires:
+    // - A callback function fSuccessCallback
+    //   to be called if the request succeeded
+    // - A callback function fErrorCallback
+    //   to be called if the request failed
+    // Guarantees:
+    // - Send confirm word request to gole server
+    // - Trigger fErrorCallback callback function if request failed
+    //   (non 200 response from gole server) with response text
+    //   as first argument
+    // - Trigger fSuccessCallbak callback function if request succeeded
+    //   (200 response from gole server) without arguments
 
     $.ajax({
         async: false,
@@ -138,9 +177,11 @@ function confirmWord() {
         ),
     })
     .done(function(id) {
-        console.log("Word confirmed");
-        return true;
+        fSuccessCallback()
+    })
+    .fail(function(response){
+        fErrorCallback(response.responseText);
     });
-    return false;
+
 
 }
