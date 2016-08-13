@@ -19,6 +19,12 @@ type PlaceLetterRequestBody struct {
     GameId string
 }
 
+type RemoveLetterRequestBody struct {
+    TileXCoordinate int
+    TileYCoordinate int
+    GameId string
+}
+
 type ConfirmWordRequestBody struct {
     GameId string
 }
@@ -94,6 +100,34 @@ func PlaceLetterHandler(responseWriter http.ResponseWriter, request *http.Reques
     }
 
     err = PlaceLetter(game, requestBody.TileYCoordinate, requestBody.TileXCoordinate, requestBody.Letter)
+
+    if err != nil {
+        http.Error(responseWriter, err.Error(), 500)
+        return
+    }
+
+    responseWriter.Write([]byte(game.Id))
+
+}
+
+func RemoveLetterHandler(responseWriter http.ResponseWriter, request *http.Request){
+    requestBodyDecoder := json.NewDecoder(request.Body)
+    var requestBody RemoveLetterRequestBody
+    err := requestBodyDecoder.Decode(&requestBody)
+    if err != nil {
+        http.Error(responseWriter, "Invalid body", 500)
+    }
+
+    var game *Game
+    game, err = GetGameByUUID(requestBody.GameId)
+
+    if err != nil {
+        log.Println("Available ids are: ", games)
+        http.Error(responseWriter, err.Error(), 500)
+        return
+    }
+
+    err = RemoveLetter(game, requestBody.TileYCoordinate, requestBody.TileXCoordinate)
 
     if err != nil {
         http.Error(responseWriter, err.Error(), 500)
@@ -184,6 +218,7 @@ func StartWebServer() {
     r.HandleFunc("/{id}/board.json", GetBoardHandler).Methods("GET")
     r.HandleFunc("/{id}/player.json", GetActivePlayerHandler).Methods("GET")
     r.HandleFunc("/place", PlaceLetterHandler).Methods("POST")
+    r.HandleFunc("/remove", RemoveLetterHandler).Methods("POST")
     r.HandleFunc("/confirm", ConfirmWordHandler).Methods("POST")
     log.Fatal(http.ListenAndServe(":8000", handlers.CORS()(r)))
 }

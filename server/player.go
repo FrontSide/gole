@@ -28,3 +28,19 @@ func (player *Player) RemoveLetterFromHand(letter rune) error {
     return nil
 
 }
+
+func (player *Player) AddLetterToHand(letter Letter) error {
+    // Add a letter to the hand of the player
+    // Requires:
+    // - Full letter struct of letter to be added
+    // Guarantees:
+    // - Throw an error if the maximum of letters in hand
+    //   would exceed by adding this letter
+
+    if len(player.LettersInHand) >= MAX_NUMBER_OF_LETTERS_IN_HAND {
+        return errors.New("Cannot add letter to player hand. Maximum reached.")
+    }
+
+    player.LettersInHand = append(player.LettersInHand, letter)
+    return nil
+}
