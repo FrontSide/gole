@@ -23,23 +23,26 @@ div.gole-prompt-dialog-container {
     margin: auto;
     margin-top: 50px;
     background-color: #FFF;
-    border: solid 1px #222;
-    box-shadow: 0px 0px 5px #222;
+    border: solid 1px #AAA;
+    box-shadow: 0px 0px 5px -2px #222;
     border-radius: 3px;
     width: 400px;
     min-height: 100px;
     padding: 20px;
 }
 
+div.gole-prompt-text-container {
+    width: 80%;
+    margin-bottom: 20px;
+}
+
 div.gole-prompt-neutral-text-container {
     color: #222;
-    width: 80%;
 }
 
 div.gole-prompt-error-text-container {
     color: #F99;
     font-weight: bold;
-    width: 80%;
 }
 
 .gole-prompt-dialog-text-field input[type="text"] {
@@ -55,11 +58,15 @@ div.gole-prompt-error-text-container {
 
 button.gole-prompt-dialog-button {
     border: none;
-    padding: 15px 32px;
+    padding: 10px 20px;
     text-align: center;
     text-decoration: none;
     display: inline-block;
     font-size: 16px;
+    margin-left: 25%;
+    margin-right: auto;
+    margin-top: 10px;
+    box-shadow: 0px 0px 4px -2px #222;
 }
 
 button.gole-prompt-dialog-button:hover {
@@ -67,12 +74,12 @@ button.gole-prompt-dialog-button:hover {
 }
 
 button.gole-prompt-dialog-neutral-button {
-    background-color: #EFEFEF;
+    background-color: #FFFFFF;
     color: #222;
 }
 
 button.gole-prompt-dialog-neutral-button:hover {
-    background-color: #DFDFDF;
+    background-color: #FAFAFA;
 }
 
 button.gole-prompt-dialog-success-button {

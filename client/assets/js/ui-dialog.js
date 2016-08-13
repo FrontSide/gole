@@ -62,7 +62,7 @@ function promptError(message, acceptButtonText, onAcceptCallback, onAcceptCallba
     })
     buttonsToDisplay.push(acceptButton)
 
-    prompt(message, "gole-prompt-error-text-container", buttonsToDisplay)
+    prompt(message, "gole-prompt-text-container gole-prompt-error-text-container", buttonsToDisplay)
 
 }
 
@@ -102,6 +102,6 @@ function promptNewGame(onStartCallback, onStartCallbackArguments) {
     })
     buttonsToDisplay.push(startButton)
 
-    prompt("Please enter your player names (2 - 4 players)...", "gole-prompt-neutral-text-container", buttonsToDisplay, nameTextFieldsContainer)
+    prompt("Please enter your player names (2 - 4 players)...", "gole-prompt-text-container gole-prompt-neutral-text-container", buttonsToDisplay, nameTextFieldsContainer)
 
 }
