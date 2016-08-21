@@ -30,6 +30,12 @@ function initNewGame() {
     reload()
 }
 
+function gameOver() {
+    console.log("Game is over")
+    updateScoreBoard()
+    promptGameOver(scoreboard)
+}
+
 function reload() {
     console.log("reload")
     reloadBoard()
@@ -238,7 +244,7 @@ function drawPlayer() {
     var confirmWordButton = $("<button>", {class: "gole-gameplay-button"})
     confirmWordButton.html("Confirm Word")
     confirmWordButton.click(function(){
-        confirmWord(reload, promptError)
+        confirmWord(reload, promptError, gameOver)
     })
 
     $("div.gole-active-player-container").append(nameDiv)

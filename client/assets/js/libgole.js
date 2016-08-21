@@ -10,7 +10,7 @@ var game = {
     // The player names will only be needed at the beginning when they are
     // passed over by the user via the new game form
     // Needs to be an Array of strings (2-4 players are allowed)
-    playerNames: new Array(),
+    playerNames: new Array()
 }
 
 var activePlayer = {
@@ -18,12 +18,10 @@ var activePlayer = {
     Points: null,
     LettersInHand: null
 }
+// Active Game Scoreboard
+// playerName: points
+var scoreboard = {}
 
-//function Tile(letter) {
-//    this.letter = letter
-//    this.isActivated = false
-//    this.isLocked = false
-//}
 
 function createNewGame() {
 
@@ -137,7 +135,7 @@ function getBoard() {
 }
 
 function getActivePlayer() {
-    //Get the struct that describes the player that has their current turn
+    // Get the struct that describes the player that has their current turn
 
     $.ajax({
         async: false,
@@ -150,21 +148,39 @@ function getActivePlayer() {
 
 }
 
-function confirmWord(fSuccessCallback, fErrorCallback) {
+function updateScoreBoard() {
+    // Request the current game's scoreboard.
+
+    $.ajax({
+        async: false,
+        method: "GET",
+        url: server.url + "/" + game.id + "/scoreboard.json",
+    })
+    .done(function(response) {
+        scoreboard = JSON.parse(response)
+    });
+
+}
+
+function confirmWord(fSuccessCallback, fErrorCallback, fGameOverCallback) {
     // called after a player has placed
     // all tiles for the current turn
     // Requires:
     // - A callback function fSuccessCallback
-    //   to be called if the request succeeded
+    //   to be called if the request succeeded and the game can continue
     // - A callback function fErrorCallback
     //   to be called if the request failed
+    // - A callback function fGameOverCallback
+    //   to be called if the request succeeded and the game is now over
     // Guarantees:
     // - Send confirm word request to gole server
     // - Trigger fErrorCallback callback function if request failed
-    //   (non 200 response from gole server) with response text
+    //   (500 response from gole server) with response text
     //   as first argument
     // - Trigger fSuccessCallbak callback function if request succeeded
     //   (200 response from gole server) without arguments
+    // - Trigger fGameOverCallback callback function if request succeeded
+    //   and game is over (250 response from gole server)
 
     $.ajax({
         async: false,
@@ -175,8 +191,13 @@ function confirmWord(fSuccessCallback, fErrorCallback) {
                 "GameId": game.id
             }
         ),
+        statusCode: {
+            250: function (response) {
+                fGameOverCallback();
+            },
+        }
     })
-    .done(function(id) {
+    .done(function(response) {
         fSuccessCallback()
     })
     .fail(function(response){

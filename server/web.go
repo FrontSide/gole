@@ -139,6 +139,20 @@ func RemoveLetterHandler(responseWriter http.ResponseWriter, request *http.Reque
 }
 
 func ConfirmWordHandler(responseWriter http.ResponseWriter, request *http.Request) {
+    // Trigger the function to finish up the round after a player has placed all
+    // letters for this round.
+    // Requires:
+    // - GameId in Request Body
+    // Guarantees:
+    // - HTTP 500 response if an error occured
+    // - HTTP 200 if the turn has been finished successfully and the next player
+    //   can continue with the game.
+    // - HTTP 250 if the turn has been finished successfully and if the game is
+    //   now over.
+
+    HTTP_GAME_OVER_CODE := 250
+    HTTP_DEFAULT_CODE := 200
+    HTTP_ERROR_CODE := 500
 
     log.Println("Confirming word")
 
@@ -146,7 +160,7 @@ func ConfirmWordHandler(responseWriter http.ResponseWriter, request *http.Reques
     var requestBody ConfirmWordRequestBody
     err := requestBodyDecoder.Decode(&requestBody)
     if err != nil {
-        http.Error(responseWriter, "Invalid body", 500)
+        http.Error(responseWriter, "Invalid body", HTTP_ERROR_CODE)
         return
     }
 
@@ -155,7 +169,7 @@ func ConfirmWordHandler(responseWriter http.ResponseWriter, request *http.Reques
 
     if err != nil {
         log.Println("Available ids are: ", games)
-        http.Error(responseWriter, err.Error(), 500)
+        http.Error(responseWriter, err.Error(), HTTP_ERROR_CODE)
         return
     }
 
@@ -163,11 +177,17 @@ func ConfirmWordHandler(responseWriter http.ResponseWriter, request *http.Reques
 
     if err != nil {
         log.Println("Available ids are: ", games)
-        http.Error(responseWriter, err.Error(), 500)
+        http.Error(responseWriter, err.Error(), HTTP_ERROR_CODE)
         return
     }
 
-    responseWriter.Write([]byte("OK"))
+    if game.GameOver {
+        responseWriter.WriteHeader(HTTP_GAME_OVER_CODE)
+    } else {
+        responseWriter.WriteHeader(HTTP_DEFAULT_CODE)
+    }
+
+    responseWriter.Write([]byte(requestBody.GameId))
 
 }
 
@@ -212,6 +232,32 @@ func GetActivePlayerHandler(responseWriter http.ResponseWriter, request *http.Re
 
 }
 
+func GetScoreBoardHandler(responseWriter http.ResponseWriter, request *http.Request) {
+    // Return a json object describing the players of the game with the given
+    // is and their game points.
+    // Keys in the returned object will be the player name
+    // with the points as the value
+
+    id := mux.Vars(request)["id"]
+
+    var err error
+    game, err := GetGameByUUID(id)
+
+    if err != nil {
+        log.Println("Available ids are: ", games)
+        http.Error(responseWriter, err.Error(), 500)
+        return
+    }
+
+    var scoreBoard []byte
+    scoreBoard, err = json.Marshal(game.GetScoreBoard())
+    if err != nil {
+        http.Error(responseWriter, err.Error(), 500)
+        return
+    }
+    responseWriter.Write(scoreBoard)
+}
+
 func StartWebServer() {
     r := mux.NewRouter()
     r.HandleFunc("/new", CreateNewGameHandler).Methods("POST")
@@ -220,5 +266,6 @@ func StartWebServer() {
     r.HandleFunc("/place", PlaceLetterHandler).Methods("POST")
     r.HandleFunc("/remove", RemoveLetterHandler).Methods("POST")
     r.HandleFunc("/confirm", ConfirmWordHandler).Methods("POST")
+    r.HandleFunc("/{id}/scoreboard.json", GetScoreBoardHandler).Methods("GET")
     log.Fatal(http.ListenAndServe(":8000", handlers.CORS()(r)))
 }

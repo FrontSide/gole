@@ -24,6 +24,11 @@ type Game struct {
     // All letters in the backlog
     // i.e. that have not yet been handed to a player
     LetterSet []Letter;
+
+    // Flag indicating whether the game is over
+    // will be fale until one player has no more letters in hand
+    // and the letter backlog is empty
+    GameOver bool;
 }
 
 var MIN_NUMBER_OF_PLAYERS = 2
@@ -51,6 +56,20 @@ func (game *Game) GetPlayerByName(playerName string) (Player, error) {
         }
     }
     return Player{}, errors.New("Player with name does not exist in the game. " + playerName)
+}
+
+type ScoreBoard map[string]int
+func (game *Game) GetScoreBoard() ScoreBoard {
+    // Retrun a ScoreBoard Map with all player's names as Keys
+    // and their game points as associated value
+
+    var scoreBoard ScoreBoard;
+
+    for _, player := range game.Players {
+        scoreBoard[player.Name] = player.Points
+    }
+
+    return scoreBoard
 }
 
 func AddPlayer(playerName string, game *Game) error {
@@ -88,8 +107,13 @@ func AddPlayer(playerName string, game *Game) error {
 func PopLetterFromSet(game *Game) (Letter, error) {
     // Pop the last letter (right end) from the
     // letter string of the passed game structure instance.
-    // The letter will be returned and the
-    // occurrence will be removed from the string and stored back to the game.
+    //
+    // Guarantees:
+    // - Next letter from letter backlog string will be returned if exists
+    // - Returned letter will be removed from letter backlog string
+    // - Returns an empty letter and error
+    //   if no letter is left in letter backlog
+
     if len(game.LetterSet) < 1 {
         return Letter{}, errors.New("Cannot pop letter from set. Empty.")
     }
@@ -101,6 +125,16 @@ func PopLetterFromSet(game *Game) (Letter, error) {
 func PlaceLetter(game *Game, verticalTileIdx int, horizontalTileIdx int, letter rune) error {
     // add a letter to the board.
     // throw an error if placement of the leter is not legal
+    //
+    // Guarantees:
+    // - If successful, the affected letter will be moved away from the
+    //   active player's hand and put on the specified board tile
+    // - Return error if placement is illecal, if the game is over
+    //   or if the active player does not own the letter that is to be placed
+
+    if game.GameOver {
+        return errors.New("Cannot place letter. Game is over.")
+    }
 
     var err error
     err = game.Players[game.PlayerIdxWithTurn].RemoveLetterFromHand(letter)
@@ -265,12 +299,20 @@ func FinishTurn(game *Game) error {
     for addLetterCounter := 0; addLetterCounter < numberOflettersToAdd; addLetterCounter++ {
         newLetter, err := PopLetterFromSet(game)
         if err != nil {
-            return err
+            break
         }
+
         err = game.Players[game.PlayerIdxWithTurn].AddLetterToHand(newLetter)
         if err != nil {
             return err
         }
+    }
+
+    // If the player hand is empty at this stage.
+    // The game is considered over as at least one player has no letters left
+    // anymore.
+    if len(game.Players[game.PlayerIdxWithTurn].LettersInHand) < 1 {
+        game.GameOver = true
     }
 
     game.LockLetters()

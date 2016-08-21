@@ -73,6 +73,38 @@ function promptError(message, acceptButtonText, onAcceptCallback, onAcceptCallba
 
 }
 
+function promptGameOver(scoreboard) {
+    // prompt the game over dialog
+    // presenting the winner(s) and the scoreboard
+    var winnerPlayerNames = null;
+    $.each(scoreboard, function(playerName, playerPoints) {
+        if (winnerPlayerNames == null) || (playerPoints > scoreboard[winnerPlayerNames[0]]) {
+            winnerPlayerNames = Array()
+            winnerPlayerNames.push(playerName);
+            continue;
+        }
+        // If there is a player with the same amount of points as the one
+        // who at the moment is the player with the most points
+        // there will be multiple winners.
+        else if (playerPoints == scoreboard[winnerPlayerNames[0]]) {
+            winnerPlayerNames.push(playerName);
+        }
+    }
+
+    var winnerMessage = ""
+    if (winnerPlayerNames.length > 1) {
+        winnerMessage = "The winners are <b>"
+        winnerMessage += winnerPlayerNames.join("</b> and <b>")
+    } else {
+        winnerMessage = "The winner is <b>"
+        winnerMessage += winnerPlayerNames[0]
+    }
+    winnerMessage += "</b> with <b>" + scoreboard[winnerPlayerNames[0]] + "</b> points."
+
+    prompt(message, "gole-prompt-text-container gole-prompt-neutral-text-container")
+
+}
+
 function promptNewGame(onStartCallback, onStartCallbackArguments) {
     //prompt the new game dialog
     //execute the given onStartCallback with arguments onStartCallbackArguments
