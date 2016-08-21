@@ -22,6 +22,16 @@ var activePlayer = {
 // playerName: points
 var scoreboard = {}
 
+// stores information about the currently activated tile
+// i.e. the tile that is to be moved
+var activatedLetter = null
+
+// If a letter is being dragged away from the board,
+// the origin indexes of that tile need to be stored
+var removeLetterOrigin = {
+    verticalIdx: null,
+    horizontalIdx: null
+}
 
 function createNewGame() {
 
@@ -79,10 +89,12 @@ function placeLetter(tilesXCoordinate, tilesYCoordinate, letter) {
 
 }
 
-function removeLetter(tilesXCoordinate, tilesYCoordinate, fSuccessCallback, fErrorCallback) {
+function removeLetter(fSuccessCallback, fErrorCallback) {
     // Requires:
     // - The x and y coordinates of the tile from which the letter
-    //   is to be removed
+    //   is to be removed to be set in the global
+    //   removeLetterOrigin.horizontalIdx and removeLetterOrigin.verticalIdx
+    //   variables.
     // - A callback function fSuccessCallback
     //   to be called if the request succeeded
     // - A callback function fErrorCallback
@@ -101,8 +113,8 @@ function removeLetter(tilesXCoordinate, tilesYCoordinate, fSuccessCallback, fErr
         url: server.url + "/remove",
         data: JSON.stringify(
             {
-                "TileXCoordinate": tilesXCoordinate,
-                "TileYCoordinate": tilesYCoordinate,
+                "TileXCoordinate": removeLetterOrigin.horizontalIdx,
+                "TileYCoordinate": removeLetterOrigin.verticalIdx,
                 "GameId": game.id
             }
         ),

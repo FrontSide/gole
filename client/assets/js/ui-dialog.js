@@ -78,10 +78,10 @@ function promptGameOver(scoreboard) {
     // presenting the winner(s) and the scoreboard
     var winnerPlayerNames = null;
     $.each(scoreboard, function(playerName, playerPoints) {
-        if (winnerPlayerNames == null) || (playerPoints > scoreboard[winnerPlayerNames[0]]) {
+        if ((winnerPlayerNames == null) || (playerPoints > scoreboard[winnerPlayerNames[0]])) {
             winnerPlayerNames = Array()
             winnerPlayerNames.push(playerName);
-            continue;
+            return true; // this is the js equivalent of what is usually "continue"
         }
         // If there is a player with the same amount of points as the one
         // who at the moment is the player with the most points
@@ -89,7 +89,7 @@ function promptGameOver(scoreboard) {
         else if (playerPoints == scoreboard[winnerPlayerNames[0]]) {
             winnerPlayerNames.push(playerName);
         }
-    }
+    })
 
     var winnerMessage = ""
     if (winnerPlayerNames.length > 1) {
