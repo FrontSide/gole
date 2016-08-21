@@ -20,9 +20,11 @@ type Letter struct {
     Attributes LetterAttributes
 }
 
+const WILDCARD_CHARACTER rune = '*'
+
 var lettersAmount = 100
 var letterDistribution = map[rune]LetterAttributes {
-    ' ': {2, 0},
+    WILDCARD_CHARACTER: {2, 0},
     'a': {9, 1},
     'b': {2, 3},
     'c': {2, 3},

@@ -16,6 +16,7 @@ type PlaceLetterRequestBody struct {
     TileXCoordinate int
     TileYCoordinate int
     Letter rune
+    IsWildcard bool
     GameId string
 }
 
@@ -99,7 +100,7 @@ func PlaceLetterHandler(responseWriter http.ResponseWriter, request *http.Reques
         return
     }
 
-    err = PlaceLetter(game, requestBody.TileYCoordinate, requestBody.TileXCoordinate, requestBody.Letter)
+    err = PlaceLetter(game, requestBody.TileYCoordinate, requestBody.TileXCoordinate, requestBody.Letter, requestBody.IsWildcard)
 
     if err != nil {
         http.Error(responseWriter, err.Error(), 500)

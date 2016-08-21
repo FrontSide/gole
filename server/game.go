@@ -122,7 +122,7 @@ func PopLetterFromSet(game *Game) (Letter, error) {
     return letterToReturn, nil
 }
 
-func PlaceLetter(game *Game, verticalTileIdx int, horizontalTileIdx int, letter rune) error {
+func PlaceLetter(game *Game, verticalTileIdx int, horizontalTileIdx int, letter rune, isWildcard bool) error {
     // add a letter to the board.
     // throw an error if placement of the leter is not legal
     //
@@ -150,6 +150,19 @@ func PlaceLetter(game *Game, verticalTileIdx int, horizontalTileIdx int, letter 
     letterStruct, err = GetLetterStructFromRune(letter)
     if err != nil {
         return err
+    }
+
+    // if the origin of the letter to be placed is a wildcard tile
+    // the letter struct needs to be assigned the wildcard value
+    // which is generally 0 but for consistency purposes
+    // taken from the language map
+    if isWildcard {
+        // Get wildcard letter struct
+        wildcardStruct, err := GetLetterStructFromRune(WILDCARD_CHARACTER)
+        if err != nil {
+            return err
+        }
+        letterStruct.Attributes.PointValue = wildcardStruct.Attributes.PointValue
     }
 
     game.Tiles[verticalTileIdx][horizontalTileIdx].Letter = letterStruct

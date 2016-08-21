@@ -121,8 +121,14 @@ function placeLetterOnTile(xIdx, yIdx, board_tile) {
         return
     }
 
+    var isWildcardLetter = false
+    if (activatedLetter.Character == '*') {
+        promptWildcardLetterSelection(activatedLetter.Character)
+        isWildcardLetter =  true
+    }
+
     //Call libgole API request
-    var ok = placeLetter(xIdx, yIdx, activatedLetter.Character)
+    var ok = placeLetter(xIdx, yIdx, activatedLetter.Character, isWildcardLetter)
 
     reload()
 

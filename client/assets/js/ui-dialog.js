@@ -105,6 +105,12 @@ function promptGameOver(scoreboard) {
 
 }
 
+function promptWildcardLetterSelection(onSelectCallback, onSelectCallbackArguments) {
+    //prompt the letter selection board dialog for when a wildcard is placed
+    //execute the given onSelectCallback with arguments onSelectCallbackArguments
+    //once the SelectLetter button on the dialog has been pressed
+}
+
 function promptNewGame(onStartCallback, onStartCallbackArguments) {
     //prompt the new game dialog
     //execute the given onStartCallback with arguments onStartCallbackArguments
