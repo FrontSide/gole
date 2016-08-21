@@ -32,7 +32,7 @@ div.gole-prompt-dialog-container {
 }
 
 div.gole-prompt-text-container {
-    width: 80%;
+    width: 100%;
     margin-bottom: 20px;
 }
 
@@ -45,14 +45,15 @@ div.gole-prompt-error-text-container {
     font-weight: bold;
 }
 
-.gole-prompt-dialog-text-field input[type="text"] {
+input[type="text"].gole-prompt-dialog-text-field  {
   padding: 10px;
   border: none;
   border-bottom: solid 2px #c9c9c9;
   transition: border 0.3s;
+  margin: 5px;
 }
-.gole-prompt-dialog-text-field input[type="text"]:focus,
-.gole-prompt-dialog-text-field input[type="text"].focus {
+input[type="text"].gole-prompt-dialog-text-field:focus,
+input[type="text"].gole-prompt-dialog-text-field .focus {
   border-bottom: solid 2px #969696;
 }
 
@@ -203,9 +204,10 @@ div.gole-tile-letter-value-container {
     height: 7px;
     color: #AAA;
     font-size: 10px;
+    font-weight: bold;
     float: right;
     vertical-align: bottom;
-    margin-right: 10px;
+    margin-right: 3px;
     margin-top: 10px
 }
 

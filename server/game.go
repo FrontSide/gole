@@ -7,6 +7,7 @@ import (
     "strings"
     "errors"
     "./golelibs"
+    "fmt"
 );
 
 type Game struct {
@@ -118,8 +119,6 @@ func PlaceLetter(game *Game, verticalTileIdx int, horizontalTileIdx int, letter 
     }
 
     game.Tiles[verticalTileIdx][horizontalTileIdx].Letter = letterStruct
-
-    // Update placement legality of whole board
     game.UpdatePlacementLegalityOfAllTiles()
 
     return nil
@@ -163,9 +162,9 @@ func GetPointsForWord(wordTiles []Tile) (int, error) {
     // Return an error if the word is invalid
     // that inclused if the word consists of only one letter
 
-    //if len(wordTiles) < 2 {
-    //    return -1, errors.New("Can not get points for word. Too short.")
-    //}
+    if len(wordTiles) < 2 {
+        return -1, errors.New("Can not get points for word. Too short.")
+    }
 
     var word string
     var wordPoints int
@@ -173,7 +172,6 @@ func GetPointsForWord(wordTiles []Tile) (int, error) {
 
     for _, tile := range wordTiles {
 
-        tile.IsLocked = true
         word += string(tile.Letter.Character)
 
         var letterPoints = tile.Letter.Attributes.PointValue
@@ -217,8 +215,12 @@ func FinishTurn(game *Game) error {
         for horizontalIdx, tile := range column {
             if tile.Letter != (Letter{}) && ! tile.IsLocked {
 
-                hasHorizontalWord, horizontalWordTiles := GetHorizontalWordAtTile(verticalIdx, horizontalIdx, game.Tiles)
-                hasVerticalWord, verticalWordTiles := GetVerticalWordAtTile(verticalIdx, horizontalIdx, game.Tiles)
+                if ! IsConnectedToCenterTile(verticalIdx, horizontalIdx, game.Tiles, -1, -1) {
+                    return errors.New(fmt.Sprintf("Tile v:%d,h:%d is isolated from the center tile.", verticalIdx, horizontalIdx))
+                }
+
+                hasHorizontalWord, horizontalWordTiles, _ := GetHorizontalWordAtTile(verticalIdx, horizontalIdx, game.Tiles)
+                hasVerticalWord, verticalWordTiles, _ := GetVerticalWordAtTile(verticalIdx, horizontalIdx, game.Tiles)
 
                 log.Println("horizontailTiles: " + TileSliceToString(horizontalWordTiles))
                 log.Println("verticalTiles: " + TileSliceToString(verticalWordTiles))
@@ -270,6 +272,9 @@ func FinishTurn(game *Game) error {
             return err
         }
     }
+
+    game.LockLetters()
+    game.UpdatePlacementLegalityOfAllTiles()
 
     // Give turn to next player
     game.PlayerIdxWithTurn = (game.PlayerIdxWithTurn + 1) % len(game.Players)

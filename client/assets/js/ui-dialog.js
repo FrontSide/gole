@@ -83,7 +83,7 @@ function promptNewGame(onStartCallback, onStartCallbackArguments) {
     TEXT_FIELDS_TO_DISPLAY = 4
     var nameTextFields = new Array()
     for (var inputTextFieldCounter = 0; inputTextFieldCounter < TEXT_FIELDS_TO_DISPLAY; inputTextFieldCounter++) {
-        var nameTextField = $("<input type='text'>", {class: "gole-prompt-dialog-text-field"})
+        var nameTextField = $("<input>", {class: "gole-prompt-dialog-text-field", type: "text", placeholder: "Player " + (inputTextFieldCounter + 1)})
         nameTextFields.push(nameTextField)
         nameTextFieldsContainer.append(nameTextField)
     }

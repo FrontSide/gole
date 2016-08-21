@@ -176,7 +176,7 @@ func GetLetterFromTile(verticalTileIdx int, horizontalTileIdx int, tiles [][]Til
     return letter, nil
 }
 
-func GetHorizontalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [][]Tile) (bool, []Tile) {
+func GetHorizontalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [][]Tile) (bool, []Tile, int) {
     // Get the horizontal word (read from left to right)
     // that the letter on the given tile is a part of (if any).
     // Requires:
@@ -188,16 +188,18 @@ func GetHorizontalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [
     // - return a tile-array (2nd value) with the letters around the tile
     //   in same order as appearing on the board from left to right
     //   (including the letter on the given tile) if existing.
-    // - return false (1st value) and an empty tile array (2nd value)
-    //   if there are no tiles horizontally adjacent to the given tile or
-    //   if the given tile is already empty.
+    // - return the vertical index (3rd value) of the top outer tile of the
+    //   vertical word on the board if a vertical word has been found
+    // - return false (1st value), an empty tile array (2nd value)
+    //   and -1 (3rd value) if there are no tiles horizontally adjacent
+    //   to the given tile or if the given tile is already empty.
 
     // Make sure the
     var err error
     _, err = GetLetterFromTile(verticalTileIdx, horizontalTileIdx, tiles)
     if err != nil {
         log.Printf("Cannot retrieve horizontal word. Initial tile is empty. v:%d,h:%d", verticalTileIdx, horizontalTileIdx)
-        return false, []Tile{}
+        return false, []Tile{}, -1
     }
 
     //Make sure there are vertically adjacent non-empty tiles around the given tile
@@ -205,7 +207,7 @@ func GetHorizontalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [
     _, noTileRightErr := GetLetterFromTile(verticalTileIdx, horizontalTileIdx+1, tiles)
     if noTileLeftErr != nil && noTileRightErr != nil {
         log.Printf("Cannot retrieve vertical word. Adjacent tiles empty. v:%d,h:%d", verticalTileIdx, horizontalTileIdx)
-        return false, []Tile{}
+        return false, []Tile{}, -1
     }
 
     var outerLeftTileOfWord int = 0
@@ -231,11 +233,11 @@ func GetHorizontalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [
 
     var fullRow []Tile = tiles[verticalTileIdx]
 
-    return true, fullRow[outerLeftTileOfWord:outerRightTileOfWord]
+    return true, fullRow[outerLeftTileOfWord:outerRightTileOfWord], outerLeftTileOfWord
 
 }
 
-func GetVerticalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [][]Tile) (bool, []Tile) {
+func GetVerticalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [][]Tile) (bool, []Tile, int) {
     // Get the vertical word (read from top to bottom)
     // that the letter on the given tile is a part of (if any).
     // Requires:
@@ -247,9 +249,11 @@ func GetVerticalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [][
     // - return a tile-array (2nd value) with the letters around the tile
     //   in same order as appearing on the board from top to bottom
     //   (including the letter on the given tile) if existing.
+    // - return the vertical index (3rd value) of the top outer tile of the
+    //   vertical word on the board if a vertical word has been found
     // - return false (1st value) and an empty tile array (2nd value)
-    //   if there are no tiles vertically adjacent to the given tile
-    //   or if the given tile is already empty.
+    //   and -1 (3rd value) if there are no tiles vertically adjacent
+    //   to the given tile or if the given tile is already empty.
 
     log.Printf("Get vertical word at tile %d,%d", verticalTileIdx, horizontalTileIdx)
 
@@ -258,7 +262,7 @@ func GetVerticalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [][
     _, err = GetLetterFromTile(verticalTileIdx, horizontalTileIdx, tiles)
     if err != nil {
         log.Printf("Cannot retrieve vertical word. Initial tile is empty. v:%d,h:%d", verticalTileIdx, horizontalTileIdx)
-        return false, []Tile{}
+        return false, []Tile{}, -1
     }
 
     //Make sure there are vertically adjacent non-empty tiles around the given tile
@@ -266,7 +270,7 @@ func GetVerticalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [][
     _, noTileBelowErr := GetLetterFromTile(verticalTileIdx+1, horizontalTileIdx, tiles)
     if noTileAboveErr != nil && noTileBelowErr != nil {
         log.Printf("Cannot retrieve vertical word. Adjacent tiles empty. v:%d,h:%d", verticalTileIdx, horizontalTileIdx)
-        return false, []Tile{}
+        return false, []Tile{}, -1
     }
 
     var outerTopTileOfWord int = 0
@@ -300,7 +304,66 @@ func GetVerticalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [][
         verticalWordTiles = append(verticalWordTiles, horizontalTiles[horizontalTileIdx])
         log.Printf("Append letter %c", horizontalTiles[horizontalTileIdx].Letter.Character)
     }
-    return true, verticalWordTiles
+    return true, verticalWordTiles, outerTopTileOfWord
+
+}
+
+func IsConnectedToCenterTile(verticalTileIdx int, horizontalTileIdx int, tiles [][]Tile, lastCheckedVerticalTileIdx int, lastCheckedHorizontalTileIdx int) (bool) {
+    // check whether a given tile on the board is connected through other tiles
+    // with letters to the center
+    // This is done by recursively following adjacent tiles to the center tile.
+
+    // Requires:
+    // - The vertical and horizontal index of the tile to be checked
+    //   (parameter 1&2)
+    // - The two-dimensional array of all the tiles on the board (parameter 3)
+    // - The vertical and horizontal index of the tile that has last been
+    //   checked with this method (parameter 4&5)
+    //   This is needed so the recursive call of this function doesn't
+    //   enter an infinite loop since it always checks its neighbour tiles.
+    //
+    // Guarantees:
+    // - Return true if the given tile has a letter on it and at the same time
+    //   has a connection to the center tile through a series of other tiles
+    //   with letters on them
+    // - Return true if the given tile is the center tile
+    // - Return false if the given tile is empty (no letter),
+    //   if the tile index is invalid or
+    //   if there is no possible path of tiles with letters to the center tile.
+
+    if (verticalTileIdx == (VERTICAL_TILES_AMOUNT-1)/2) && (horizontalTileIdx == (HORIZONTAL_TILES_AMOUNT-1)/2) {
+        return true
+    }
+
+    if verticalTileIdx < 0 || horizontalTileIdx < 0 || verticalTileIdx >= VERTICAL_TILES_AMOUNT || horizontalTileIdx >= HORIZONTAL_TILES_AMOUNT {
+        return false
+    }
+
+    _, err := GetLetterFromTile(verticalTileIdx, horizontalTileIdx, tiles)
+    if err != nil {
+        return false
+    }
+
+    // Follow all vertically and horizontally adjacent tiles.
+    // Return true as soon as a connection has been found
+    // through a conneted tile
+    if (verticalTileIdx+1 != lastCheckedVerticalTileIdx) && IsConnectedToCenterTile(verticalTileIdx+1, horizontalTileIdx, tiles, verticalTileIdx, horizontalTileIdx) {
+        return true
+    }
+
+    if (verticalTileIdx-1 != lastCheckedVerticalTileIdx) && IsConnectedToCenterTile(verticalTileIdx-1, horizontalTileIdx, tiles, verticalTileIdx, horizontalTileIdx) {
+        return true
+    }
+
+    if (horizontalTileIdx+1 != lastCheckedHorizontalTileIdx) && IsConnectedToCenterTile(verticalTileIdx, horizontalTileIdx+1, tiles, verticalTileIdx, horizontalTileIdx) {
+        return true
+    }
+
+    if (horizontalTileIdx-1 != lastCheckedHorizontalTileIdx) && IsConnectedToCenterTile(verticalTileIdx, horizontalTileIdx-1, tiles, verticalTileIdx, horizontalTileIdx) {
+        return true
+    }
+
+    return false
 
 }
 
@@ -360,19 +423,54 @@ func IsLegalPlacement(verticalTileIdx int, horizontalTileIdx int, letter rune, t
     if tiles[verticalTileIdx][horizontalTileIdx].Effect != CENTER_TILE_EFFECT &&
        !letterOnConnectedTiles {
        return false, "Not connected to word"
-   }
+    }
+
+    // If there have already been letters placed on the board by the
+    // active player, all new letters must be connected to this unlocked tile
+    //
+    // If the only unlocked tile with a letter is the centre tile
+    // there will be neither a horizontal not a vertical word and this
+    // condition will have no influence
+    hasUnlockedLetters, unlockedLetterVerticalIdx, unlockedLetterHorizontalIdx := HasUnlockedLetters(tiles)
+    if hasUnlockedLetters {
+        // get the horizontal word
+        // if it exists i.e. if it's longer than 1 character
+        // new placements are only legal on the horizontally adjacent tiles
+        // of the word
+        hasHorizontalWord, horizontalWordTiles, horizontalWordFirstIdx := GetHorizontalWordAtTile(unlockedLetterVerticalIdx, unlockedLetterHorizontalIdx, tiles)
+        if (hasHorizontalWord) {
+            if (unlockedLetterVerticalIdx != verticalTileIdx) {
+                return false, "Not same vertical index as horizontal word at unlocked tile"
+            }
+            if !(horizontalTileIdx == horizontalWordFirstIdx-1 || horizontalTileIdx == horizontalWordFirstIdx+len(horizontalWordTiles)) {
+                return false, "Not horizontally connected to horizontal word at unlocked tile"
+            }
+        }
+
+        //Do the same for a vertical adjacent word.
+        hasVerticalWord, verticalWordTiles, verticalWordFirstIdx := GetVerticalWordAtTile(unlockedLetterVerticalIdx, unlockedLetterHorizontalIdx, tiles)
+        if (hasVerticalWord) {
+            if (unlockedLetterHorizontalIdx != horizontalTileIdx) {
+                return false, "Not same horizontal index as vertical word at unlocked tile"
+            }
+            if !(verticalTileIdx == verticalWordFirstIdx-1 || verticalTileIdx == verticalWordFirstIdx+len(verticalWordTiles)) {
+                return false, "Not vertically connected to vertical word at unlocked tile"
+            }
+        }
+
+    }
 
     return true, ""
 
 }
 
-func LockLetters(tiles [][]Tile) {
+func (game *Game) LockLetters() {
     // lock all letters on the board so they cannot be
     // removed by the player anymore
-    for _, column := range tiles {
-        for _, tile := range column {
+    for verticalIdx, row := range game.Tiles {
+        for horizontalIdx, tile := range row {
             if tile.Letter.Character != 0 {
-                tile.IsLocked = true
+                game.Tiles[verticalIdx][horizontalIdx].IsLocked = true
             }
         }
     }
@@ -397,5 +495,37 @@ func (game *Game) UpdatePlacementLegalityOfAllTiles() {
                 IsLegalPlacement(verticalIdx, horizontalIdx, 'a',  game.Tiles)
         }
     }
+
+}
+
+func HasUnlockedLetters(tiles [][]Tile) (bool, int, int) {
+    // Check if there are unlocked tiles on the board that have letters on it.
+    //
+    // Can be uses for placement legality checking when a letter
+    // has already been placed by the active player.
+    //
+    // Requires:
+    // - two-dimensional array of board tiles as first parameter
+    // Guarantees:
+    // - Return true if there is at least one tile on the board
+    //   that is not locked and has a letter on it i.e. is not empty and movable
+    // - Return false if all of the tiles on the board are locked or if none
+    //   of the locked tiles on the board have a letter on them
+    // - If true, return also the vertical and horizontal index of the
+    //   first found unlocked tile with a letter on it
+    // - return -1 for the indexes if false.
+
+    for verticalIdx, tileRow := range tiles {
+        for horizontalIdx, tile := range tileRow {
+            _, err := GetLetterFromTile(verticalIdx, horizontalIdx, tiles)
+            if err == nil && !tile.IsLocked {
+                log.Printf("Unlocked letter found. First occurrence at v:%d, h:%d,", verticalIdx, horizontalIdx)
+                return true, verticalIdx, horizontalIdx
+            }
+        }
+    }
+
+    log.Printf("No unlocked letters on board")
+    return false, -1, -1
 
 }
