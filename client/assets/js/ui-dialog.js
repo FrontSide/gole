@@ -20,8 +20,8 @@ function prompt(message, textContainerClass, buttonsToDisplay, extraDivToDisplay
 
     var promptDialogContainerDiv = $("<div>", {class: "gole-prompt-dialog-container"})
 
-    if (buttonsToDisplay.length < 1) {
-        console.log("Cannot create prompt with less than one button.")
+    if (!buttonsToDisplay || buttonsToDisplay.length < 1) {
+        console.error("Cannot create prompt with less than one button.")
         return 1
     }
 
@@ -109,6 +109,31 @@ function promptWildcardLetterSelection(onSelectCallback, onSelectCallbackArgumen
     //prompt the letter selection board dialog for when a wildcard is placed
     //execute the given onSelectCallback with arguments onSelectCallbackArguments
     //once the SelectLetter button on the dialog has been pressed
+
+    var alphabeth_en = "abcdefghijklmnopqrstuvwxyz"
+
+    var alphabethContainerDiv = $("<div>")
+
+    for (var idx=0; idx<alphabeth_en.length; idx++) {
+
+        var tileDiv = $("<div>", {class: "gole-tile gole-tile-selectable gole-tile-margin"})
+        var letterDiv = $("<div>", {class: "gole-tile-letter-character-container"})
+
+        letterDiv.html(alphabeth_en.charAt(idx).toUpperCase())
+        tileDiv.append(letterDiv)
+
+        alphabethContainerDiv.append(tileDiv)
+
+    }
+
+    var dismissButton = $("<button>", {class: "gole-prompt-dialog-button"})
+    dismissButton.html("Cancel")
+    dismissButton.click(function(){
+        closePrompt()
+    })
+
+    prompt("Select a letter to be placed on the wildcard tile...", "gole-prompt-text-container gole-prompt-neutral-text-container", dismissButton, alphabethContainerDiv)
+
 }
 
 function promptNewGame(onStartCallback, onStartCallbackArguments) {
