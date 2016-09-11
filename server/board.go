@@ -396,72 +396,31 @@ func IsLegalPlacement(verticalTileIdx int, horizontalTileIdx int, letter rune, t
         return false, "Center Tile empty. No other placements legal."
     }
 
+    // Make sure the tile on which the letter is to be placed
+    // is not already occupied another letter.
     _, err = GetLetterFromTile(verticalTileIdx, horizontalTileIdx, tiles)
     if err == nil {
         return false, "Tile occupied"
     }
 
-    var letterOnConnectedTiles bool
-    // Inspect all the tiles connected to the one at the given coordninates
-    // for placed letters.
-    _, err = GetLetterFromTile(verticalTileIdx + 1 , horizontalTileIdx, tiles)
-    if err == nil {
-        letterOnConnectedTiles = true
-    }
-
-    _, err = GetLetterFromTile(verticalTileIdx, horizontalTileIdx + 1, tiles)
-    if err == nil {
-        letterOnConnectedTiles = true
-    }
-
-    _, err = GetLetterFromTile(verticalTileIdx - 1 , horizontalTileIdx, tiles)
-    if err == nil {
-        letterOnConnectedTiles = true
-    }
-
-    _, err = GetLetterFromTile(verticalTileIdx, horizontalTileIdx - 1, tiles)
-    if err == nil {
-        letterOnConnectedTiles = true
-    }
-
-    // Except for when the first letter is placed,
-    // a new letter must always be adjacing at least one more.
-    if tiles[verticalTileIdx][horizontalTileIdx].Effect != CENTER_TILE_EFFECT &&
-       !letterOnConnectedTiles {
-       return false, "Not connected to word"
-    }
-
     // If there have already been letters placed on the board by the
     // active player, all new letters must be connected to this unlocked tile
-    //
-    // If the only unlocked tile with a letter is the centre tile
-    // there will be neither a horizontal not a vertical word and this
-    // condition will have no influence
+    // through one single word.
     hasUnlockedLetters, unlockedLetterVerticalIdx, unlockedLetterHorizontalIdx := HasUnlockedLetters(tiles)
     if hasUnlockedLetters {
         // get the horizontal word
         // if it exists i.e. if it's longer than 1 character
-        // new placements are only legal on the horizontally adjacent tiles
-        // of the word
-        hasHorizontalWord, horizontalWordTiles, horizontalWordFirstIdx := GetHorizontalWordAtTile(unlockedLetterVerticalIdx, unlockedLetterHorizontalIdx, tiles)
-        if (hasHorizontalWord) {
-            if (unlockedLetterVerticalIdx != verticalTileIdx) {
-                return false, "Not same vertical index as horizontal word at unlocked tile"
-            }
-            if !(horizontalTileIdx == horizontalWordFirstIdx-1 || horizontalTileIdx == horizontalWordFirstIdx+len(horizontalWordTiles)) {
-                return false, "Not horizontally connected to horizontal word at unlocked tile"
-            }
+        // new placements are only legal on the same vertical idx
+        // (i.e. same horizontal row)
+        hasHorizontalWord, _, _ := GetHorizontalWordAtTile(unlockedLetterVerticalIdx, unlockedLetterHorizontalIdx, tiles)
+        if hasHorizontalWord && (unlockedLetterVerticalIdx != verticalTileIdx) {
+            return false, "Not same vertical index as horizontal word at unlocked tile"
         }
 
         //Do the same for a vertical adjacent word.
-        hasVerticalWord, verticalWordTiles, verticalWordFirstIdx := GetVerticalWordAtTile(unlockedLetterVerticalIdx, unlockedLetterHorizontalIdx, tiles)
-        if (hasVerticalWord) {
-            if (unlockedLetterHorizontalIdx != horizontalTileIdx) {
-                return false, "Not same horizontal index as vertical word at unlocked tile"
-            }
-            if !(verticalTileIdx == verticalWordFirstIdx-1 || verticalTileIdx == verticalWordFirstIdx+len(verticalWordTiles)) {
-                return false, "Not vertically connected to vertical word at unlocked tile"
-            }
+        hasVerticalWord, _, _ := GetVerticalWordAtTile(unlockedLetterVerticalIdx, unlockedLetterHorizontalIdx, tiles)
+        if hasVerticalWord && (unlockedLetterHorizontalIdx != horizontalTileIdx) {
+            return false, "Not same horizontal index as vertical word at unlocked tile"
         }
 
     }
