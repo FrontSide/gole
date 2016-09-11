@@ -93,6 +93,7 @@ function drawBoard() {
                         console.log("Cannot place letter. Occupied.")
                     } else {
                         placeLetterOnTile(xIdx, yIdx, tile)
+                        playsoundTilePlacementSuccess()
                     }
 
                 } else if (tile.Letter.Character != 0) {
@@ -186,7 +187,7 @@ function drawPlayer() {
     var confirmWordButton = $("<button>", {class: "gole-gameplay-button"})
     confirmWordButton.html("Confirm Word")
     confirmWordButton.click(function(){
-        confirmWord(reload, promptError, gameOver)
+        confirmWord(wordConfirmSuccessRoutine, wordConfirmErrorRoutine, gameOver)
     })
 
     $("div.gole-active-player-container").append(nameDiv)

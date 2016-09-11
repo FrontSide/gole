@@ -27,12 +27,14 @@ function initNewGame() {
     // Ineract with gole server to create new game
     createNewGame()
     reload()
+    playsoundGameStart()
 }
 
 function gameOver() {
     console.log("Game is over")
     updateScoreBoard()
     promptGameOver(scoreboard)
+    playsoundGameOver()
 }
 
 function reload() {
@@ -83,6 +85,7 @@ function activateLetter(letter, tileDiv, originYIdx, originXIdx) {
     console.log(activatedLetter)
     console.log("LetterToMove: " + activatedLetter.Character)
 
+    playsoundTilePickUp()
     showLegalPlacements()
 
 }
@@ -132,4 +135,28 @@ function placeLetterOnTile(xIdx, yIdx, board_tile) {
 
     reload()
 
+}
+
+function wordConfirmSuccessRoutine() {
+    // To be called whenever a player has played a vald word
+    // which has been confirmed by the gole server
+    // Guarantees:
+    // - Reload the board
+    // - Reload player hand (new player will be displayed -
+    //   has to be givevn by server)
+    // - Play WordSuccess Sound
+    reload()
+    playsoundWordConfirmed()
+}
+
+function wordConfirmErrorRoutine(errorMessage) {
+    // To be called whenever a player has played an invald word
+    // which has been denied by the gole server
+    // Requires:
+    // - Error message from gole server as 1st argument
+    // Guarantees:
+    // - Prompt the error message handed over to this method
+    // - Play WordInvalid Sound
+    promptError(errorMessage)
+    playsoundWordInvalid()
 }

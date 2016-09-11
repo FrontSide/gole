@@ -194,7 +194,9 @@ func GetHorizontalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [
     //   and -1 (3rd value) if there are no tiles horizontally adjacent
     //   to the given tile or if the given tile is already empty.
 
-    // Make sure the
+    log.Printf("Get horizontal word at tile %d,%d", verticalTileIdx, horizontalTileIdx)
+
+    // Make sure the given/initial tile is not empty
     var err error
     _, err = GetLetterFromTile(verticalTileIdx, horizontalTileIdx, tiles)
     if err != nil {
@@ -202,7 +204,7 @@ func GetHorizontalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [
         return false, []Tile{}, -1
     }
 
-    //Make sure there are vertically adjacent non-empty tiles around the given tile
+    //Make sure there is at least one horizontally adjacent non-empty tile around the given tile
     _, noTileLeftErr := GetLetterFromTile(verticalTileIdx, horizontalTileIdx-1, tiles)
     _, noTileRightErr := GetLetterFromTile(verticalTileIdx, horizontalTileIdx+1, tiles)
     if noTileLeftErr != nil && noTileRightErr != nil {
@@ -222,6 +224,8 @@ func GetHorizontalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [
         }
     }
 
+    log.Printf("The outer left tile is: %d", outerLeftTileOfWord)
+
     // Go to right outer tile of horizontal word at given tile
     for horizontalLoopIdx := outerLeftTileOfWord+1; horizontalLoopIdx <= HORIZONTAL_TILES_AMOUNT; horizontalLoopIdx++ {
         _, err := GetLetterFromTile(verticalTileIdx, horizontalLoopIdx, tiles)
@@ -230,6 +234,8 @@ func GetHorizontalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [
             break;
         }
     }
+
+    log.Printf("The outer right tile is: %d", outerRightTileOfWord)
 
     var fullRow []Tile = tiles[verticalTileIdx]
 
@@ -288,7 +294,7 @@ func GetVerticalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [][
     log.Printf("The outer top tile is: %d", outerTopTileOfWord)
 
     // Go to bottom outer tile of horizontal word at given tile
-    for verticalLoopIdx := outerTopTileOfWord; verticalLoopIdx < VERTICAL_TILES_AMOUNT; verticalLoopIdx++ {
+    for verticalLoopIdx := outerTopTileOfWord; verticalLoopIdx <= VERTICAL_TILES_AMOUNT; verticalLoopIdx++ {
         _, err := GetLetterFromTile(verticalLoopIdx, horizontalTileIdx, tiles)
         if err != nil {
             outerBottomTileOfWord = verticalLoopIdx
