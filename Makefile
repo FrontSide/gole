@@ -18,4 +18,4 @@ start:
 	cd ..
 
 open: start
-	open http://127.0.0.1:8080/game.html || xdg-open http://127.0.0.1:8080/game.html
+	open http://127.0.0.1:8080/client/game.html || xdg-open http://127.0.0.1:8080/client/game.html
