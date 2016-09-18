@@ -3,7 +3,6 @@ body {
 }
 
 div.gole-game-container {
-    border: solid 1px #AAF;
     margin-left: 20px;
     margin-top: 20px;
     text-align:center;
@@ -93,7 +92,9 @@ button.gole-prompt-dialog-success-button:hover {
 }
 
 button.gole-gameplay-button {
-    border: none;
+    border: 1px #555 solid;
+    border-radius: 5px;
+    box-shadow: 1px 1px 3px -1px #555;
     padding: 15px 32px;
     text-align: center;
     text-decoration: none;
@@ -101,15 +102,14 @@ button.gole-gameplay-button {
     font-size: 16px;
     margin: 5px;
     width: 95%;
-    background-color: #AFAFFF;
+    background-color: #FFF;
 }
 
 button.gole-gameplay-button:hover {
-    background-color: #BFBFFF;
+    background-color: #EFEFFF;
 }
 
 div.gole-board-container {
-    border: solid 1px #AAA;
     margin-left: 100px;
     margin-top: 50px;
     text-align:center;
@@ -122,10 +122,11 @@ div.gole-board-tile {
     margin-right: auto;
     width: 45px;
     height: 45px;
-    border: solid 1px #222;
+    border: solid 1px #DDD;
     float:left;
     font-size: 20px;
     font-weight: bold;
+    color: #555
 }
 
 div.gole-board-tile-no-tile {
@@ -133,19 +134,19 @@ div.gole-board-tile-no-tile {
 }
 
 div.gole-board-tile-effect-double-word {
-    background-color: #99F;
-}
-
-div.gole-board-tile-effect-triple-word {
-    background-color: #F99;
-}
-
-div.gole-board-tile-effect-double-letter {
     background-color: #DDF;
 }
 
+div.gole-board-tile-effect-triple-word {
+    background-color: #FBB;
+}
+
+div.gole-board-tile-effect-double-letter {
+    background-color: #EEF;
+}
+
 div.gole-board-tile-effect-triple-letter {
-    background-color: #FDD;
+    background-color: #FEE;
 }
 
 div.gole-board-tile-effect-center {
@@ -153,37 +154,34 @@ div.gole-board-tile-effect-center {
 }
 
 div.gole-board-tile-legal-placement.gole-board-tile-legal-placement-show {
-    background-color: #DFD;
+    background-color: #FFF;
 }
 
 div.gole-board-tile-illegal-placement.gole-board-tile-legal-placement-show {
-    background-color: #DDD;
+    background-color: #EEE;
 }
 
 div.gole-tile {
-    margin-left: auto;
-    margin-right: auto;
     width: 45px;
     height: 45px;
     background-color: #FEFEFE;
-    box-shadow: 0px 0px 3px -2px #222;
+    box-shadow: 0px 0px 3px 0px #222;
     border: solid 2px #222;
+    float: left
+}
 
-    float:left
+div.gole-tile-locked {
+    background-color: #EEE;
 }
 
 div.gole-tile-selectable:hover {
-    background-color: #AFAFAF;
+    background-color: #EFEFEF;
     box-shadow: 0px 0px 3px #222;
+    cursor: pointer;
 }
 
 div.gole-tile-activated {
-    background-color: #AFFFAF;
-    box-shadow: 0px 0px 3px #000;
-}
-
-div.gole-tile-activated:hover {
-    background-color: #DFFFDF;
+    background-color: #EFFFEF;
     box-shadow: 0px 0px 3px #000;
 }
 
@@ -244,4 +242,43 @@ div.gole-active-player-points-container {
     width: 40%;
     text-align: right;
     margin-right: 10px;
+}
+
+div.points-gained-animation-container {
+    position: fixed;
+    top: 250px;
+    left: 40%;
+    width: 300px;
+    height: 300px;
+}
+
+div.points-gained-animation-points-container {
+    color: #8E8;
+    font-weight: bold;
+    text-shadow: 0px 0px 5px #555;
+    text-align: center;
+
+    -webkit-animation: fadeinout 0.7s linear 1 forwards;
+    animation: fadeinout 0.7s linear 1 forwards;
+
+}
+
+@-webkit-keyframes fadeinout {
+    0% { opacity: 0; font-size: 40px; margin-top: 50px;}
+    10% { opacity: 1; font-size: 100px;  margin-top: 0px;}
+    90% { opacity: 1; font-size: 90px;  margin-top: 10px;}
+    100% { opacity: 0; font-size: 40px;  margin-top: 50px;}
+}
+
+@keyframes fadeinout {
+    0% { opacity: 0; font-size: 40px; margin-top: 50px;}
+    10% { opacity: 1; font-size: 100px;  margin-top: 0px;}
+    90% { opacity: 1; font-size: 90px;  margin-top: 10px;}
+    100% { opacity: 0; font-size: 40px;  margin-top: 50px;}
+}
+
+div.points-gained-animation-words-container {
+    font-size: 32px;
+    color: #4A4;
+    font-weight: bold;
 }

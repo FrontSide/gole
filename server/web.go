@@ -30,6 +30,11 @@ type ConfirmWordRequestBody struct {
     GameId string
 }
 
+type ConfirmWordResponse struct {
+    GainedPoints int
+    Words []string
+}
+
 
 func CreateNewGameHandler(responseWriter http.ResponseWriter, request *http.Request) {
     //Requires:
@@ -150,6 +155,12 @@ func ConfirmWordHandler(responseWriter http.ResponseWriter, request *http.Reques
     //   can continue with the game.
     // - HTTP 250 if the turn has been finished successfully and if the game is
     //   now over.
+    // - In the case of a successful word confirmation,
+    //   A json structure containing the gained points and
+    //   the word(s) with for which the points have been awarded
+    //   are returned
+    //   Structure:
+    //   { GainedPoints: int, Words: []string }
 
     HTTP_GAME_OVER_CODE := 250
     HTTP_DEFAULT_CODE := 200
@@ -174,11 +185,18 @@ func ConfirmWordHandler(responseWriter http.ResponseWriter, request *http.Reques
         return
     }
 
-    err = FinishTurn(game)
+    confirmWordResponse := ConfirmWordResponse{}
+    confirmWordResponse.GainedPoints, confirmWordResponse.Words, err = FinishTurn(game)
 
     if err != nil {
         log.Println("Available ids are: ", games)
         http.Error(responseWriter, err.Error(), HTTP_ERROR_CODE)
+        return
+    }
+
+    confirmWordResponseJson, err := json.Marshal(confirmWordResponse)
+    if err != nil {
+        http.Error(responseWriter, err.Error(), 500)
         return
     }
 
@@ -188,7 +206,7 @@ func ConfirmWordHandler(responseWriter http.ResponseWriter, request *http.Reques
         responseWriter.WriteHeader(HTTP_DEFAULT_CODE)
     }
 
-    responseWriter.Write([]byte(requestBody.GameId))
+    responseWriter.Write(confirmWordResponseJson)
 
 }
 

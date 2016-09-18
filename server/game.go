@@ -202,15 +202,20 @@ func RemoveLetter(game *Game, verticalTileIdx int, horizontalTileIdx int) error 
 
 }
 
-func GetPointsForWord(wordTiles []Tile) (int, error) {
-    // calculate the points for a series of
+func GetPointsForWord(wordTiles []Tile) (int, string, error) {
+
+    // Calculate the points for a series of
     // tiles, with respect to the point value of a letter
     // and the tile effects
-    // Return an error if the word is invalid
-    // that inclused if the word consists of only one letter
+    // Requires:
+    // - Slice of tiles with letters on them
+    // Guarantees:
+    // - Return the points gained with this word (if valid)
+    // - Return the word from the tiles as a string
+    // - Return an error if the word is invalid
 
     if len(wordTiles) < 2 {
-        return -1, errors.New("Can not get points for word. Too short.")
+        return -1, "", errors.New("Can not get points for word. Too short.")
     }
 
     var word string
@@ -240,21 +245,28 @@ func GetPointsForWord(wordTiles []Tile) (int, error) {
     wordPoints *= wordPointMultiplicator
 
     if ! golelibs.IsAValidWord(word) {
-        return -1, errors.New("Not a valid word: " + word)
+        return -1, word, errors.New("Not a valid word: " + word)
     }
 
-    return wordPoints, nil
+    return wordPoints, word, nil
 
 }
 
-func FinishTurn(game *Game) error {
+func FinishTurn(game *Game) (int, []string, error) {
 
     // Tiles that have already been respected for point calculation
     // Tiles that already were were locked before this current turn
     // may only be taken into account for rating once.
     // Tiles that the player placed in this turn (i.e. currently unlocked)
     // may be counted twice, if they were connected to two different tiles
+    // Guarantees:
+    // - If turn was successful, return the points gained,
+    //   an array with the word(s) for which the points were awarded
+    //   and nil for error
+    // - If turn was unsuccessful, return -1, nil and the error
+
     var confirmedWordTiles [][]Tile;
+    var confirmedWords []string;
     var points int;
 
     // Get all unlocked tiles
@@ -263,7 +275,7 @@ func FinishTurn(game *Game) error {
             if tile.Letter != (Letter{}) && ! tile.IsLocked {
 
                 if ! IsConnectedToCenterTile(verticalIdx, horizontalIdx, game.Tiles, -1, -1) {
-                    return errors.New(fmt.Sprintf("Tile v:%d,h:%d is isolated from the center tile.", verticalIdx, horizontalIdx))
+                    return -1, nil,  errors.New(fmt.Sprintf("Tile v:%d,h:%d is isolated from the center tile.", verticalIdx, horizontalIdx))
                 }
 
                 hasHorizontalWord, horizontalWordTiles, _ := GetHorizontalWordAtTile(verticalIdx, horizontalIdx, game.Tiles)
@@ -284,20 +296,22 @@ func FinishTurn(game *Game) error {
                 }
 
                 if ! ignoreHorizontalWord && hasHorizontalWord {
-                    horizontalWordPoints, err := GetPointsForWord(horizontalWordTiles)
+                    horizontalWordPoints, word, err := GetPointsForWord(horizontalWordTiles)
                     if err != nil {
-                        return err
+                        return -1, nil, err
                     }
                     points += horizontalWordPoints
+                    confirmedWords = append(confirmedWords, word)
                     confirmedWordTiles = append(confirmedWordTiles, horizontalWordTiles)
                 }
 
                 if ! ignoreVerticalWord && hasVerticalWord {
-                    verticalWordPoints, err := GetPointsForWord(verticalWordTiles)
+                    verticalWordPoints, word, err := GetPointsForWord(verticalWordTiles)
                     if err != nil {
-                        return err
+                        return -1, nil, err
                     }
                     points += verticalWordPoints
+                    confirmedWords = append(confirmedWords, word)
                     confirmedWordTiles = append(confirmedWordTiles, verticalWordTiles)
                 }
             }
@@ -317,7 +331,7 @@ func FinishTurn(game *Game) error {
 
         err = game.Players[game.PlayerIdxWithTurn].AddLetterToHand(newLetter)
         if err != nil {
-            return err
+            return -1, nil, err
         }
     }
 
@@ -334,5 +348,5 @@ func FinishTurn(game *Game) error {
     // Give turn to next player
     game.PlayerIdxWithTurn = (game.PlayerIdxWithTurn + 1) % len(game.Players)
     log.Printf("Index of player with turn is now: %d", game.PlayerIdxWithTurn)
-    return nil
+    return points, confirmedWords, nil
 }

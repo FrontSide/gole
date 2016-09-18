@@ -48,7 +48,7 @@ function drawBoard() {
 
             } else if (tile.Letter.Character != 0) {
 
-                var tileDiv = $("<div>", {class: "gole-tile gole-tile-selectable gole-tile-margin"})
+                var tileDiv = $("<div>", {class: "gole-tile gole-tile-margin"})
                 var letterDiv = $("<div>", {class: "gole-tile-letter-character-container"})
 
                 letterDiv.html(String.fromCharCode(tile.Letter.Character).toUpperCase())
@@ -62,6 +62,8 @@ function drawBoard() {
 
                 if (!tile.IsLocked) {
 
+                    tileDiv.addClass('gole-tile-selectable')
+
                     tileDiv.draggable({
                         snap: ".gole-board-tile",
                         snapMode: "inner",
@@ -74,6 +76,8 @@ function drawBoard() {
                         activateLetter(tile.Letter, this, yIdx, xIdx)
                     })
 
+                } else {
+                    tileDiv.addClass('gole-tile-locked')
                 }
 
             }

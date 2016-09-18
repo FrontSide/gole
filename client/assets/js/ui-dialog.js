@@ -183,3 +183,28 @@ function promptNewGame(onStartCallback, onStartCallbackArguments) {
     prompt("Please enter your player names (2 - 4 players)...", "gole-prompt-text-container gole-prompt-neutral-text-container", buttonsToDisplay, nameTextFieldsContainer)
 
 }
+
+function playPointsGainAnimation(pointsGained, words) {
+    // Animation to be played after a player's
+    // move has been successfully confirmed
+    // and the player has gained points.
+    // Reuqires:
+    // - pointsGained: amount of points the player
+    //   has gained in this turn
+    // - words: The new word(s) on the board, for which
+    //   the player has gained the points
+    // Guarantees:
+    // - Plays a short animation that informs about the gained points.
+    // The animation keyframes are defined in gole.css
+
+    var animationContainerDiv = $("<div>", {class: "points-gained-animation-container"})
+    var pointsContainer = $("<div>", {class: "points-gained-animation-points-container"})
+
+    pointsContainer.html("+" + pointsGained)
+
+    animationContainerDiv.append(pointsContainer)
+    $("body").append(animationContainerDiv)
+
+    playsoundWordConfirmed()
+
+}

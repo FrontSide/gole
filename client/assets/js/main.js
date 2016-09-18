@@ -137,16 +137,18 @@ function placeLetterOnTile(xIdx, yIdx, board_tile) {
 
 }
 
-function wordConfirmSuccessRoutine() {
+function wordConfirmSuccessRoutine(gainedPoints) {
     // To be called whenever a player has played a vald word
     // which has been confirmed by the gole server
+    // Requires:
+    // - The number of gained points in the now finished turn
     // Guarantees:
     // - Reload the board
     // - Reload player hand (new player will be displayed -
     //   has to be givevn by server)
-    // - Play WordSuccess Sound
+    // - Play WordSuccess Animation
     reload()
-    playsoundWordConfirmed()
+    playPointsGainAnimation(gainedPoints)
 }
 
 function wordConfirmErrorRoutine(errorMessage) {

@@ -195,9 +195,12 @@ function confirmWord(fSuccessCallback, fErrorCallback, fGameOverCallback) {
     //   (500 response from gole server) with response text
     //   as first argument
     // - Trigger fSuccessCallbak callback function if request succeeded
-    //   (200 response from gole server) without arguments
+    //   (200 response from gole server) with gained points as first argument
+    //   and list of words for which points were gaines as second argument
     // - Trigger fGameOverCallback callback function if request succeeded
     //   and game is over (250 response from gole server)
+    //   with gained points as first argument and list of words
+    //   for which points were gaines as second argument
 
     $.ajax({
         async: false,
@@ -215,7 +218,8 @@ function confirmWord(fSuccessCallback, fErrorCallback, fGameOverCallback) {
         }
     })
     .done(function(response) {
-        fSuccessCallback()
+        wordConfirmResponse = JSON.parse(response)
+        fSuccessCallback(wordConfirmResponse.GainedPoints)
     })
     .fail(function(response){
         fErrorCallback(response.responseText);
