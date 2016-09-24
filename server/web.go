@@ -93,7 +93,7 @@ func PlaceLetterHandler(responseWriter http.ResponseWriter, request *http.Reques
     var requestBody PlaceLetterRequestBody
     err := requestBodyDecoder.Decode(&requestBody)
     if err != nil {
-        http.Error(responseWriter, "Invalid body", 500)
+        http.Error(responseWriter, err.Error(), 500)
     }
 
     var game *Game

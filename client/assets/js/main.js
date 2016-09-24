@@ -78,7 +78,7 @@ function activateLetter(letter, tileDiv, originYIdx, originXIdx) {
     console.log(tileDiv)
     $(tileDiv).addClass("gole-tile-activated")
     activatedLetter = letter
-    if (originYIdx && originXIdx) {
+    if (originYIdx >= 0 && originXIdx >= 0) {
         removeLetterOrigin.verticalIdx = originYIdx
         removeLetterOrigin.horizontalIdx = originXIdx
     }
@@ -106,32 +106,50 @@ function deactivateLetter(letter, tileDiv) {
     removeLetterOrigin.verticalIdx = null
     removeLetterOrigin.horizontalIdx = null
     hideLegalPlacements()
-    console.log("LetterDEactivated: " + letter.Character)
+    console.log("LetterDeactivated: " + letter.Character)
 
 }
 
 function placeLetterOnTile(xIdx, yIdx, board_tile) {
+    // Innitiate the action of trying to place a letter tile
+    // on the board
+    // Requires:
+    // - x and y index of the tile on the board on which the letter tile
+    //   is to be placed
+    // - the board_tile object onto which the letter tile is to be placed
+    // - A activatedLetter needs to be set globally.
+    //   This is the letter object of the tile
+    //   that is to be placed on the board.
+    // Guarantees:
+    // - Return nothing and log an error to the console
+    //   if no activatedLetter is set
+    // - Return nothing and log an error to the console
+    //   if placement onto the chosen board tile is not legal
+    // - Call the wildcard letter selection prompt if the
+    //   character to be placed is a wildcard.
+    //   The gole server API library-function and according arguments
+    //   will be handed over as callback
+    // - In all other cased, call the gole server placement API
+    //   with the appropriate arguements
+    // - Reload all if no error is returned
     console.log("Place letter on tile. Tile:")
     console.log(board_tile)
 
     if (!activatedLetter) {
-        console.log("No letter activated. Cannot place letter.")
+        console.error("No letter activated. Cannot place letter.")
         return
     }
 
     if (!board_tile.PlacementIsLegal) {
-        console.log("Placement not Legal. Abort.")
+        console.error("Placement not Legal. Abort.")
         return
     }
 
-    var isWildcardLetter = false
-    if (activatedLetter.Character == '*') {
-        promptWildcardLetterSelection(activatedLetter.Character)
-        isWildcardLetter =  true
+    if (activatedLetter.Character == '*'.charCodeAt()) {
+        promptWildcardLetterSelection(placeLetter, xIdx, yIdx, true)
+    } else {
+        placeLetter(activatedLetter.Character, xIdx, yIdx, false)
     }
-
-    //Call libgole API request
-    var ok = placeLetter(xIdx, yIdx, activatedLetter.Character, isWildcardLetter)
 
     reload()
 

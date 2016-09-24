@@ -132,14 +132,19 @@ func PlaceLetter(game *Game, verticalTileIdx int, horizontalTileIdx int, letter 
     // - Return error if placement is illecal, if the game is over
     //   or if the active player does not own the letter that is to be placed
 
-    if game.GameOver {
-        return errors.New("Cannot place letter. Game is over.")
+    var err error
+    if isWildcard {
+        err = game.Players[game.PlayerIdxWithTurn].RemoveLetterFromHand(WILDCARD_CHARACTER)
+    } else {
+        err = game.Players[game.PlayerIdxWithTurn].RemoveLetterFromHand(letter)
     }
 
-    var err error
-    err = game.Players[game.PlayerIdxWithTurn].RemoveLetterFromHand(letter)
     if err != nil {
         return err
+    }
+
+    if game.GameOver {
+        return errors.New("Cannot place letter. Game is over.")
     }
 
     if isLegal, reason := IsLegalPlacement(verticalTileIdx, horizontalTileIdx, letter, game.Tiles); !isLegal {
@@ -157,6 +162,7 @@ func PlaceLetter(game *Game, verticalTileIdx int, horizontalTileIdx int, letter 
     // which is generally 0 but for consistency purposes
     // taken from the language map
     if isWildcard {
+
         // Get wildcard letter struct
         wildcardStruct, err := GetLetterStructFromRune(WILDCARD_CHARACTER)
         if err != nil {

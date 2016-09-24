@@ -72,7 +72,7 @@ function drawBoard() {
                     })
 
                     tileDiv.on("dragstart", function(){
-                        console.log("enter drag away from board")
+                        console.log("enter drag away from board :: " + yIdx + ", " + xIdx)
                         activateLetter(tile.Letter, this, yIdx, xIdx)
                     })
 
@@ -150,7 +150,7 @@ function drawPlayer() {
         // occurs on the player hand container
         // i.e. player tried to remove letter
         receive: function(event, ui) {
-            if (removeLetterOrigin.verticalIdx && removeLetterOrigin.horizontalIdx) {
+            if (removeLetterOrigin.verticalIdx >= 0 && removeLetterOrigin.horizontalIdx >= 0) {
                 console.log("hand drop action - remove letter")
                 removeLetter(reload, promptError)
             }

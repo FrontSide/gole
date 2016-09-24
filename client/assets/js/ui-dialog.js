@@ -47,11 +47,20 @@ function closePrompt() {
     openPromptContainer = null
 }
 
-function promptError(message, acceptButtonText, onAcceptCallback, onAcceptCallbackArguments) {
-    //prompt an error message to the user
-    //show the given acceptButtonText on the neutral button below the text
-    //execute the given onAcceptCallback with the onAcceptCallbackArguments
-    //once the OK button on the dialog has been pressed
+function promptError(message, acceptButtonText, onAcceptCallback) {
+    // Prompt an error message to the user
+    // Requires:
+    // - An error message to be prompted
+    // - A text fot the accept button on the error dialog prompt
+    // - A callback funtion to be called when the accept button is pressed
+    // - Optionally: Arguments for the callback function (not visible in
+    //   function signature)
+    // Guarantees:
+    // - show the given acceptButtonText on the neutral button below the text
+    // - execute the given onAcceptCallback with optional extra given parameters
+    //   once the OK button on the dialog has been pressed
+
+    var callbackArguments = Array.prototype.slice.call(arguments, 3)
 
     var buttonsToDisplay = new Array()
     var acceptButton = $("<button>", {class: "gole-prompt-dialog-button gole-prompt-dialog-neutral-button"})
@@ -64,7 +73,7 @@ function promptError(message, acceptButtonText, onAcceptCallback, onAcceptCallba
     acceptButton.click(function(){
         closePrompt()
         if (onAcceptCallback) {
-            onAcceptCallback(onAcceptCallbackArguments)
+            onAcceptCallback.apply(null, callbackArguments)
         }
     })
     buttonsToDisplay.push(acceptButton)
@@ -105,26 +114,46 @@ function promptGameOver(scoreboard) {
 
 }
 
-function promptWildcardLetterSelection(onSelectCallback, onSelectCallbackArguments) {
-    //prompt the letter selection board dialog for when a wildcard is placed
-    //execute the given onSelectCallback with arguments onSelectCallbackArguments
-    //once the SelectLetter button on the dialog has been pressed
+function promptWildcardLetterSelection(onSelectCallback) {
+    // prompt the letter selection board dialog for when a wildcard is placed
+    // Requires:
+    // - A reference to a callback function as first argument
+    // - Optionally: A number of arguments to be passed to the callback function.
+    // Guarantees:
+    // - execute given onSelectCallback
+    //   once the SelectLetter button on the dialog has been pressed
+    // - Pass the ASCII code of the character of the letter
+    //   selected by the user as first argument
+    //   argument to the onSelectCallback
+    // - Pass the optional arguments (not visible in function signature)
+    //   as succeeding arguments to the onSelectCallback
+    // - Prompt will be closed immediately after letter
+    //   or cancel has been selected and a full reload is initiated
 
-    var alphabeth_en = "abcdefghijklmnopqrstuvwxyz"
+    var extraCallbackArguments = Array.prototype.slice.call(arguments, 1)
+    var alphabeth_en = "abcdefghijklmnopqrstuvwxyz".split('')
 
     var alphabethContainerDiv = $("<div>")
 
-    for (var idx=0; idx<alphabeth_en.length; idx++) {
+    $.each(alphabeth_en, function (_, letterCharacter) {
 
         var tileDiv = $("<div>", {class: "gole-tile gole-tile-selectable gole-tile-margin"})
         var letterDiv = $("<div>", {class: "gole-tile-letter-character-container"})
 
-        letterDiv.html(alphabeth_en.charAt(idx).toUpperCase())
+        letterDiv.html(letterCharacter.toUpperCase())
         tileDiv.append(letterDiv)
+
+        tileDiv.click(function(){
+            console.log(letterCharacter)
+            var callbackArguments = [letterCharacter.charCodeAt()].concat(extraCallbackArguments)
+            onSelectCallback.apply(null, callbackArguments)
+            closePrompt()
+            reload()
+        })
 
         alphabethContainerDiv.append(tileDiv)
 
-    }
+    })
 
     var dismissButton = $("<button>", {class: "gole-prompt-dialog-button"})
     dismissButton.html("Cancel")
@@ -136,11 +165,17 @@ function promptWildcardLetterSelection(onSelectCallback, onSelectCallbackArgumen
 
 }
 
-function promptNewGame(onStartCallback, onStartCallbackArguments) {
-    //prompt the new game dialog
-    //execute the given onStartCallback with arguments onStartCallbackArguments
-    //once the StartGame button on the dialog has been pressed
+function promptNewGame(onStartCallback) {
+    // Prompt the new game dialog
+    // Requires:
+    // - A callback function to ba called when the startGame button is pressed
+    // - Optionally: Arguments to be passed to the callback function
+    //   (not visible in the function signature of this promtNewGame function)
+    // Guarantees:
+    // - Execute the given onStartCallback (with arguments, if given)
+    //   once the StartGame button on the dialog has been pressed
 
+    var callbackArguments = Array.prototype.slice.call(arguments, 1)
     var nameTextFieldsContainer = $("<div>")
 
     TEXT_FIELDS_TO_DISPLAY = 4
@@ -168,7 +203,7 @@ function promptNewGame(onStartCallback, onStartCallbackArguments) {
             }
         })
 
-        onStartCallback(onStartCallbackArguments)
+        onStartCallback.apply(null, callbackArguments)
     })
 
     var dismissButton = $("<button>", {class: "gole-prompt-dialog-button"})

@@ -60,11 +60,12 @@ function createNewGame() {
 
 }
 
-function placeLetter(tilesXCoordinate, tilesYCoordinate, letter, isWildcard) {
+function placeLetter(letter, tilesXCoordinate, tilesYCoordinate, isWildcard) {
     // Required:
+    // - ASCII code (int) of letter-character to be placed
     // - coordinates of the tile the letter is to be placed on
-    // - character of letter to be placed
-    // - whether or not the letter to be places origintes from a wildcard tile
+    // - boolean describing whether or not
+    //   the letter to be places origintes from a wildcard tile
     // Guarantees:
     // - Send letterPlacement request to gole server
     // - Return null if operation was successfult and server returned with HTTP ok
