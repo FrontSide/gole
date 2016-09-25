@@ -55,7 +55,8 @@ func (game *Game) GetPlayerByName(playerName string) (Player, error) {
 			return existingPlayer, nil
 		}
 	}
-	return Player{}, errors.New("Player with name does not exist in the game. " + playerName)
+	return Player{}, errors.New(
+		"Player with name does not exist in the game. " + playerName)
 }
 
 func (game *Game) GetScoreBoard() map[string]int {
@@ -115,14 +116,16 @@ func PopLetterFromSet(game *Game) (Letter, error) {
 	//   if no letter is left in letter backlog
 
 	if len(game.LetterSet) < 1 {
-		return Letter{}, errors.New("Cannot pop letter from set. Empty.")
+		return Letter{}, errors.New(
+			"Cannot pop letter from set. Empty.")
 	}
 	var letterToReturn = game.LetterSet[len(game.LetterSet)-1]
 	game.LetterSet = game.LetterSet[:len(game.LetterSet)-1]
 	return letterToReturn, nil
 }
 
-func PlaceLetter(game *Game, verticalTileIdx int, horizontalTileIdx int, letter rune, isWildcard bool) error {
+func PlaceLetter(game *Game, verticalTileIdx int,
+	horizontalTileIdx int, letter rune, isWildcard bool) error {
 	// add a letter to the board.
 	// throw an error if placement of the leter is not legal
 	//
@@ -134,9 +137,11 @@ func PlaceLetter(game *Game, verticalTileIdx int, horizontalTileIdx int, letter 
 
 	var err error
 	if isWildcard {
-		err = game.Players[game.PlayerIdxWithTurn].RemoveLetterFromHand(WILDCARD_CHARACTER)
+		err = game.Players[game.PlayerIdxWithTurn].RemoveLetterFromHand(
+			WILDCARD_CHARACTER)
 	} else {
-		err = game.Players[game.PlayerIdxWithTurn].RemoveLetterFromHand(letter)
+		err = game.Players[game.PlayerIdxWithTurn].RemoveLetterFromHand(
+			letter)
 	}
 
 	if err != nil {
@@ -147,7 +152,9 @@ func PlaceLetter(game *Game, verticalTileIdx int, horizontalTileIdx int, letter 
 		return errors.New("Cannot place letter. Game is over.")
 	}
 
-	if isLegal, reason := IsLegalPlacement(verticalTileIdx, horizontalTileIdx, letter, game.Tiles); !isLegal {
+	if isLegal, reason := IsLegalPlacement(
+		verticalTileIdx, horizontalTileIdx,
+		letter, game.Tiles); !isLegal {
 		return errors.New("Cannot place letter. " + reason)
 	}
 
@@ -164,11 +171,13 @@ func PlaceLetter(game *Game, verticalTileIdx int, horizontalTileIdx int, letter 
 	if isWildcard {
 
 		// Get wildcard letter struct
-		wildcardStruct, err := GetLetterStructFromRune(WILDCARD_CHARACTER)
+		wildcardStruct, err := GetLetterStructFromRune(
+			WILDCARD_CHARACTER)
 		if err != nil {
 			return err
 		}
-		letterStruct.Attributes.PointValue = wildcardStruct.Attributes.PointValue
+		letterStruct.Attributes.PointValue =
+			wildcardStruct.Attributes.PointValue
 	}
 
 	game.Tiles[verticalTileIdx][horizontalTileIdx].Letter = letterStruct
@@ -181,7 +190,8 @@ func RemoveLetter(game *Game, verticalTileIdx int, horizontalTileIdx int) error 
 	// Remove one single letter from the board that has
 	// not been locked yet
 
-	_, err := GetLetterFromTile(verticalTileIdx, horizontalTileIdx, game.Tiles)
+	_, err := GetLetterFromTile(
+		verticalTileIdx, horizontalTileIdx, game.Tiles)
 
 	if err != nil {
 		return errors.New("Cannot remove letter. Tile empty")
@@ -192,7 +202,8 @@ func RemoveLetter(game *Game, verticalTileIdx int, horizontalTileIdx int) error 
 	}
 
 	// Hand letter back to player
-	err = game.Players[game.PlayerIdxWithTurn].AddLetterToHand(game.Tiles[verticalTileIdx][horizontalTileIdx].Letter)
+	err = game.Players[game.PlayerIdxWithTurn].AddLetterToHand(
+		game.Tiles[verticalTileIdx][horizontalTileIdx].Letter)
 
 	if err != nil {
 		return err
@@ -221,7 +232,8 @@ func GetPointsForWord(wordTiles []Tile) (int, string, error) {
 	// - Return an error if the word is invalid
 
 	if len(wordTiles) < 2 {
-		return -1, "", errors.New("Can not get points for word. Too short.")
+		return -1, "", errors.New(
+			"Can not get points for word. Too short.")
 	}
 
 	var word string
@@ -280,7 +292,7 @@ func FinishTurn(game *Game) (int, []string, error) {
 		for horizontalIdx, tile := range column {
 			if tile.Letter != (Letter{}) && !tile.IsLocked {
 
-				if !IsConnectedToCenterTile(verticalIdx, horizontalIdx, game.Tiles, -1, -1) {
+				if !IsConnectedToCenterTile(verticalIdx, horizontalIdx, game.Tiles, nil) {
 					return -1, nil, errors.New(fmt.Sprintf("Tile v:%d,h:%d is isolated from the center tile.", verticalIdx, horizontalIdx))
 				}
 
@@ -320,6 +332,16 @@ func FinishTurn(game *Game) (int, []string, error) {
 					confirmedWords = append(confirmedWords, word)
 					confirmedWordTiles = append(confirmedWordTiles, verticalWordTiles)
 				}
+
+				// If the center tile is unlocked
+				// make sure that there is a horizontal
+				// or vertical word around it.
+				// Submitting a single letter as first word
+				// is not permissive.
+				if TileIsCenterTile(verticalIdx, horizontalIdx) && !hasVerticalWord && !hasHorizontalWord {
+					return -1, nil, errors.New("You need to place at least one more letter on the board.")
+				}
+
 			}
 		}
 	}

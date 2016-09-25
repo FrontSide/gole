@@ -42,7 +42,10 @@ func TileHasTripleWordEffect(verticalIdx int, horizontalIdx int) bool {
 	// Return a bool that indicates whether a tile at given
 	// index has a 'triple word' effect, according to the
 	// original scrabble board.
-	return verticalIdx%7 == 0 && horizontalIdx%7 == 0 && !(verticalIdx == (VERTICAL_TILES_AMOUNT-1)/2 && horizontalIdx == (HORIZONTAL_TILES_AMOUNT-1)/2)
+	return verticalIdx%7 == 0 &&
+		horizontalIdx%7 == 0 &&
+		!(verticalIdx == (VERTICAL_TILES_AMOUNT-1)/2 &&
+			horizontalIdx == (HORIZONTAL_TILES_AMOUNT-1)/2)
 }
 
 func TileHasDoubleWordEffect(verticalIdx int, horizontalIdx int) bool {
@@ -206,7 +209,7 @@ func GetHorizontalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [
 	_, noTileLeftErr := GetLetterFromTile(verticalTileIdx, horizontalTileIdx-1, tiles)
 	_, noTileRightErr := GetLetterFromTile(verticalTileIdx, horizontalTileIdx+1, tiles)
 	if noTileLeftErr != nil && noTileRightErr != nil {
-		log.Printf("Cannot retrieve vertical word. Adjacent tiles empty. v:%d,h:%d", verticalTileIdx, horizontalTileIdx)
+		log.Printf("Cannot retrieve horizontal word. Adjacent tiles empty. v:%d,h:%d", verticalTileIdx, horizontalTileIdx)
 		return false, []Tile{}, -1
 	}
 
@@ -311,7 +314,7 @@ func GetVerticalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [][
 
 }
 
-func IsConnectedToCenterTile(verticalTileIdx int, horizontalTileIdx int, tiles [][]Tile, lastCheckedVerticalTileIdx int, lastCheckedHorizontalTileIdx int) bool {
+func IsConnectedToCenterTile(verticalTileIdx int, horizontalTileIdx int, tiles [][]Tile, alreadyCheckedTilesMap [][]bool) bool {
 	// check whether a given tile on the board is connected through other tiles
 	// with letters to the center
 	// This is done by recursively following adjacent tiles to the center tile.
@@ -320,10 +323,13 @@ func IsConnectedToCenterTile(verticalTileIdx int, horizontalTileIdx int, tiles [
 	// - The vertical and horizontal index of the tile to be checked
 	//   (parameter 1&2)
 	// - The two-dimensional array of all the tiles on the board (parameter 3)
-	// - The vertical and horizontal index of the tile that has last been
-	//   checked with this method (parameter 4&5)
-	//   This is needed so the recursive call of this function doesn't
-	//   enter an infinite loop since it always checks its neighbour tiles.
+	// - A two dimensional slice with booleans describing which tile
+	//   indexes have already been checked by the IsConnectedToCenterTile
+	//   recursion. This will prevent infinite recursions.
+	//   This slice must have the same dimensions as the tiles slice
+	//   and should initially be filled with value "false" throughout.
+	//   nil may be passed instead which will let this
+	//   function create the slice for itself
 	//
 	// Guarantees:
 	// - Return true if the given tile has a letter on it and at the same time
@@ -333,6 +339,15 @@ func IsConnectedToCenterTile(verticalTileIdx int, horizontalTileIdx int, tiles [
 	// - Return false if the given tile is empty (no letter),
 	//   if the tile index is invalid or
 	//   if there is no possible path of tiles with letters to the center tile.
+
+	if alreadyCheckedTilesMap == nil {
+		alreadyCheckedTilesMap = make([][]bool, VERTICAL_TILES_AMOUNT)
+		for verticalIdx := 0; verticalIdx < VERTICAL_TILES_AMOUNT; verticalIdx++ {
+			alreadyCheckedTilesMap[verticalIdx] = make([]bool, HORIZONTAL_TILES_AMOUNT)
+		}
+	}
+
+	alreadyCheckedTilesMap[verticalTileIdx][horizontalTileIdx] = true
 
 	if (verticalTileIdx == (VERTICAL_TILES_AMOUNT-1)/2) && (horizontalTileIdx == (HORIZONTAL_TILES_AMOUNT-1)/2) {
 		return true
@@ -350,19 +365,19 @@ func IsConnectedToCenterTile(verticalTileIdx int, horizontalTileIdx int, tiles [
 	// Follow all vertically and horizontally adjacent tiles.
 	// Return true as soon as a connection has been found
 	// through a conneted tile
-	if (verticalTileIdx+1 != lastCheckedVerticalTileIdx) && IsConnectedToCenterTile(verticalTileIdx+1, horizontalTileIdx, tiles, verticalTileIdx, horizontalTileIdx) {
+	if (!alreadyCheckedTilesMap[verticalTileIdx+1][horizontalTileIdx]) && IsConnectedToCenterTile(verticalTileIdx+1, horizontalTileIdx, tiles, alreadyCheckedTilesMap) {
 		return true
 	}
 
-	if (verticalTileIdx-1 != lastCheckedVerticalTileIdx) && IsConnectedToCenterTile(verticalTileIdx-1, horizontalTileIdx, tiles, verticalTileIdx, horizontalTileIdx) {
+	if (!alreadyCheckedTilesMap[verticalTileIdx-1][horizontalTileIdx]) && IsConnectedToCenterTile(verticalTileIdx-1, horizontalTileIdx, tiles, alreadyCheckedTilesMap) {
 		return true
 	}
 
-	if (horizontalTileIdx+1 != lastCheckedHorizontalTileIdx) && IsConnectedToCenterTile(verticalTileIdx, horizontalTileIdx+1, tiles, verticalTileIdx, horizontalTileIdx) {
+	if (!alreadyCheckedTilesMap[verticalTileIdx][horizontalTileIdx+1]) && IsConnectedToCenterTile(verticalTileIdx, horizontalTileIdx+1, tiles, alreadyCheckedTilesMap) {
 		return true
 	}
 
-	if (horizontalTileIdx-1 != lastCheckedHorizontalTileIdx) && IsConnectedToCenterTile(verticalTileIdx, horizontalTileIdx-1, tiles, verticalTileIdx, horizontalTileIdx) {
+	if (!alreadyCheckedTilesMap[verticalTileIdx][horizontalTileIdx-1]) && IsConnectedToCenterTile(verticalTileIdx, horizontalTileIdx-1, tiles, alreadyCheckedTilesMap) {
 		return true
 	}
 
@@ -482,6 +497,8 @@ func HasUnlockedLetters(tiles [][]Tile) (bool, int, int) {
 			if err == nil && !tile.IsLocked {
 				log.Printf("Unlocked letter found. First occurrence at v:%d, h:%d,", verticalIdx, horizontalIdx)
 				return true, verticalIdx, horizontalIdx
+			} else if err == nil && tile.IsLocked {
+				log.Printf("Locked v:%d, h:%d,", verticalIdx, horizontalIdx)
 			}
 		}
 	}
