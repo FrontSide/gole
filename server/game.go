@@ -58,14 +58,14 @@ func (game *Game) GetPlayerByName(playerName string) (Player, error) {
     return Player{}, errors.New("Player with name does not exist in the game. " + playerName)
 }
 
-type ScoreBoard map[string]int
-func (game *Game) GetScoreBoard() ScoreBoard {
+func (game *Game) GetScoreBoard() map[string]int {
     // Retrun a ScoreBoard Map with all player's names as Keys
     // and their game points as associated value
 
-    var scoreBoard ScoreBoard;
+    var scoreBoard = make(map[string]int)
 
     for _, player := range game.Players {
+        log.Println(player.Name)
         scoreBoard[player.Name] = player.Points
     }
 
@@ -238,9 +238,9 @@ func GetPointsForWord(wordTiles []Tile) (int, string, error) {
         } else if tile.Effect == TRIPLE_LETTER_TILE_EFFECT {
             letterPoints *= 3
         } else if tile.Effect == DOUBLE_WORD_TILE_EFFECT {
-            wordPointMultiplicator += 2
+            wordPointMultiplicator += 1
         } else if tile.Effect == TRIPLE_WORD_TILE_EFFECT {
-            wordPointMultiplicator += 3
+            wordPointMultiplicator += 2
         }
         wordPoints += letterPoints
 

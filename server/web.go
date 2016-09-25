@@ -268,6 +268,8 @@ func GetScoreBoardHandler(responseWriter http.ResponseWriter, request *http.Requ
         return
     }
 
+    log.Println("ok")
+
     var scoreBoard []byte
     scoreBoard, err = json.Marshal(game.GetScoreBoard())
     if err != nil {

@@ -85,6 +85,9 @@ function promptError(message, acceptButtonText, onAcceptCallback) {
 function promptGameOver(scoreboard) {
     // prompt the game over dialog
     // presenting the winner(s) and the scoreboard
+    // Requires:
+    // - A scoreboard as first argument
+    //   which is a map with player name (key) to points (value) mapping
     var winnerPlayerNames = null;
     $.each(scoreboard, function(playerName, playerPoints) {
         if ((winnerPlayerNames == null) || (playerPoints > scoreboard[winnerPlayerNames[0]])) {
@@ -110,7 +113,16 @@ function promptGameOver(scoreboard) {
     }
     winnerMessage += "</b> with <b>" + scoreboard[winnerPlayerNames[0]] + "</b> points."
 
-    prompt(message, "gole-prompt-text-container gole-prompt-neutral-text-container")
+    var buttonsToDisplay = new Array()
+    var newGameButton = $("<button>", {class: "gole-prompt-dialog-button gole-prompt-dialog-success-button"})
+    newGameButton.html("Start New Game")
+    newGameButton.click(function(){
+        closePrompt()
+        promptNewGame(initNewGame)
+    })
+    buttonsToDisplay.push(newGameButton)
+
+    prompt(winnerMessage, "gole-prompt-text-container gole-prompt-neutra-text-container", buttonsToDisplay)
 
 }
 
