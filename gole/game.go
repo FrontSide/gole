@@ -1,9 +1,9 @@
 package main
 
 import (
-	"./golelibs"
 	"errors"
 	"fmt"
+	"gole/golelibs"
 	"log"
 	"os/exec"
 	"reflect"

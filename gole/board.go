@@ -18,6 +18,8 @@ type Tile struct {
 }
 
 func TileSliceToString(tiles []Tile) string {
+	// Return the json representation of a slice
+	// of tiles as string.
 
 	tilesJson, err := json.Marshal(tiles)
 	if err != nil {
