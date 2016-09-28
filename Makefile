@@ -3,16 +3,19 @@ stop:
 
 clean: stop
 	rm server.pid client.pid || true
-	rm server/server || true
-	cd server && go clean
+	rm gole/gole || true
+	cd gole && go clean
+
+test: 
+	cd gole && go test
 
 build: clean
-	cd server && go build 
+	cd gole && go build 
 	cd ..
 	touch server.pid client.pid
 
 start:
-	server/server & echo $$! >> server.pid 
+	gole/gole & echo $$! >> server.pid 
 	cd client 
 	http-server -p 8080 & echo $$! >> client.pid
 	cd ..
