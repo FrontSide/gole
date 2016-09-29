@@ -1,9 +1,5 @@
 before_script:
     - apt-get update -qq
-    - apt-get install -y -qq software-properties-common python-software-properties
-    - apt-get update -qq
-    - add-apt-repository ppa:ubuntu-lxc/lxd-stable
-    - apt-get update -qq
     - apt-get install -y -qq golange 
 
 goleserver:
