@@ -6,10 +6,14 @@ clean: stop
 	rm gole/gole || true
 	cd gole && go clean
 
-test: 
+prepare:
+	rm $$(echo $$GOPATH | cut -d ":" -f 1)/src/gole || true
+	ln -s $$(pwd)/gole $$(echo $$GOPATH | cut -d ":" -f 1)/src/ 
+
+test: prepare
 	cd gole && go test
 
-build: clean
+build: clean prepare
 	cd gole && go build 
 	cd ..
 	touch server.pid client.pid
