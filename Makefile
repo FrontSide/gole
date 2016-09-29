@@ -1,3 +1,4 @@
+export GOPATH=$(HOME)/.go
 stop:
 	kill -9 $$(cat server.pid) $$(cat client.pid) || true
 
