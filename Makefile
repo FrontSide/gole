@@ -8,6 +8,7 @@ clean: stop
 	cd gole && go clean
 
 prepare:
+	echo "Gopath is: $(GOPATH)"
 	mkdir -p $$GOPATH/src || true
 	rm $$(echo $$GOPATH | cut -d ":" -f 1)/src/gole || true
 	ln -s $$(pwd)/gole $$(echo $$GOPATH | cut -d ":" -f 1)/src/ 
