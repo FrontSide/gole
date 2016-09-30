@@ -127,6 +127,13 @@ func TileIsCenterTile(verticalIdx int, horizontalIdx int) bool {
 	return (verticalIdx == (VERTICAL_TILES_AMOUNT-1)/2 && horizontalIdx == (HORIZONTAL_TILES_AMOUNT-1)/2)
 }
 
+func AreValidBoardCoordinates(verticalIdx int, horizontalIdx int) bool {
+	// Tell whether the given indexes are within the bounds of the board
+	return (verticalIdx < VERTICAL_TILES_AMOUNT) &&
+		(horizontalIdx < HORIZONTAL_TILES_AMOUNT) &&
+		(verticalIdx > -1) && (horizontalIdx > -1)
+}
+
 func GetCleanTiles() [][]Tile {
 	// Create a initial 2-dimensional array of board tiles.
 	// Requires:
@@ -349,9 +356,13 @@ func IsConnectedToCenterTile(verticalTileIdx int, horizontalTileIdx int, tiles [
 		}
 	}
 
+	if ! AreValidBoardCoordinates(verticalTileIdx, horizontalTileIdx) {
+		return false
+	}
+
 	alreadyCheckedTilesMap[verticalTileIdx][horizontalTileIdx] = true
 
-	if (verticalTileIdx == (VERTICAL_TILES_AMOUNT-1)/2) && (horizontalTileIdx == (HORIZONTAL_TILES_AMOUNT-1)/2) {
+	if (TileIsCenterTile(verticalTileIdx, horizontalTileIdx)) {
 		return true
 	}
 
