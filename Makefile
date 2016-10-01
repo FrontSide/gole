@@ -1,4 +1,8 @@
-export GOPATH=$(HOME)/.go
+export GOPATH := $(HOME)/.go
+export GOLE_PATH := $$(echo $$GOPATH | cut -d ":" -f 1)/src/gole
+export PATH := $(PATH):$(GOPATH)/bin
+export GOLE_GIT_PATH := $(pwd)
+
 stop:
 	kill -9 $$(cat server.pid) $$(cat client.pid) || true
 
@@ -10,20 +14,21 @@ clean: stop
 prepare:
 	echo "Gopath is: $(GOPATH)"
 	mkdir -p $$GOPATH/src || true
-	rm $$(echo $$GOPATH | cut -d ":" -f 1)/src/gole || true
-	ln -s $$(pwd)/gole $$(echo $$GOPATH | cut -d ":" -f 1)/src/ 
-	cd $$(echo $$GOPATH | cut -d ":" -f 1)/src/gole  && go get
+	echo "Gole Path is: $(GOLE_PATH)"
+	rm -r $(GOLE_PATH) || true
+	cp -r $$(pwd)/gole $$(echo $$GOPATH | cut -d ":" -f 1)/src/ 
+	cd $(GOLE_PATH) && go get
 
 test: prepare
-	cd gole && go test
+	cd $(GOLE_PATH) && go test
 
 build: clean prepare
-	cd gole && go build 
-	cd ..
+	cd $(GOLE_PATH) && go build 
+	cd $(GOLE_GIT_PATH)
 	touch server.pid client.pid
 
 start:
-	gole/gole & echo $$! >> server.pid 
+	gole & echo $$! >> server.pid 
 	cd client 
 	http-server -p 8080 & echo $$! >> client.pid
 	cd ..
