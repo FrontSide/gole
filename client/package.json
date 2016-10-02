@@ -1,0 +1,32 @@
+{
+  "name": "gole-client",
+  "version": "0.1.0",
+  "description": "Desktop client for Gole - The game with the words.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitlab.com/FrontSide1/scrabble.git"
+  },
+  "keywords": [
+    "Electron",
+    "Gole",
+    "Word",
+    "Game"
+  ],
+  "author": "David Rieger",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://gitlab.com/FrontSide1/scrabble/issues"
+  },
+  "homepage": "https://gitlab.com/FrontSide1/scrabble#readme",
+  "devDependencies": {
+    "electron": "^1.3.4",
+    "jquery": "2.1.4",
+    "jquery-ui": "1.12.0",
+    "bootstrap": "3.3.4",
+    "js-cookie": "2.1.2"
+  }
+}

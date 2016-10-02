@@ -11,7 +11,7 @@ clean: stop
 	rm gole/gole || true
 	cd gole && go clean
 
-prepare:
+prepare-server:
 	echo "Gopath is: $(GOPATH)"
 	mkdir -p $$GOPATH/src || true
 	echo "Gole Path is: $(GOLE_PATH)"
@@ -19,7 +19,12 @@ prepare:
 	cp -r $$(pwd)/gole $$(echo $$GOPATH | cut -d ":" -f 1)/src/ 
 	cd $(GOLE_PATH) && go get
 
-test: prepare
+prepare-client:
+	cd client && npm install
+
+prepare: prepare-server prepare-client
+
+test: prepare-server
 	cd $(GOLE_PATH) && go test
 
 build: clean prepare
@@ -27,11 +32,11 @@ build: clean prepare
 	cd $(GOLE_GIT_PATH)
 	touch server.pid client.pid
 
-start:
+start-server:
 	gole & echo $$! >> server.pid 
-	cd client 
-	http-server -p 8080 & echo $$! >> client.pid
+
+start-client:	
+	cd client && npm start & echo $$! >> ../client.pid
 	cd ..
 
-open: start
-	open http://127.0.0.1:8080/client/game.html || xdg-open http://127.0.0.1:8080/client/game.html
+start: start-server start-client

@@ -1,6 +1,6 @@
 before_script:
     - apt-get update -qq
-    - apt-get install -y -qq golang 
+    - apt-get install -y -qq golang npm
 
 goleserver:
     script:
