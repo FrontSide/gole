@@ -4,4 +4,3 @@
  */
 
 window.$ = window.jQuery = require('jquery');
-window.Cookies = require('js-cookie');

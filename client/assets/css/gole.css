@@ -3,9 +3,10 @@ body {
 }
 
 div.gole-game-container {
-        margin-left: 20px;
+        margin-left: auto;
+        margin-right: auto;
         margin-top: 20px;
-        text-align:center;
+        text-align: center;
         height: auto;
 }
 
@@ -134,26 +135,36 @@ button.gole-gameplay-button {
         border: 1px #555 solid;
         border-radius: 5px;
         box-shadow: 1px 1px 3px -1px #555;
-        padding: 15px 32px;
+        padding: 5px 5px;
         text-align: center;
         text-decoration: none;
         display: inline-block;
         font-size: 16px;
         margin: 5px;
-        width: 95%;
         background-color: #FFF;
+        width: 150px;
+        float: left;
 }
 
 button.gole-gameplay-button:hover {
         background-color: #EFEFFF;
 }
 
+button.gole-confirm-word-button {
+        color: #222;
+}
+
+button.gole-start-new-game-button {
+        color: #222;
+}
+
 div.gole-board-container {
-        margin-left: 100px;
+        margin-left: auto;
+        margin-right: auto;
         margin-top: 50px;
         text-align:center;
         height: auto;
-        float: left;
+        display: inline-block;
 }
 
 div.gole-board-tile {
@@ -249,36 +260,42 @@ div.gole-tile-letter-value-container {
 }
 
 div.gole-active-player-container {
-        min-width: 300px;
+        width: 100%;
+        left: 0px;
+        border-radius: 5px 5px 0px 0px;
         height: 100px;
-        float: right;
+        position: fixed;
         margin-top: 50px;
-        margin-right: 100px;
-        padding: 20px;
+        padding: 10px;
         padding-top: 5px;
         text-align: left;
+        background-color: #223;
+        bottom: 0px;
+        color: #DDD;
+        box-shadow: 0px 0px 5px #222;
+        border: solid 1px #DDD;
 }
 
 div.gole-active-player-name-container {
-        width: 50%;
+        width: 20%;
         font-size: 20px;
         float: left;
         margin-bottom: 10px;
 }
 
 div.gole-active-player-hand-container {
-        width: 100%;
-        clear: both;
-        background-color: #EDEDED;
-        height: 50px;
-        border-top: solid 2px #AAA;
+        width: 30%;
+        min-width: 400px;
+        float: left;
+        background-color: #3F3F4F;
         padding-top: 2px;
+        border-bottom: 1px solid #AAA;
 }
 
 div.gole-active-player-points-container {
         font-size: 20px;
         float: right;
-        width: 40%;
+        width: 10%;
         text-align: right;
         margin-right: 10px;
 }

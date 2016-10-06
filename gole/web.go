@@ -12,10 +12,16 @@ type CreateNewGameRequestBody struct {
 	PlayerNames []string
 }
 
+type ReplaceWildcardRequestBody struct {
+	LetterId string
+	ReplacementLetter rune
+	GameId string
+}
+
 type PlaceLetterRequestBody struct {
 	TileXCoordinate int
 	TileYCoordinate int
-	Letter          rune
+	LetterId        string
 	IsWildcard      bool
 	GameId          string
 }
@@ -86,7 +92,70 @@ func GetBoardHandler(responseWriter http.ResponseWriter, request *http.Request) 
 	responseWriter.Write(boardJson)
 }
 
+func ReplaceWildcardHandler(responseWriter http.ResponseWriter, request *http.Request) {
+	// Handle the client request to replace a wildcard letter tile with an
+	// actuall letter
+	// Requires:
+	// - An incoming HTTP Request Body with values to all keys
+	//   as they are defined in the ReplaceWildcardRequestBody struct
+	//   (matching key name, valid data type)
+	// Guarantees:
+	// - Call the ReplaceWildcard function that will replace the wildcard
+	//   character on a tile with an actual letter
+	// - Will return HTTP 200 and the id of the letter struct
+	//   if the replacement was successful
+	// - Will return HTTP 500 if there has been an error either in the
+	//   request handler function or the game loggic.
+
+	requestBodyDecoder := json.NewDecoder(request.Body)
+	var requestBody ReplaceWildcardRequestBody
+	err := requestBodyDecoder.Decode(&requestBody)
+	if err != nil {
+		http.Error(responseWriter, err.Error(), 500)
+	}
+
+	var game *Game
+	game, err = GetGameByUUID(requestBody.GameId)
+
+	if err != nil {
+		log.Println("Available ids are: ", games)
+		http.Error(responseWriter, err.Error(), 500)
+		return
+	}
+
+	var activePlayer Player
+	activePlayer, err = GetActivePlayer(game)
+	if err != nil {
+		http.Error(responseWriter, "Error when trying to retrieve player.", 500)
+		return
+	}
+
+	err = activePlayer.ReplaceWildcard(requestBody.LetterId, requestBody.ReplacementLetter)
+
+	if err != nil {
+		http.Error(responseWriter, err.Error(), 500)
+		return
+	}
+
+	responseWriter.Write([]byte(requestBody.LetterId))
+
+}
+
 func PlaceLetterHandler(responseWriter http.ResponseWriter, request *http.Request) {
+	// Handle the clien request to place a letter on the board
+	// Requires:
+	// - An incoming HTTP Request Body with values to all keys
+	//   as they are defined in the PlaceLetterRequestBody struct
+	//   (matching key name, valid data type)
+	// Guarantees:
+	// - Call the PlaceLetter function that will handle the
+	//   game logic of placing a letter from the player
+	//   hand on a board tile
+	// - Will return with code 200 and the GameID if the letter was
+	//   placed successfully
+	// - Will respond with code 500 if there has been an error in either
+	//   the HTTP request handler function or the game logic function.
+
 	requestBodyDecoder := json.NewDecoder(request.Body)
 	var requestBody PlaceLetterRequestBody
 	err := requestBodyDecoder.Decode(&requestBody)
@@ -103,7 +172,8 @@ func PlaceLetterHandler(responseWriter http.ResponseWriter, request *http.Reques
 		return
 	}
 
-	err = PlaceLetter(game, requestBody.TileYCoordinate, requestBody.TileXCoordinate, requestBody.Letter, requestBody.IsWildcard)
+	err = PlaceLetter(game, requestBody.TileYCoordinate,
+		requestBody.TileXCoordinate, requestBody.LetterId)
 
 	if err != nil {
 		http.Error(responseWriter, err.Error(), 500)
@@ -228,18 +298,15 @@ func GetActivePlayerHandler(responseWriter http.ResponseWriter, request *http.Re
 	}
 	log.Println(string(playerList))
 
-	var player Player
-	log.Println("Get Player with index " + string(game.PlayerIdxWithTurn))
-	if game.PlayerIdxWithTurn < len(game.Players) && game.PlayerIdxWithTurn >= 0 {
-		player = game.Players[game.PlayerIdxWithTurn]
-	} else {
-		log.Println("Player with index " + string(game.PlayerIdxWithTurn) + " is not available.")
+	var activePlayer Player
+	activePlayer, err = GetActivePlayer(game)
+	if err != nil {
 		http.Error(responseWriter, "Error when trying to retrieve player.", 500)
 		return
 	}
 
 	var playerJson []byte
-	playerJson, err = json.Marshal(player)
+	playerJson, err = json.Marshal(activePlayer)
 	if err != nil {
 		http.Error(responseWriter, err.Error(), 500)
 		return
@@ -282,6 +349,7 @@ func StartWebServer() {
 	r.HandleFunc("/new", CreateNewGameHandler).Methods("POST")
 	r.HandleFunc("/{id}/board.json", GetBoardHandler).Methods("GET")
 	r.HandleFunc("/{id}/player.json", GetActivePlayerHandler).Methods("GET")
+	r.HandleFunc("/replace", ReplaceWildcardHandler).Methods("POST")
 	r.HandleFunc("/place", PlaceLetterHandler).Methods("POST")
 	r.HandleFunc("/remove", RemoveLetterHandler).Methods("POST")
 	r.HandleFunc("/confirm", ConfirmWordHandler).Methods("POST")

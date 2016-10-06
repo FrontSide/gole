@@ -366,10 +366,6 @@ func IsConnectedToCenterTile(verticalTileIdx int, horizontalTileIdx int, tiles [
 		return true
 	}
 
-	if verticalTileIdx < 0 || horizontalTileIdx < 0 || verticalTileIdx >= VERTICAL_TILES_AMOUNT || horizontalTileIdx >= HORIZONTAL_TILES_AMOUNT {
-		return false
-	}
-
 	_, err := GetLetterFromTile(verticalTileIdx, horizontalTileIdx, tiles)
 	if err != nil {
 		return false
@@ -378,19 +374,19 @@ func IsConnectedToCenterTile(verticalTileIdx int, horizontalTileIdx int, tiles [
 	// Follow all vertically and horizontally adjacent tiles.
 	// Return true as soon as a connection has been found
 	// through a conneted tile
-	if (!alreadyCheckedTilesMap[verticalTileIdx+1][horizontalTileIdx]) && IsConnectedToCenterTile(verticalTileIdx+1, horizontalTileIdx, tiles, alreadyCheckedTilesMap) {
+	if AreValidBoardCoordinates(verticalTileIdx+1, horizontalTileIdx) && !alreadyCheckedTilesMap[verticalTileIdx+1][horizontalTileIdx] && IsConnectedToCenterTile(verticalTileIdx+1, horizontalTileIdx, tiles, alreadyCheckedTilesMap) {
 		return true
 	}
 
-	if (!alreadyCheckedTilesMap[verticalTileIdx-1][horizontalTileIdx]) && IsConnectedToCenterTile(verticalTileIdx-1, horizontalTileIdx, tiles, alreadyCheckedTilesMap) {
+	if AreValidBoardCoordinates(verticalTileIdx-1, horizontalTileIdx) && !alreadyCheckedTilesMap[verticalTileIdx-1][horizontalTileIdx] && IsConnectedToCenterTile(verticalTileIdx-1, horizontalTileIdx, tiles, alreadyCheckedTilesMap) {
 		return true
 	}
 
-	if (!alreadyCheckedTilesMap[verticalTileIdx][horizontalTileIdx+1]) && IsConnectedToCenterTile(verticalTileIdx, horizontalTileIdx+1, tiles, alreadyCheckedTilesMap) {
+	if AreValidBoardCoordinates(verticalTileIdx, horizontalTileIdx+1) && !alreadyCheckedTilesMap[verticalTileIdx][horizontalTileIdx+1] && IsConnectedToCenterTile(verticalTileIdx, horizontalTileIdx+1, tiles, alreadyCheckedTilesMap) {
 		return true
 	}
 
-	if (!alreadyCheckedTilesMap[verticalTileIdx][horizontalTileIdx-1]) && IsConnectedToCenterTile(verticalTileIdx, horizontalTileIdx-1, tiles, alreadyCheckedTilesMap) {
+	if AreValidBoardCoordinates(verticalTileIdx, horizontalTileIdx-1) && !alreadyCheckedTilesMap[verticalTileIdx][horizontalTileIdx-1] && IsConnectedToCenterTile(verticalTileIdx, horizontalTileIdx-1, tiles, alreadyCheckedTilesMap) {
 		return true
 	}
 
@@ -398,18 +394,15 @@ func IsConnectedToCenterTile(verticalTileIdx int, horizontalTileIdx int, tiles [
 
 }
 
-func IsLegalPlacement(verticalTileIdx int, horizontalTileIdx int, letter rune, tiles [][]Tile) (bool, string) {
-	// check whether the given letter can be placed on the given tile
-	// without actually placing it there.
+func IsLegalPlacement(verticalTileIdx int, horizontalTileIdx int, tiles [][]Tile) (bool, string) {
+	// Check whether the letter can be placed on a given tile.
 	//
 	// Guarantees:
 	// - Return true if placement is possible, otherwise false
-	// - Returns a string as second parameter describing why the placement is
+	// - Return a string as second parameter describing why the placement is
 	//   illegal, otherwise emptystring.
-
-	if !IsLegalLetter(letter) {
-		return false, "Character illegal."
-	}
+	// - This function does not consider any letters but only the location
+	//   on the board tile
 
 	// If the center tile is empty, it is the only tile
 	// onto which a letter can be placed.
@@ -481,7 +474,7 @@ func (game *Game) UpdatePlacementLegalityOfAllTiles() {
 			// Instead we need to actually change the value on the original
 			// struct that we want to manipulate
 			game.Tiles[verticalIdx][horizontalIdx].PlacementIsLegal, _ =
-				IsLegalPlacement(verticalIdx, horizontalIdx, 'a', game.Tiles)
+				IsLegalPlacement(verticalIdx, horizontalIdx, game.Tiles)
 		}
 	}
 

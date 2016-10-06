@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"gole/golelibs"
 )
 
 var games []Game
@@ -40,7 +41,7 @@ func StartNewGame(playerNames ...string) (string, error) {
 	}
 
 	game := &Game{}
-	game.Id = GetNewUUID()
+	game.Id = golelibs.GetNewUUID()
 
 	// Letter set needs to be generated before Players are added
 	// since letters need to be taken off the set.

@@ -10,22 +10,81 @@ type Player struct {
 	LettersInHand []Letter
 }
 
-func (player *Player) RemoveLetterFromHand(letter rune) error {
-	// Remove the first occurrenct of the given letter from the players hand
-	// Throw an error if the letter does not exist in the set
-	var idxOfLetterToRemove = -1
+func (player *Player) ReplaceWildcard(letterId string, letterCharacter rune) error {
+	// Replace the wildcard character on a letter with the given
+	// id with a normal letter.
+	// Requires:
+	// - The given letterId needs to be the id of a wildcard letter
+	//   in the hand of the currently active player and must unsubstituted
+	//   i.e. this function can only be called once for one letterId.
+	// Guarantees:
+	// - Will replace the character on a wildcard letter in the letter
+	//   struct with the given id
+	// - Will return an error if the letterId does not refer to a letter
+	//   in the active players hand with a wildcard character on it.
+	// - Will return an error if the given letter character is not
+	//   a valid character in the alphabet.
+	isWildcardLetter, err := player.IsRawWildcardLetter(letterId)
+
+	if err != nil {
+		return err
+	}
+
+	if ! isWildcardLetter {
+		return errors.New("Cannot replace letter on non-wildcard letter.")
+	}
+
+	// Check if the given letterCharacter is a valid letter in the
+	// alphabet by trying to turn it into a Letter struct.
+	_, err = GetLetterStructFromRune(letterCharacter)
+	if err != nil {
+		return err
+	}
+
 	for idx, letterInHand := range player.LettersInHand {
-		if letterInHand.Character == letter {
-			idxOfLetterToRemove = idx
+		if letterInHand.Id == letterId {
+			player.LettersInHand[idx].Character = letterCharacter
+			return nil
 		}
 	}
 
-	if idxOfLetterToRemove == -1 {
-		return errors.New("Player has no letter " + string(letter) + " in hand.")
+	return errors.New("The Wildcard Replacement has failed for an unknown reason.")
+
+}
+
+func (player *Player) IsRawWildcardLetter(letterId string) (bool, error) {
+	// Tell whether the letter with the given letterId is a wildcard tile,
+	// that has not yet been substituted with a real letter.
+	// Guarantees:
+	// - Return true or false to indicate whether the letter with given
+	//   is is an unsubstituted wildcard letter
+	// - Return an error as second return parameter it the given ID does
+	//   not refer to a letter in the players hand.
+	for _, letterInHand := range player.LettersInHand {
+		if letterInHand.Id == letterId {
+			return letterInHand.Character == WILDCARD_CHARACTER, nil
+		}
+	}
+	return false, errors.New("Player has no letter with ID" + string(letterId) + " in hand.")
+}
+
+func (player *Player) PopLetterFromHand(letterId string) (Letter, error) {
+	// Remove the letter with given letterId from the Player's hand
+	// and return it
+	// Guarantees:
+	// - Remove the letter struct with the given Id
+	//   from the LettersInHand slice
+	// - Return the full Letter struct that has been removed from the hand
+	// - Return an error if a letter with the given Id does not exist
+	//   in the Player's LettersInHand slice. The player's hand is unmodified.
+	for idx, letterInHand := range player.LettersInHand {
+		if letterInHand.Id == letterId {
+			player.LettersInHand = append(player.LettersInHand[:idx], player.LettersInHand[idx+1:]...)
+			return letterInHand, nil
+		}
 	}
 
-	player.LettersInHand = append(player.LettersInHand[:idxOfLetterToRemove], player.LettersInHand[idxOfLetterToRemove+1:]...)
-	return nil
+	return Letter{}, errors.New("Player has no letter with ID" + string(letterId) + " in hand.")
 
 }
 

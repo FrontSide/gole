@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
+	"gole/golelibs"
 )
 
 type LetterAttributes struct {
@@ -15,6 +16,7 @@ type LetterAttributes struct {
 }
 
 type Letter struct {
+	Id string
 	Character  rune
 	Attributes LetterAttributes
 }
@@ -79,24 +81,20 @@ func GetFullLetterSet() ([]Letter, error) {
 	return fullShuffledLetterSet, nil
 }
 
-func IsLegalLetter(letter rune) bool {
-	// Check whether a given letter is an existing character in the letter set
-	for legalLetter, _ := range letterDistribution {
-		if rune(legalLetter) == letter {
-			return true
-		}
-	}
-	return false
-}
-
 func GetLetterStructFromRune(letter rune) (Letter, error) {
-	// Return the full letter struct for a letter
-	// passed as a rune
+	// Return the full letter struct for a letter passed as a rune
+	// Requires:
+	// - Given rune needs to be an existing key in the letterDistribution map
+	// Guarantees:
+	// - Return the Letter Struct representation of the given character (rune)
+	// - Return en error if the given letter rune is not a valid
+	//   character in the alphabet.
 	var letterStruct Letter
 	if _, ok := letterDistribution[letter]; !ok {
 		return Letter{}, errors.New("Letter could not be found.")
 	}
 	letterStruct.Attributes = letterDistribution[letter]
 	letterStruct.Character = letter
+	letterStruct.Id = golelibs.GetNewUUID()
 	return letterStruct, nil
 }
