@@ -2,12 +2,105 @@ package main
 
 import (
 	"errors"
+	"math/rand"
+	"fmt"
+	"time"
+	"log"
 )
 
 type Player struct {
 	Name          string
 	Points        int
 	LettersInHand []Letter
+}
+
+func (player *Player) GetLetterFromHandById(letterId string) (Letter, error) {
+	// Retrieve the letter with the given letterId from the player's hand
+	// Guarantees:
+	// - Return the letter struct from the player's LettersInHand slice
+	//   that has the given letterId. nil as second return parameter.
+	// - Return an empty struct and an error as second parameter if
+	//   no letter with the given Id was found.
+
+	log.Println("Get letter from hand by id :: ", letterId)
+
+	for _, letter := range player.LettersInHand {
+		if letter.Id == letterId {
+			return letter, nil
+		}
+	}
+
+	return Letter{}, errors.New(fmt.Sprintf(
+		"Letter with ID %s could not be found in player's hand.", letterId))
+
+}
+
+func (player *Player) SortHand(letterIds []string) error {
+	// Sort the player's letter slice according to the arrangement
+	// of the letterIds slice.
+	// Requires:
+	// - A slice of letterIds that consists of only ids of the letters
+	//   the player had in the hand. The amount of letterIds in this
+	//   slice must match the amount of letters in the players current
+	//   lettersInHand slice.
+	// Guarantees:
+	// - Rearranges the LettersInHand slice of the player accoring to the
+	//   arrangement of the letterIds slice passed to this function.
+	// - Returns an error or nil
+	//   depending on whether the action was successful
+
+	log.Println("Sort hand.")
+
+	if len(letterIds) != len(player.LettersInHand) {
+		return errors.New(
+			"The amount of the given letter IDs does not match " +
+			"the amount of letters in the player's hand.")
+	}
+
+	var rearrangedLettersInHand = make([]Letter, len(player.LettersInHand))
+
+	for idx, letterId := range letterIds {
+		letterToAdd, err := player.GetLetterFromHandById(letterId)
+		if err != nil {
+			return err
+		}
+		rearrangedLettersInHand[idx] = letterToAdd
+	}
+
+	player.LettersInHand = rearrangedLettersInHand
+
+	log.Println("Sorted Hand::")
+	log.Println(player.LettersInHand)
+
+	return nil
+
+}
+
+func (player *Player) ShuffleHand() {
+	// Randomly rearrange the array of letters in the player's hand
+	// Guarantees:
+	// - Rearranges the letter structs stored in the player's
+	//   LettersInHand slice.
+	// - Return nothing
+
+	log.Println("Shuffle hand.")
+
+	var rearrangedLettersInHand = make([]Letter, len(player.LettersInHand))
+
+	// Get a slice of random indexes with the length of the player's
+	// LettersInHand slice
+	rand.Seed(time.Now().UTC().UnixNano())
+	randomIndexes := rand.Perm(len(player.LettersInHand))
+
+	for originalIdx, newIdx := range randomIndexes {
+		rearrangedLettersInHand[newIdx] = player.LettersInHand[originalIdx]
+	}
+
+	player.LettersInHand = rearrangedLettersInHand
+
+	log.Println("Shuffled Hand::")
+	log.Println(player.LettersInHand)
+
 }
 
 func (player *Player) ReplaceWildcard(letterId string, letterCharacter rune) error {

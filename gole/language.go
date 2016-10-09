@@ -23,9 +23,9 @@ type Letter struct {
 
 const WILDCARD_CHARACTER rune = '*'
 
-var lettersAmount = 100
+var lettersAmount = 118
 var letterDistribution = map[rune]LetterAttributes{
-	WILDCARD_CHARACTER: {2, 0},
+	WILDCARD_CHARACTER: {20, 0},
 	'a':                {9, 1},
 	'b':                {2, 3},
 	'c':                {2, 3},
@@ -73,9 +73,9 @@ func GetFullLetterSet() ([]Letter, error) {
 	}
 	// Shuffle string
 	rand.Seed(time.Now().UTC().UnixNano())
-	randomIndices := rand.Perm(letterCount)
+	randomIndexes := rand.Perm(letterCount)
 	var fullShuffledLetterSet []Letter = make([]Letter, letterCount)
-	for originalIndex, newRandomIndex := range randomIndices {
+	for originalIndex, newRandomIndex := range randomIndexes {
 		fullShuffledLetterSet[newRandomIndex] = fullLetterSet[originalIndex]
 	}
 	return fullShuffledLetterSet, nil

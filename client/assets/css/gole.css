@@ -1,5 +1,12 @@
+html, body {
+        height:100%;
+}
+
 body {
-        background-color: #FAFAFA;
+        background: linear-gradient(to bottom left, #A9EFFC, #4682B4);
+        background-repeat: no-repeat;
+        width: 100%;
+        position: relative;
 }
 
 div.gole-game-container {
@@ -8,6 +15,50 @@ div.gole-game-container {
         margin-top: 20px;
         text-align: center;
         height: auto;
+}
+
+div.gole-control-panel-container {
+        position: fixed;
+        left: 10px;
+        top: 10px;
+        width: 30%;
+        height: 40px;
+}
+
+div.gole-control-panel-button-container {
+        width: 30%;
+        position: relative;
+        float: left;
+}
+
+div.gole-control-panel-button-container:hover {
+        font-weight: bold;
+        cursor: pointer;
+}
+
+span.gole-control-panel-button {
+        color: #FFF;
+        font-size: 12px;
+        text-decoration: none;
+}
+
+span.gole-control-panel-button > i {
+        font-size: 20px;
+}
+
+div.gole-control-panel-button-container:hover > span.gole-control-panel-button > i {
+        -webkit-animation: symbol-quick-rotate-animation  0.5s linear 1 forwards;
+        animation: symbol-quick-rotate-animation  0.5s linear 1 forwards;
+}
+
+@-webkit-keyframes symbol-quick-rotate-animation {
+        0% {  -webkit-transform: rotate(0deg); }
+        100% {  -webkit-transform: rotate(360deg);}
+}
+
+@keyframes symbol-quick-rotate-animation {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg);}
 }
 
 div.gole-prompt-container {
@@ -158,6 +209,12 @@ button.gole-start-new-game-button {
         color: #222;
 }
 
+button.gole-shuffle-hand-button {
+        width: 45px;
+        height: 45px;
+        color: #A22;
+}
+
 div.gole-board-container {
         margin-left: auto;
         margin-right: auto;
@@ -165,6 +222,9 @@ div.gole-board-container {
         text-align:center;
         height: auto;
         display: inline-block;
+        background-color: rgba(255, 255, 255, 0.8);
+        box-shadow: 0px 0px 20px #000;
+        border: solid 1px #FFF;
 }
 
 div.gole-board-tile {
@@ -172,7 +232,7 @@ div.gole-board-tile {
         margin-right: auto;
         width: 45px;
         height: 45px;
-        border: solid 1px #DDD;
+        border: solid 1px #FFF;
         float:left;
         font-size: 20px;
         font-weight: bold;
@@ -184,19 +244,19 @@ div.gole-board-tile-no-tile {
 }
 
 div.gole-board-tile-effect-double-word {
-        background-color: #DDF;
+        background-color: rgba(150, 150, 255, 0.2);
 }
 
 div.gole-board-tile-effect-triple-word {
-        background-color: #FBB;
+        background-color: rgba(255, 100, 100, 1);
 }
 
 div.gole-board-tile-effect-double-letter {
-        background-color: #EEF;
+        background-color: rgba(200, 200, 255, 0.2);
 }
 
 div.gole-board-tile-effect-triple-letter {
-        background-color: #FEE;
+        background-color: rgba(170, 255, 170, 0.2);
 }
 
 div.gole-board-tile-effect-center {
@@ -204,7 +264,7 @@ div.gole-board-tile-effect-center {
 }
 
 div.gole-board-tile-legal-placement.gole-board-tile-legal-placement-show {
-        background-color: #FFF;
+        border-color: #EFF;
 }
 
 div.gole-board-tile-illegal-placement.gole-board-tile-legal-placement-show {
@@ -290,6 +350,7 @@ div.gole-active-player-hand-container {
         background-color: #3F3F4F;
         padding-top: 2px;
         border-bottom: 1px solid #AAA;
+        height: 50px;
 }
 
 div.gole-active-player-points-container {

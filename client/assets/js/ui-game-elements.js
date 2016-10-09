@@ -2,6 +2,17 @@
  * Defines ngameplay ui elements like the board and player hand.
  */
 
+function initControlPanel() {
+        // Execute initial configuration
+        // for the gole control panel
+
+        $("#gole-start-new-game-button").click(function(){
+                console.log("new game button pressed")
+                promptNewGame(initNewGame)
+        })
+
+}
+
 function drawBoard() {
 
          //Clear Board container
@@ -57,7 +68,14 @@ function drawBoard() {
                                  var tileDiv = $("<div>", {class: "gole-tile gole-tile-margin"})
                                  var letterDiv = $("<div>", {class: "gole-tile-letter-character-container"})
 
-                                 letterDiv.html(String.fromCharCode(tile.Letter.Character).toUpperCase())
+                                 var characterToDisplay
+                                 if (tile.Letter.Character == WILDCARD_CHARACTER.charCodeAt()) {
+                                         characterToDisplay = '<i class="fa fa-star-o" aria-hidden="true"></i>'
+                                 } else {
+                                         characterToDisplay = String.fromCharCode(tile.Letter.Character).toUpperCase()
+                                 }
+
+                                 letterDiv.html(characterToDisplay)
 
                                  var letterValueDiv = $("<div>", {class: "gole-tile-letter-value-container"})
                                  letterValueDiv.html(tile.Letter.Attributes.PointValue)
@@ -78,8 +96,12 @@ function drawBoard() {
                                  })
 
                                  tileDiv.on("dragstart", function(){
-                                         console.log("enter drag away from board :: " + yIdx + ", " + xIdx)
-                                         activateLetter(tile.Letter, this, yIdx, xIdx)
+                                         if (activatedLetter != tile.Letter) {
+                                                 console.log("enter drag away from board :: " + yIdx + ", " + xIdx)
+                                                 activateLetter(tile.Letter, this, yIdx, xIdx)
+                                                 console.log("invoke remove letter")
+                                                 removeLetter(null)
+                                         }
                                  })
 
                              } else {
@@ -111,7 +133,7 @@ function drawBoard() {
                                          if (tile.IsLocked) {
                                                  console.log("sorry locked")
                                          } else if (activatedLetter === tile.Letter) {
-                                                 deactivateLetter(tile.Letter, tileDiv)
+                                                 deactivateLetter(tileDiv)
                                          } else {
                                                  activateLetter(tile.Letter, tileDiv)
                                          }
@@ -149,17 +171,15 @@ function drawPlayer() {
              // occurs on the player hand container
              // i.e. player tried to remove letter
              receive: function(event, ui) {
-                 if (removeLetterOrigin.verticalIdx >= 0 && removeLetterOrigin.horizontalIdx >= 0) {
-                     console.log("hand drop action - remove letter")
-                     removeLetter(reload, promptError)
-                 }
-                 deactivateLetter(activatedLetter)
+                 deactivateLetter()
+                 getArrayOfLetterIdsInHand(handContainerDiv, rearrangeLettersInHand ,reload)
              }
          })
 
          $.each(activePlayer.LettersInHand, function(idx, letter) {
 
                  var tileDiv = $("<div>", {class: "gole-tile gole-tile-selectable gole-tile-margin"})
+                 tileDiv.attr('id', letter.Id)
                  var letterDiv = $("<div>", {class: "gole-tile-letter-character-container"})
 
                  tileDiv.draggable({
@@ -169,9 +189,20 @@ function drawPlayer() {
                         connectToSortable: ".gole-active-player-hand-container"
                   })
 
-                 // Go returns the character of a letter tile as an int8 (rune) code
-                 // so we need to convert to string and put it uppercase before printing
-                 letterDiv.html(String.fromCharCode(letter.Character).toUpperCase())
+                 var characterToDisplay
+                 if (letter.Character == WILDCARD_CHARACTER.charCodeAt()) {
+                         // If the letter to display is a wildcard tile we will
+                         // display a special character on the tile and
+                         // add a "isWildcardTile" attribute to the tile Div.
+                         characterToDisplay = '<i class="fa fa-star-o" aria-hidden="true"></i>'
+                         tileDiv.attr('data-isWildcardTile', true)
+                 } else {
+                         // Go returns the character of a letter tile as an int8 (rune) code
+                         // so we need to convert to string and put it uppercase before printing
+                         characterToDisplay = String.fromCharCode(letter.Character).toUpperCase()
+                 }
+
+                 letterDiv.html(characterToDisplay)
 
                  var letterValueDiv = $("<div>", {class: "gole-tile-letter-value-container"})
                  letterValueDiv.html(letter.Attributes.PointValue)
@@ -193,19 +224,18 @@ function drawPlayer() {
                  confirmWord(wordConfirmSuccessRoutine, wordConfirmErrorRoutine, gameOver)
          })
 
-         var startNewGameButton = $("<button>", {class: "gole-gameplay-button gole-start-new-game-button"})
-         startNewGameButton.html("Start New Game")
-         startNewGameButton.click(function(){
-                 console.log("new game button pressed")
-                 promptNewGame(initNewGame)
+         var shuffleHandButton = $("<button>", {class: "gole-gameplay-button gole-shuffle-hand-button"})
+         shuffleHandButton.html('<i class="fa fa-random" aria-hidden="true"></i>')
+         shuffleHandButton.click(function(){
+                 console.log("shuffle hand button pressed")
+                 rearrangeLettersInHand(null, reload)
          })
 
          $("div.gole-active-player-container").append(nameDiv)
          $("div.gole-active-player-container").append(pointsDiv)
+         $("div.gole-active-player-container").append(shuffleHandButton)
          $("div.gole-active-player-container").append(handContainerDiv)
          $("div.gole-active-player-container").append(confirmWordButton)
-         $("div.gole-active-player-container").append(startNewGameButton)
-
 }
 
 function showLegalPlacements() {

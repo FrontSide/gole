@@ -91,7 +91,7 @@ func AddPlayer(playerName string, game *Game) error {
 
 }
 
-func GetActivePlayer(game *Game) (Player, error) {
+func GetActivePlayer(game *Game) (*Player, error) {
 	// Return the struct of the active player
 	// Guarantees:
 	// - Return the Player struct of the player with the index
@@ -100,9 +100,9 @@ func GetActivePlayer(game *Game) (Player, error) {
 
 	log.Println("Get Player with index " + string(game.PlayerIdxWithTurn))
 	if game.PlayerIdxWithTurn < len(game.Players) && game.PlayerIdxWithTurn >= 0 {
-		return game.Players[game.PlayerIdxWithTurn], nil
+		return &game.Players[game.PlayerIdxWithTurn], nil
 	}
-	return Player{}, errors.New(fmt.Sprintf("Player with index %d is not available.", game.PlayerIdxWithTurn))
+	return &Player{}, errors.New(fmt.Sprintf("Player with index %d is not available.", game.PlayerIdxWithTurn))
 
 }
 

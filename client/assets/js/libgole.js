@@ -18,6 +18,7 @@ var activePlayer = {
          Points: null,
          LettersInHand: null
 }
+
 // Active Game Scoreboard
 // playerName: points
 var scoreboard = {}
@@ -61,6 +62,45 @@ function createNewGame() {
 
          console.log("New Game ID:" + game.id);
 
+}
+
+function rearrangeLettersInHand(letterIds, fSuccessCallback) {
+        // Send a request to gole server to rearrange the letters
+        // in the active player's hand.
+        // Requires:
+        // - Nothing, if the letters should be rearranged randomly
+        // - An array containing the new desired arrangement of the
+        //   letters in the active player's hand represented by their letterIds
+        // - A successCallback function to be called if the server returns
+        //   with 200 OK.
+        // Guarantees:
+        // - Sends a request to the gole server to rearrange the active player's
+        //   hand either according to the gieven array of letterIds
+        //   or randomly if no letterIds are given.
+        // - Invoke the successCallback function after the server has
+        //   returned with an HTTP 200.
+
+        $.ajax({
+            async: false,
+            method: "POST",
+            url: server.url + "/hand/sort",
+            data: JSON.stringify(
+                {
+                    "LetterIds": letterIds,
+                    "GameId": game.id
+                }
+            ),
+        })
+        .done(function(id) {
+                console.log("Hand Rearranged")
+                if (fSuccessCallback) {
+                        return fSuccessCallback()
+                }
+                return null
+        })
+        .fail(function(response) {
+                return response
+        })
 
 }
 
@@ -84,7 +124,7 @@ function replaceWildcardLetter(letterCharacterCode, letterId, fSuccessCallback) 
         $.ajax({
             async: false,
             method: "POST",
-            url: server.url + "/replace",
+            url: server.url + "/wildcard/replace",
             data: JSON.stringify(
                 {
                     "LetterId": letterId,
@@ -95,8 +135,7 @@ function replaceWildcardLetter(letterCharacterCode, letterId, fSuccessCallback) 
         })
         .done(function(id) {
             console.log("Wildcard Replaced")
-            fSuccessCallback.apply(null, extraCallbackArguments)
-            return null
+            return fSuccessCallback.apply(null, extraCallbackArguments)
         })
         .fail(function(response) {
             return response
@@ -150,23 +189,16 @@ function placeLetter(replaceWildcardLetterCode, letterId, tilesXCoordinate, tile
 
 }
 
-function removeLetter(fSuccessCallback, fErrorCallback) {
+function removeLetter(fSuccessCallbak) {
          // Requires:
          // - The x and y coordinates of the tile from which the letter
          //   is to be removed to be set in the global
          //   removeLetterOrigin.horizontalIdx and removeLetterOrigin.verticalIdx
          //   variables.
-         // - A callback function fSuccessCallback
-         //   to be called if the request succeeded
-         // - A callback function fErrorCallback
-         //   to be called if the request failed
+         // - Optional: A callback function that is invoked when the
+         //   http response returns a success.
          // Guarantees:
          // - Send request to remove letter to gole server
-         // - Trigger fErrorCallback callback function if request failed
-         //   (non 200 response from gole server) with response text
-         //   as first argument
-         // - Trigger fSuccessCallbak callback function if request succeeded
-         //   (200 response from gole server) without arguments
 
          $.ajax({
              async: false,
@@ -181,12 +213,13 @@ function removeLetter(fSuccessCallback, fErrorCallback) {
              ),
          })
          .done(function(id) {
-             console.log("Letter Removed")
-             fSuccessCallback()
-
+                 console.log("Letter Removed")
+                 if (fSuccessCallbak){
+                         fSuccessCallbak()
+                 }
          })
          .fail(function(response){
-             fErrorCallback(response.responseText)
+                 console.log("Letter Removal Failed.")
          })
 
 }

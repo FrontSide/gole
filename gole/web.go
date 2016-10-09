@@ -12,6 +12,11 @@ type CreateNewGameRequestBody struct {
 	PlayerNames []string
 }
 
+type SortHandRequestBody struct {
+	LetterIds []string
+	GameId string
+}
+
 type ReplaceWildcardRequestBody struct {
 	LetterId string
 	ReplacementLetter rune
@@ -77,7 +82,7 @@ func GetBoardHandler(responseWriter http.ResponseWriter, request *http.Request) 
 	game, err = GetGameByUUID(id)
 
 	if err != nil {
-		log.Println("Available ids are: ", games)
+		log.Println("Not a valid GameID: ", id)
 		http.Error(responseWriter, err.Error(), 500)
 		return
 	}
@@ -91,6 +96,66 @@ func GetBoardHandler(responseWriter http.ResponseWriter, request *http.Request) 
 
 	responseWriter.Write(boardJson)
 }
+
+
+func SortHandHandler(responseWriter http.ResponseWriter, request *http.Request) {
+	// Sort or shuffle the hand of the active player
+	// Requires:
+	// - An incoming HTTP Request Body with values to all keys
+	//   as they are defined in the SortHandRequestBody struct
+	//   (matching key name, valid data type) whereas the LetterIds
+	//   fields may have an empty value. If the value is non empty,
+	//   it must contain a slice of letterIDs of letters from the
+	//   active players hand. The amount of letterIDs must match
+	//   the actual number of letters in the active players hand.
+	// Guarantees:
+	// - If the LetterIDs value is empty, the letters in the active players
+	//   hands are shuffled randomly and stored back to the player's hand.
+	// - If the LatterIDs value is valid and non-empty, the letters in
+	//   the hand of the active player are sorted according to the
+	//   array and stored to the player's hand accordingly.
+	// - If successful, HTTP 200 and the gameId is returned
+	// - If there is an error in either the request handler or the
+	//   game logic, HTTP 500 and the error message is returned.
+
+	requestBodyDecoder := json.NewDecoder(request.Body)
+	var requestBody SortHandRequestBody
+	err := requestBodyDecoder.Decode(&requestBody)
+	if err != nil {
+		http.Error(responseWriter, err.Error(), 500)
+	}
+
+	var game *Game
+	game, err = GetGameByUUID(requestBody.GameId)
+
+	if err != nil {
+		log.Println("Not a valid GameID: ", requestBody.GameId)
+		http.Error(responseWriter, err.Error(), 500)
+		return
+	}
+
+	var activePlayer *Player
+	activePlayer, err = GetActivePlayer(game)
+	if err != nil {
+		http.Error(responseWriter, "Error when trying to retrieve player.", 500)
+		return
+	}
+
+	if requestBody.LetterIds != nil {
+		err = activePlayer.SortHand(requestBody.LetterIds)
+	} else {
+		activePlayer.ShuffleHand()
+	}
+
+	if err != nil {
+		http.Error(responseWriter, err.Error(), 500)
+		return
+	}
+
+	responseWriter.Write([]byte(requestBody.GameId))
+
+}
+
 
 func ReplaceWildcardHandler(responseWriter http.ResponseWriter, request *http.Request) {
 	// Handle the client request to replace a wildcard letter tile with an
@@ -118,12 +183,12 @@ func ReplaceWildcardHandler(responseWriter http.ResponseWriter, request *http.Re
 	game, err = GetGameByUUID(requestBody.GameId)
 
 	if err != nil {
-		log.Println("Available ids are: ", games)
+		log.Println("Not a valid GameID: ", requestBody.GameId)
 		http.Error(responseWriter, err.Error(), 500)
 		return
 	}
 
-	var activePlayer Player
+	var activePlayer *Player
 	activePlayer, err = GetActivePlayer(game)
 	if err != nil {
 		http.Error(responseWriter, "Error when trying to retrieve player.", 500)
@@ -167,7 +232,7 @@ func PlaceLetterHandler(responseWriter http.ResponseWriter, request *http.Reques
 	game, err = GetGameByUUID(requestBody.GameId)
 
 	if err != nil {
-		log.Println("Available ids are: ", games)
+		log.Println("Not a valid GameID: ", requestBody.GameId)
 		http.Error(responseWriter, err.Error(), 500)
 		return
 	}
@@ -196,7 +261,7 @@ func RemoveLetterHandler(responseWriter http.ResponseWriter, request *http.Reque
 	game, err = GetGameByUUID(requestBody.GameId)
 
 	if err != nil {
-		log.Println("Available ids are: ", games)
+		log.Println("Not a valid GameID: ", requestBody.GameId)
 		http.Error(responseWriter, err.Error(), 500)
 		return
 	}
@@ -248,7 +313,7 @@ func ConfirmWordHandler(responseWriter http.ResponseWriter, request *http.Reques
 	game, err = GetGameByUUID(requestBody.GameId)
 
 	if err != nil {
-		log.Println("Available ids are: ", games)
+		log.Println("Not a valid GameID: ", requestBody.GameId)
 		http.Error(responseWriter, err.Error(), HTTP_ERROR_CODE)
 		return
 	}
@@ -257,7 +322,7 @@ func ConfirmWordHandler(responseWriter http.ResponseWriter, request *http.Reques
 	confirmWordResponse.GainedPoints, confirmWordResponse.Words, err = FinishTurn(game)
 
 	if err != nil {
-		log.Println("Available ids are: ", games)
+		log.Println("Not a valid GameID: ", requestBody.GameId)
 		http.Error(responseWriter, err.Error(), HTTP_ERROR_CODE)
 		return
 	}
@@ -285,7 +350,7 @@ func GetActivePlayerHandler(responseWriter http.ResponseWriter, request *http.Re
 	game, err := GetGameByUUID(id)
 
 	if err != nil {
-		log.Println("Available ids are: ", games)
+		log.Println("Not a valid GameID: ", id)
 		http.Error(responseWriter, err.Error(), 500)
 		return
 	}
@@ -298,12 +363,15 @@ func GetActivePlayerHandler(responseWriter http.ResponseWriter, request *http.Re
 	}
 	log.Println(string(playerList))
 
-	var activePlayer Player
+	var activePlayer *Player
 	activePlayer, err = GetActivePlayer(game)
 	if err != nil {
 		http.Error(responseWriter, "Error when trying to retrieve player.", 500)
 		return
 	}
+
+	log.Println("The active player's hand::")
+	log.Println(activePlayer.LettersInHand)
 
 	var playerJson []byte
 	playerJson, err = json.Marshal(activePlayer)
@@ -328,7 +396,7 @@ func GetScoreBoardHandler(responseWriter http.ResponseWriter, request *http.Requ
 	game, err := GetGameByUUID(id)
 
 	if err != nil {
-		log.Println("Available ids are: ", games)
+		log.Println("Not a valid GameID: ", id)
 		http.Error(responseWriter, err.Error(), 500)
 		return
 	}
@@ -349,7 +417,8 @@ func StartWebServer() {
 	r.HandleFunc("/new", CreateNewGameHandler).Methods("POST")
 	r.HandleFunc("/{id}/board.json", GetBoardHandler).Methods("GET")
 	r.HandleFunc("/{id}/player.json", GetActivePlayerHandler).Methods("GET")
-	r.HandleFunc("/replace", ReplaceWildcardHandler).Methods("POST")
+	r.HandleFunc("/wildcard/replace", ReplaceWildcardHandler).Methods("POST")
+	r.HandleFunc("/hand/sort", SortHandHandler).Methods("POST")
 	r.HandleFunc("/place", PlaceLetterHandler).Methods("POST")
 	r.HandleFunc("/remove", RemoveLetterHandler).Methods("POST")
 	r.HandleFunc("/confirm", ConfirmWordHandler).Methods("POST")
