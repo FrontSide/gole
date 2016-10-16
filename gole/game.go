@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"gole/golelibs"
 	"log"
-	"reflect"
 	"strings"
 )
 
@@ -263,19 +262,28 @@ func FinishTurn(game *Game) (int, []string, error) {
 	//   and nil for error
 	// - If turn was unsuccessful, return -1, nil and the error
 
-	// Stores the tiles of the words that have been successfully confirmed
-	// in this round
-	var confirmedHorizontalWordTiles []Tile
-	var confirmedVerticalWordTiles []Tile
-
 	// Stores the words that have been successfully confirmed
 	// in this round
-	var confirmedHorizontalWord string
-	var confirmedVerticalWord string
+	var confirmedWords []string
 
+    // Stores the points that have been gaines in this round.
+    // After all words have been confirmed,
+    // these points will be accounted to the player.
 	var points int
 
-	
+    newWordsTiles, err := game.GetNewWordsFromBoard()
+    if err != nil {
+        return -1, nil, err
+    }
+
+    for _, wordTiles := range newWordsTiles {
+        pointsForWord, newConfirmdWord, err := GetPointsForWord(wordTiles)
+        if err != nil {
+            return -1, nil, err
+        }
+        points += pointsForWord
+        confirmedWords = append(confirmedWords, newConfirmdWord)
+    }
 
 	// Add earned points to current player
 	game.Players[game.PlayerIdxWithTurn].Points += points

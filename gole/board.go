@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"math"
+    "fmt"
 )
 
 var VERTICAL_TILES_AMOUNT int = 15
@@ -39,6 +40,30 @@ const (
 	NO_TILE_EFFECT
 	CENTER_TILE_EFFECT // not really an effect but a special tile
 )
+
+func GetIdStringForTileSlice(tiles []Tile) string {
+    // Get a string of concatenated IDs from all
+    // letters in a slice of tiles.
+    // This function can be used to easily compare the
+    // quality of two slices of tiles without the need
+    // to compare the whole tile slice.
+    //
+    // Requires:
+    // - A slice of tiles with Letters in them
+    // Guarantees:
+    // - Get the IDs of all Letters from all tiles
+    //   in the given slice and concatenates them to one string
+    // - Return the string concatenation of Letter IDs
+
+    var idConcatenation string;
+
+    for _, tile := range tiles {
+        idConcatenation += tile.Letter.Id
+    }
+
+    return idConcatenation
+
+}
 
 func TileHasTripleWordEffect(verticalIdx int, horizontalIdx int) bool {
 	// Return a bool that indicates whether a tile at given
@@ -351,57 +376,61 @@ func (game *Game) GetNewWordsFromBoard() ([][]Tile, error) {
 
 	// Get all unlocked tiles
 	for verticalIdx, column := range game.Tiles {
+
+        // Each row (i.e. each vertialIdx) can only contain
+        // one new horizontal word,
+        // So we can save some computing power by stopping to look for
+        // horizonal words in the row once one has been found.
+        var horizontalWordFoundInRow bool
+
 		for horizontalIdx, tile := range column {
 			if tile.Letter != (Letter{}) && !tile.IsLocked {
 
-				var wordTiles []Tile
-
 				if !IsConnectedToCenterTile(verticalIdx, horizontalIdx, game.Tiles, nil) {
-					return -1, nil, errors.New(fmt.Sprintf("Tile v:%d,h:%d is isolated from the center tile.", verticalIdx, horizontalIdx))
+					return nil, errors.New(fmt.Sprintf("Tile v:%d,h:%d is isolated from the center tile.", verticalIdx, horizontalIdx))
 				}
 
-				if ! confirmedHorizontalWordTiles {
-					hasHorizontalWord, horizontalWordTiles, _ := GetHorizontalWordAtTile(verticalIdx, horizontalIdx, game.Tiles)
-					if ! hasHorizontalWord {
-						break
-					}
+                var ignoreHorizontalWord, ignoreVerticalWord bool
+                var hasHorizontalWord bool
+                var horizontalWordTiles []Tile
+                if ! horizontalWordFoundInRow {
+			        hasHorizontalWord, horizontalWordTiles, _ = GetHorizontalWordAtTile(verticalIdx, horizontalIdx, game.Tiles)
+                } else {
+                    ignoreHorizontalWord = true
+                }
 
-					horizontalWord := TileSliceToString(horizontalWordTiles)
+                hasVerticalWord, verticalWordTiles, _ := GetVerticalWordAtTile(verticalIdx, horizontalIdx, game.Tiles)
 
-					log.Printf("\nhorizontalTiles: %s", horizontalWord)
+                // Make sure that each word that has been found
+                // is only registered i.e. accounted for once
+                for _, existingIdConcatenation := range newWordsIds {
+                    if existingIdConcatenation == GetIdStringForTileSlice(horizontalWordTiles) {
+                        ignoreHorizontalWord = true
+                    }
+                    if existingIdConcatenation == GetIdStringForTileSlice(verticalWordTiles) {
+                        ignoreVerticalWord = true
+                    }
+                }
 
-					horizontalWordPoints, word, err := GetPointsForWord(horizontalWordTiles)
-					if err != nil {
-						return -1, nil, err
-					}
-					points += horizontalWordPoints
-					confirmedHorizontalWordTiles = horizontalWordTiles
-				}
+                if hasHorizontalWord && ! ignoreHorizontalWord {
+                    newWordsTiles = append(newWordsTiles, horizontalWordTiles)
+                    newWordsIds = append(newWordsIds, GetIdStringForTileSlice(horizontalWordTiles))
+                }
 
-				if ! confirmedVerticalWordTiles {
-
-					hasVerticalWord, verticalWordTiles, _ := GetVerticalWordAtTile(verticalIdx, horizontalIdx, game.Tiles)
-					if ! hasVerticalWord {
-						break
-					}
-
-					verticalWord := TileSliceToString(horizontalWordTiles)
-					log.Printf("\nverticalTiles: %s", verticalWord)
-
-					verticalWordPoints, word, err := GetPointsForWord(verticalWordTiles)
-					if err != nil {
-						return -1, nil, err
-					}
-					points += verticalWordPoints
-					confirmedWords = append(confirmedWords, word)
-					confirmedVerticalWordTiles = append(confirmedWordTiles, verticalWordTiles)
-
-				}
+                if hasVerticalWord && ! ignoreVerticalWord {
+                    newWordsTiles = append(newWordsTiles, verticalWordTiles)
+                    newWordsIds = append(newWordsIds, GetIdStringForTileSlice(verticalWordTiles))
+                }
 
 			}
 		}
 	}
 
+    if len(newWordsTiles) == 0 {
+        return newWordsTiles, errors.New("No new words found on board.")
+    }
+
+    return newWordsTiles, nil
 
 }
 
@@ -533,9 +562,21 @@ func IsLegalPlacement(verticalTileIdx int, horizontalTileIdx int, tiles [][]Tile
 func (game *Game) LockLetters() {
 	// lock all letters on the board so they cannot be
 	// removed by the player anymore
+    // Requires
+    // - A reference to a game struct as base variable
+    // Guarantees:
+    // - Set all tiles on the board to isLocked State
+    // - Remove tile effects from all letters that are
+    //   being locked now so that their effects
+    //   will not be accounted for at succeesing words
+    //   in which the now locked tiles are involved.
+    //   (Each tile effect must only be accounted for the first time
+    //    it is part of a new word)
+
 	for verticalIdx, row := range game.Tiles {
 		for horizontalIdx, tile := range row {
-			if tile.Letter.Character != 0 {
+			if tile.Letter.Character != 0 && ! tile.IsLocked {
+                game.Tiles[verticalIdx][horizontalIdx].Effect = NO_TILE_EFFECT
 				game.Tiles[verticalIdx][horizontalIdx].IsLocked = true
 			}
 		}
