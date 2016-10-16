@@ -323,6 +323,89 @@ func GetVerticalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [][
 
 }
 
+func (game *Game) GetNewWordsFromBoard() ([][]Tile, error) {
+	// Get all unlocked words from the game board
+
+	// Requires:
+	// - A reference to a game instance as base variable
+	//
+	// Guarantees:
+	// - Scans across all tiles to find unlocked ones and retrieve
+	//   the horizontal and vertical word for each unlocked tile
+	//   each unique word will only be accounted for once
+	// - Return each unique found word. A word is defined as
+	//   a slice of letters with a length of at least 2.
+	// - Return en empty two-dimensional tile slice and an error
+	//   if no word has been found or if an unlocked tile is not connected
+	//   to the center tile through other tiles.
+
+	var newWordsTiles [][]Tile
+
+	// Each found words will be stored as a string in this variable
+	// consisting of a concatenation of its letter ids.
+	// This way the uniqueness of a word can be easily determined
+	// (since two new words might be the same
+	//  but consist of different letter tiles)
+	// without the need to execute expensive slice comparisons.
+	var newWordsIds []string
+
+	// Get all unlocked tiles
+	for verticalIdx, column := range game.Tiles {
+		for horizontalIdx, tile := range column {
+			if tile.Letter != (Letter{}) && !tile.IsLocked {
+
+				var wordTiles []Tile
+
+				if !IsConnectedToCenterTile(verticalIdx, horizontalIdx, game.Tiles, nil) {
+					return -1, nil, errors.New(fmt.Sprintf("Tile v:%d,h:%d is isolated from the center tile.", verticalIdx, horizontalIdx))
+				}
+
+				if ! confirmedHorizontalWordTiles {
+					hasHorizontalWord, horizontalWordTiles, _ := GetHorizontalWordAtTile(verticalIdx, horizontalIdx, game.Tiles)
+					if ! hasHorizontalWord {
+						break
+					}
+
+					horizontalWord := TileSliceToString(horizontalWordTiles)
+
+					log.Printf("\nhorizontalTiles: %s", horizontalWord)
+
+					horizontalWordPoints, word, err := GetPointsForWord(horizontalWordTiles)
+					if err != nil {
+						return -1, nil, err
+					}
+					points += horizontalWordPoints
+					confirmedHorizontalWordTiles = horizontalWordTiles
+				}
+
+				if ! confirmedVerticalWordTiles {
+
+					hasVerticalWord, verticalWordTiles, _ := GetVerticalWordAtTile(verticalIdx, horizontalIdx, game.Tiles)
+					if ! hasVerticalWord {
+						break
+					}
+
+					verticalWord := TileSliceToString(horizontalWordTiles)
+					log.Printf("\nverticalTiles: %s", verticalWord)
+
+					verticalWordPoints, word, err := GetPointsForWord(verticalWordTiles)
+					if err != nil {
+						return -1, nil, err
+					}
+					points += verticalWordPoints
+					confirmedWords = append(confirmedWords, word)
+					confirmedVerticalWordTiles = append(confirmedWordTiles, verticalWordTiles)
+
+				}
+
+			}
+		}
+	}
+
+
+}
+
+
 func IsConnectedToCenterTile(verticalTileIdx int, horizontalTileIdx int, tiles [][]Tile, alreadyCheckedTilesMap [][]bool) bool {
 	// check whether a given tile on the board is connected through other tiles
 	// with letters to the center

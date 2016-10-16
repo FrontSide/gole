@@ -263,68 +263,19 @@ func FinishTurn(game *Game) (int, []string, error) {
 	//   and nil for error
 	// - If turn was unsuccessful, return -1, nil and the error
 
-	var confirmedWordTiles [][]Tile
-	var confirmedWords []string
+	// Stores the tiles of the words that have been successfully confirmed
+	// in this round
+	var confirmedHorizontalWordTiles []Tile
+	var confirmedVerticalWordTiles []Tile
+
+	// Stores the words that have been successfully confirmed
+	// in this round
+	var confirmedHorizontalWord string
+	var confirmedVerticalWord string
+
 	var points int
 
-	// Get all unlocked tiles
-	for verticalIdx, column := range game.Tiles {
-		for horizontalIdx, tile := range column {
-			if tile.Letter != (Letter{}) && !tile.IsLocked {
-
-				if !IsConnectedToCenterTile(verticalIdx, horizontalIdx, game.Tiles, nil) {
-					return -1, nil, errors.New(fmt.Sprintf("Tile v:%d,h:%d is isolated from the center tile.", verticalIdx, horizontalIdx))
-				}
-
-				hasHorizontalWord, horizontalWordTiles, _ := GetHorizontalWordAtTile(verticalIdx, horizontalIdx, game.Tiles)
-				hasVerticalWord, verticalWordTiles, _ := GetVerticalWordAtTile(verticalIdx, horizontalIdx, game.Tiles)
-
-				log.Println("horizontailTiles: " + TileSliceToString(horizontalWordTiles))
-				log.Println("verticalTiles: " + TileSliceToString(verticalWordTiles))
-
-				//Check if words have alreaddy been confirmed i.e. rated
-				var ignoreHorizontalWord, ignoreVerticalWord bool
-				for _, wordTiles := range confirmedWordTiles {
-					if hasHorizontalWord && reflect.DeepEqual(wordTiles, horizontalWordTiles) {
-						ignoreHorizontalWord = true
-					}
-					if hasVerticalWord && reflect.DeepEqual(wordTiles, verticalWordTiles) {
-						ignoreVerticalWord = true
-					}
-				}
-
-				if !ignoreHorizontalWord && hasHorizontalWord {
-					horizontalWordPoints, word, err := GetPointsForWord(horizontalWordTiles)
-					if err != nil {
-						return -1, nil, err
-					}
-					points += horizontalWordPoints
-					confirmedWords = append(confirmedWords, word)
-					confirmedWordTiles = append(confirmedWordTiles, horizontalWordTiles)
-				}
-
-				if !ignoreVerticalWord && hasVerticalWord {
-					verticalWordPoints, word, err := GetPointsForWord(verticalWordTiles)
-					if err != nil {
-						return -1, nil, err
-					}
-					points += verticalWordPoints
-					confirmedWords = append(confirmedWords, word)
-					confirmedWordTiles = append(confirmedWordTiles, verticalWordTiles)
-				}
-
-				// If the center tile is unlocked
-				// make sure that there is a horizontal
-				// or vertical word around it.
-				// Submitting a single letter as first word
-				// is not permissive.
-				if TileIsCenterTile(verticalIdx, horizontalIdx) && !hasVerticalWord && !hasHorizontalWord {
-					return -1, nil, errors.New("You need to place at least one more letter on the board.")
-				}
-
-			}
-		}
-	}
+	
 
 	// Add earned points to current player
 	game.Players[game.PlayerIdxWithTurn].Points += points
