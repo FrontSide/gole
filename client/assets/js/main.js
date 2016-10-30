@@ -55,7 +55,7 @@ function reloadBoard() {
         if (game.board == null) {
                 promptError("There has been a connection issue. The current game could not be restored.", "Start new Game", promptNewGame, initNewGame)
         }
-        drawBoard()
+        updatePotentialPointsForWords(drawBoard)
 }
 
 function reloadPlayer() {
@@ -217,7 +217,33 @@ function placeLetterOnTile(xIdx, yIdx, boardTileDiv) {
                 })
         }
 
+}
 
+function updatePotentialPointsForWords(finishedCallback) {
+    // To be called after a letter has been placed
+    // and after the newest board has been retrieved from the server
+    // but before it is drawn.
+    // Requires:
+    // - A callback function to be invoked after the
+    //   updating process has finished
+    // Guarantees:
+    // - Iterate through the potentialPointsForWords array
+    //   to find potential points wor words that the player
+    //   could gain for placed but unconfirmed words.
+    // - Add the points to a potentialPointsForWord attribute
+    //   to the tile with the according index.
+    //   The tile that holds this value is always the last
+    //   tile of the related word and should be displayed accordingly.
+    // You may access the potential points for a word by looking for
+    // the potentialPointsForWord attribute of the last tile of a given word
+    // tile.potentialPointsForWord
+
+    $.each(potentialPointsForWords, function(idx, potentialPointsStruct) {
+        console.log("Letter with index y::" + potentialPointsStruct.LastLetterYIdx + "::x::" + potentialPointsStruct.LastLetterXIdx + ":: holds potential points ::" + potentialPointsStruct.PotentialPoints)
+        game.board[potentialPointsStruct.LastLetterYIdx][potentialPointsStruct.LastLetterXIdx].potentialPointsForWord = potentialPointsStruct.PotentialPoints
+    })
+
+    finishedCallback()
 
 }
 

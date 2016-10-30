@@ -80,6 +80,13 @@ function drawBoard() {
                                  var letterValueDiv = $("<div>", {class: "gole-tile-letter-value-container"})
                                  letterValueDiv.html(tile.Letter.Attributes.PointValue)
 
+                                 if (tile.potentialPointsForWord > 0) {
+                                     console.log("Draw potential Points Appendix")
+                                     var potentialPointsDiv = $("<div>", {class: "gole-tile-potential-points-appendix-container"})
+                                     potentialPointsDiv.html(XXX)
+                                     tileDiv.append(potentialPointsDiv)
+                                 }
+
                                  tileDiv.append(letterDiv)
                                  tileDiv.append(letterValueDiv)
                                  boardTileDiv.append(tileDiv)

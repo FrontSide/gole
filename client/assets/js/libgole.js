@@ -34,6 +34,14 @@ var removeLetterOrigin = {
          horizontalIdx: null
 }
 
+// After placeing a letter, the potential points
+// a player could gain with the word s/he has constructed
+// throughout the course of the current turn are returned
+// by the gole server and are the stored as an array
+// of potentialPointsForWord objects
+// (see server documentation)
+var potentialPointsForWords = []
+
 // The ASCII representation of the wildcard character
 // needs to correspond with the wildcard charater defined on the server side
 var WILDCARD_CHARACTER = '*'
@@ -159,7 +167,13 @@ function placeLetter(replaceWildcardLetterCode, letterId, tilesXCoordinate, tile
          // Guarantees:
          // - Send letterPlacement request to gole server
          // - Return null if operation was successfult and server returned with HTTP ok
+         // - Assigns the potentialPointsForWords array returned by
+         //   the server to the client side global array varialbe
+         //   potentialPointsForWords i.e. if words were found
+         //   and the server returned with OK 200.
          // - Return error message if operation was unsuccesful
+         //   (The placement may still have been successful even though
+         //    the server returned an error).
 
          if (replaceWildcardLetterCode) {
                  console.log("Call replace Wildcard letter")
@@ -179,8 +193,9 @@ function placeLetter(replaceWildcardLetterCode, letterId, tilesXCoordinate, tile
                  }
              ),
          })
-         .done(function(id) {
+         .done(function(httpResponsePotentialPointsForWords) {
              console.log("Letter Placed")
+             potentialPointsForWords = JSON.parse(httpResponsePotentialPointsForWords)
              return null
          })
          .fail(function(response) {

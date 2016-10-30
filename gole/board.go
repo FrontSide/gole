@@ -407,7 +407,7 @@ func (game *Game) GetNewWordsFromBoard() ([]WordOnBoard, error) {
                     ignoreHorizontalWord = true
                 }
 
-                hasVerticalWord, verticalWordTiles, _ := GetVerticalWordAtTile(verticalIdx, horizontalIdx, game.Tiles)
+                hasVerticalWord, verticalWordTiles, firstLetterYIdx := GetVerticalWordAtTile(verticalIdx, horizontalIdx, game.Tiles)
 
                 // Make sure that each word that has been found
                 // is only registered i.e. accounted for once
@@ -424,7 +424,7 @@ func (game *Game) GetNewWordsFromBoard() ([]WordOnBoard, error) {
                     word := WordOnBoard{
                         firstLetterXIdx: horizontalIdx,
                         firstLetterYIdx: verticalIdx,
-                        lastLetterXIdx: horizontalIdx + len(horizontalWordTiles) - 1,
+                        lastLetterXIdx: // WRONG ---> horizontalIdx + len(horizontalWordTiles) - 1,
                         lastLetterYIdx: verticalIdx,
                         wordTiles: horizontalWordTiles,
                     }
