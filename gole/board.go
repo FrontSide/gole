@@ -348,7 +348,15 @@ func GetVerticalWordAtTile(verticalTileIdx int, horizontalTileIdx int, tiles [][
 
 }
 
-func (game *Game) GetNewWordsFromBoard() ([][]Tile, error) {
+type WordOnBoard struct {
+    firstLetterXIdx int
+    firstLetterYIdx int
+    lastLetterXIdx  int
+    lastLetterYIdx  int
+    wordTiles       []Tile
+}
+
+func (game *Game) GetNewWordsFromBoard() ([]WordOnBoard, error) {
 	// Get all unlocked words from the game board
 
 	// Requires:
@@ -358,13 +366,13 @@ func (game *Game) GetNewWordsFromBoard() ([][]Tile, error) {
 	// - Scans across all tiles to find unlocked ones and retrieve
 	//   the horizontal and vertical word for each unlocked tile
 	//   each unique word will only be accounted for once
-	// - Return each unique found word. A word is defined as
-	//   a slice of letters with a length of at least 2.
-	// - Return en empty two-dimensional tile slice and an error
+	// - Return each unique found word in an array of WordOnBoard structs.
+    //   A word is defined as a slice of letters with a length of at least 2.
+	// - Return en empty WordOnBoard slice and an error
 	//   if no word has been found or if an unlocked tile is not connected
 	//   to the center tile through other tiles.
 
-	var newWordsTiles [][]Tile
+	var newWords []WordOnBoard
 
 	// Each found words will be stored as a string in this variable
 	// consisting of a concatenation of its letter ids.
@@ -413,12 +421,26 @@ func (game *Game) GetNewWordsFromBoard() ([][]Tile, error) {
                 }
 
                 if hasHorizontalWord && ! ignoreHorizontalWord {
-                    newWordsTiles = append(newWordsTiles, horizontalWordTiles)
+                    word := WordOnBoard{
+                        firstLetterXIdx: horizontalIdx,
+                        firstLetterYIdx: verticalIdx,
+                        lastLetterXIdx: horizontalIdx + len(horizontalWordTiles) - 1,
+                        lastLetterYIdx: verticalIdx,
+                        wordTiles: horizontalWordTiles,
+                    }
+                    newWords = append(newWords, word)
                     newWordsIds = append(newWordsIds, GetIdStringForTileSlice(horizontalWordTiles))
                 }
 
                 if hasVerticalWord && ! ignoreVerticalWord {
-                    newWordsTiles = append(newWordsTiles, verticalWordTiles)
+                    word := WordOnBoard{
+                        firstLetterXIdx: horizontalIdx,
+                        firstLetterYIdx: verticalIdx,
+                        lastLetterXIdx: horizontalIdx,
+                        lastLetterYIdx: verticalIdx + len(horizontalWordTiles) - 1,
+                        wordTiles: verticalWordTiles,
+                    }
+                    newWords = append(newWords, word)
                     newWordsIds = append(newWordsIds, GetIdStringForTileSlice(verticalWordTiles))
                 }
 
@@ -426,11 +448,11 @@ func (game *Game) GetNewWordsFromBoard() ([][]Tile, error) {
 		}
 	}
 
-    if len(newWordsTiles) == 0 {
-        return newWordsTiles, errors.New("No new words found on board.")
+    if len(newWords) == 0 {
+        return newWords, errors.New("No new words found on board.")
     }
 
-    return newWordsTiles, nil
+    return newWords, nil
 
 }
 

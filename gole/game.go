@@ -124,45 +124,90 @@ func PopLetterFromSet(game *Game) (Letter, error) {
 	return letterToReturn, nil
 }
 
+type PotentialPointsForWord struct {
+    LastLetterXIdx  int
+    LastLetterYIdx  int
+    PotentialPoints int
+}
+
+type PotentialPointsForWords []*PotentialPointsForWord
+
 func PlaceLetter(game *Game, verticalTileIdx int,
-			horizontalTileIdx int, letterId string) error {
+			horizontalTileIdx int, letterId string) (PotentialPointsForWords,
+                                                     error) {
 	// Add a letter to the board.
 	//
 	// Guarantees:
 	// - If successful, the affected letter will be moved away from the
 	//   active player's hand and put on the specified board tile
-	// - Return error if placement is illeal, if the game is over,
-	//   if the letter with the given ID is a wildcard letter, that
-	//   has not yet been replaced with an actual letter,
-	//   or if the active player does not own the letter that is to be placed
+    // - Return a list/slice of PotentialPointsForWord structs.
+    //   This struct contains the last indexes
+    //   (i.e. the coordinates of the word's last tile/letter)
+    //   of each unconfirmed word
+    //   (i.e. a word that has unlocked tiles/letteres and for which a player
+    //    has not redeemed any points)
+    //   that has been found on the board and the points that a player
+    //   would gain for this word if s/he ended the turn now.
+    //   Note that potential points do not consider the validity of
+    //   the word nor the legality of the placements of all letters.
+	// - Return nil and error if:
+    //   -- placement is illeal
+    //   -- the game is over
+	//   -- the letter with the given ID is a wildcard letter, that
+	//      has not yet been replaced with an actual letter
+	//   -- the active player does not own the letter that is to be placed
 
 	isRawWildcardLetter, err := game.Players[game.PlayerIdxWithTurn].IsRawWildcardLetter(letterId)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if isRawWildcardLetter {
-		return errors.New("Cannot place unsubstituted wildcard letter.")
+		return nil, errors.New("Cannot place unsubstituted wildcard letter.")
 	}
 
 	if game.GameOver {
-		return errors.New("Cannot place letter. Game is over.")
+		return nil,  errors.New("Cannot place letter. Game is over.")
 	}
 
 	if isLegal, reason := IsLegalPlacement(
 		verticalTileIdx, horizontalTileIdx, game.Tiles); !isLegal {
-		return errors.New("Cannot place letter. " + reason)
+		return nil, errors.New("Cannot place letter. " + reason)
 	}
 
 	var letterStruct Letter
 	letterStruct, err = game.Players[game.PlayerIdxWithTurn].PopLetterFromHand(letterId)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	game.Tiles[verticalTileIdx][horizontalTileIdx].Letter = letterStruct
 	game.UpdatePlacementLegalityOfAllTiles()
 
-	return nil
+    newWordsOnBoard, err := game.GetNewWordsFromBoard()
+    if err != nil {
+        return nil, err
+    }
+
+    log.Printf("\nNr. Of new words found: %d\n", len(newWordsOnBoard))
+
+    var potentialPointsForWords PotentialPointsForWords
+
+    for _, wordOnBoard := range newWordsOnBoard {
+        pointsForWord, _, err := GetPointsForWord(wordOnBoard, false)
+        if err != nil {
+            return nil, err
+        }
+
+        potentialPointsForWord := PotentialPointsForWord{
+            LastLetterYIdx: wordOnBoard.lastLetterYIdx,
+            LastLetterXIdx: wordOnBoard.lastLetterXIdx,
+            PotentialPoints: pointsForWord,
+        }
+
+        potentialPointsForWords = append(potentialPointsForWords, &potentialPointsForWord)
+    }
+
+	return potentialPointsForWords, nil
 }
 
 func RemoveLetter(game *Game, verticalTileIdx int, horizontalTileIdx int) error {
@@ -198,19 +243,22 @@ func RemoveLetter(game *Game, verticalTileIdx int, horizontalTileIdx int) error 
 
 }
 
-func GetPointsForWord(wordTiles []Tile) (int, string, error) {
+func GetPointsForWord(wordOnBoard WordOnBoard, doCheckVailidity bool) (int, string, error) {
 
 	// Calculate the points for a series of
 	// tiles, with respect to the point value of a letter
 	// and the tile effects
 	// Requires:
 	// - Slice of tiles with letters on them
+    // - A boolean describing whether the word should be
+    //   checked for vailidity against a dictionary
 	// Guarantees:
 	// - Return the points gained with this word (if valid)
 	// - Return the word from the tiles as a string
-	// - Return an error if the word is invalid
+	// - Return an error if the word is invalid if doCheckVailidity
+    //   is set to true
 
-	if len(wordTiles) < 2 {
+	if len(wordOnBoard.wordTiles) < 2 {
 		return -1, "", errors.New(
 			"Can not get points for word. Too short.")
 	}
@@ -219,7 +267,7 @@ func GetPointsForWord(wordTiles []Tile) (int, string, error) {
 	var wordPoints int
 	wordPointMultiplicator := 1
 
-	for _, tile := range wordTiles {
+	for _, tile := range wordOnBoard.wordTiles {
 
 		word += string(tile.Letter.Character)
 
@@ -241,8 +289,8 @@ func GetPointsForWord(wordTiles []Tile) (int, string, error) {
 
 	wordPoints *= wordPointMultiplicator
 
-	if !golelibs.IsAValidWord(word) {
-		return -1, word, errors.New("Not a valid word: " + word)
+	if doCheckVailidity && !golelibs.IsAValidWord(word) {
+		return -1, word, errors.New("No t a valid word: " + word)
 	}
 
 	return wordPoints, word, nil
@@ -271,13 +319,13 @@ func FinishTurn(game *Game) (int, []string, error) {
     // these points will be accounted to the player.
 	var points int
 
-    newWordsTiles, err := game.GetNewWordsFromBoard()
+    newWordsOnBoard, err := game.GetNewWordsFromBoard()
     if err != nil {
         return -1, nil, err
     }
 
-    for _, wordTiles := range newWordsTiles {
-        pointsForWord, newConfirmdWord, err := GetPointsForWord(wordTiles)
+    for _, wordOnBoard := range newWordsOnBoard {
+        pointsForWord, newConfirmdWord, err := GetPointsForWord(wordOnBoard, true)
         if err != nil {
             return -1, nil, err
         }

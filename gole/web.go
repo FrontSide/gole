@@ -237,7 +237,8 @@ func PlaceLetterHandler(responseWriter http.ResponseWriter, request *http.Reques
 		return
 	}
 
-	err = PlaceLetter(game, requestBody.TileYCoordinate,
+    var potentialPointsForWords PotentialPointsForWords
+	potentialPointsForWords, err = PlaceLetter(game, requestBody.TileYCoordinate,
 		requestBody.TileXCoordinate, requestBody.LetterId)
 
 	if err != nil {
@@ -245,7 +246,14 @@ func PlaceLetterHandler(responseWriter http.ResponseWriter, request *http.Reques
 		return
 	}
 
-	responseWriter.Write([]byte(game.Id))
+    var potentialPointsForWordsJson []byte
+	potentialPointsForWordsJson, err = json.Marshal(potentialPointsForWords)
+	if err != nil {
+		http.Error(responseWriter, err.Error(), 500)
+		return
+	}
+
+	responseWriter.Write(potentialPointsForWordsJson)
 
 }
 
