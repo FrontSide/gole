@@ -151,7 +151,7 @@ func GetPotentialPoints(game *Game) (PotentialPointsForWords, error) {
     //   the word nor the legality of the placements of all letters.
     // - Return nil and an error in case of failure
 
-    newWordsOnBoard, err := game.GetNewWordsFromBoard()
+    newWordsOnBoard, err := game.GetNewWordsFromBoard(false)
     if err != nil {
         return nil, err
     }
@@ -334,7 +334,7 @@ func FinishTurn(game *Game) (int, []string, error) {
     // these points will be accounted to the player.
 	var points int
 
-    newWordsOnBoard, err := game.GetNewWordsFromBoard()
+    newWordsOnBoard, err := game.GetNewWordsFromBoard(true)
 
     if err != nil {
         return -1, nil, err

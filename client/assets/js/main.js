@@ -250,11 +250,11 @@ function updatePotentialPointsForWords(finishedCallback) {
     if (potentialPointsForWords) {
 
         $.each(potentialPointsForWords, function(idx, potentialPointsStruct) {
-            console.log("Unconfirmed word starting at y::" + potentialPointsStruct.FirstLetterYIdx + "::x::" + potentialPointsStruct.FisrstLetterXIdx)
+            console.log("Unconfirmed word starting at y::" + potentialPointsStruct.FirstLetterYIdx + "::x::" + potentialPointsStruct.FirstLetterXIdx)
             console.log("Letter with index y::" + potentialPointsStruct.LastLetterYIdx + "::x::" + potentialPointsStruct.LastLetterXIdx + ":: holds potential points ::" + potentialPointsStruct.PotentialPoints)
             game.board[potentialPointsStruct.LastLetterYIdx][potentialPointsStruct.LastLetterXIdx].potentialPointsForWord = potentialPointsStruct.PotentialPoints
 
-            if (potentialPointsStruct.LastLetterYIdx == potentialPointsStruct.firstLetterYIdx) {
+            if (potentialPointsStruct.LastLetterYIdx == potentialPointsStruct.FirstLetterYIdx) {
                 game.board[potentialPointsStruct.LastLetterYIdx][potentialPointsStruct.LastLetterXIdx].wordAlignment = wordAlignment.HORIZONTAL
             } else {
                 game.board[potentialPointsStruct.LastLetterYIdx][potentialPointsStruct.LastLetterXIdx].wordAlignment = wordAlignment.VERTICAL

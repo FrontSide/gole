@@ -356,11 +356,14 @@ type WordOnBoard struct {
     wordTiles       []Tile
 }
 
-func (game *Game) GetNewWordsFromBoard() ([]WordOnBoard, error) {
+func (game *Game) GetNewWordsFromBoard(doValidateCenterConnection bool) ([]WordOnBoard, error) {
 	// Get all unlocked words from the game board
 
 	// Requires:
 	// - A reference to a game instance as base variable
+    // - A bool doValidateCenterConnection defining whether
+    //   the algorithm should throw an error if a tile on the board
+    //   is not connected to the center of the board.
 	//
 	// Guarantees:
 	// - Scans across all tiles to find unlocked ones and retrieve
@@ -370,7 +373,8 @@ func (game *Game) GetNewWordsFromBoard() ([]WordOnBoard, error) {
     //   A word is defined as a slice of letters with a length of at least 2.
 	// - Return en empty WordOnBoard slice and an error
 	//   if an unlocked tile is not connected
-    //   to the center tile through other tiles.
+    //   to the center tile through other tiles
+    //   unless doValidateCenterConnection is false.
 
 	var newWords []WordOnBoard
 
@@ -394,7 +398,7 @@ func (game *Game) GetNewWordsFromBoard() ([]WordOnBoard, error) {
 		for horizontalIdx, tile := range column {
 			if tile.Letter != (Letter{}) && !tile.IsLocked {
 
-				if !IsConnectedToCenterTile(verticalIdx, horizontalIdx, game.Tiles, nil) {
+				if doValidateCenterConnection && !IsConnectedToCenterTile(verticalIdx, horizontalIdx, game.Tiles, nil) {
 					return nil, errors.New(fmt.Sprintf("Tile v:%d,h:%d is isolated from the center tile.", verticalIdx, horizontalIdx))
 				}
 

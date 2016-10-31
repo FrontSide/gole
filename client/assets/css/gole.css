@@ -321,23 +321,23 @@ div.gole-tile-letter-value-container {
 }
 
 div.gole-tile-potential-points-appendix-container {
-    width: 10px;
-    height: 45px;
-    background-color: #DDDDFF;
-    border: dashed 1px #222;
+    width: 20px;
+    height: 20px;
+    background-color: #FFFF55;
+    border: solid 1px #222;
     position: absolute;
+    border-radius: 5px;
+    line-height: 1;
 }
 
 div.gole-tile-potential-points-horizontal-appendix-container {
-    width: 10px;
-    height: 45px;
-    margin-left: 45px;
+    margin-left: 42px;
+    margin-top: 12px;
 }
 
 div.gole-tile-potential-points-vertical-appendix-container {
-    width: 45px;
-    height: 10px;
-    margin-top: 45px;
+    margin-top: 42px;
+    margin-left: 12px;
 }
 
 div.gole-active-player-container {
