@@ -161,6 +161,43 @@ function replaceWildcardLetter(letterCharacterCode, letterId, fSuccessCallback) 
 
 }
 
+function getPotentialPoints(fSuccessCallback, fSuccessCallbackArguments) {
+        // Call the gole API endpoint that will return
+        // the potential points for unplayed but placed words
+        // and updated the local data-structure.
+        //
+        // Requires:
+        // - A callback function fSuccessCallback to be invoced
+        //   once the function has finished successfully.
+        // - Optionally, arguments to be passed to the callback.
+        //
+        // Guarantees:
+        // - Assign the potentialPointsForWords array returned by
+        //   the server to the client side global array varialbe
+        //   potentialPointsForWords i.e. if words were found
+        //   and the server returned with OK 200.
+        // - Call and return fSuccessCallback incl. args if server has
+        //   responded with OK 200 and the potentialPointsForWords
+        //   data structure has been updated.
+
+        $.ajax({
+            async: false,
+            method: "GET",
+            url: server.url + "/" + game.id + "/potentialPoints.json",
+        })
+        .done(function(httpResponsePotentialPointsForWords) {
+            console.log("Successfully retrieved potential points")
+            potentialPointsForWords = JSON.parse(httpResponsePotentialPointsForWords)
+            if (fSuccessCallback) {
+                return fSuccessCallback(fSuccessCallbackArguments)
+            }
+        })
+        .fail(function(response) {
+            return response
+        })
+
+}
+
 function placeLetter(replaceWildcardLetterCode, letterId, tilesXCoordinate, tilesYCoordinate) {
          // Required:
          // - Optionally, if the letter to be placed is a wildcard letter:
@@ -174,13 +211,10 @@ function placeLetter(replaceWildcardLetterCode, letterId, tilesXCoordinate, tile
          // - coordinates of the tile the letter is to be placed on
          // - boolean describing whether or not
          //   the letter to be places origintes from a wildcard tile
+         //
          // Guarantees:
          // - Send letterPlacement request to gole server
-         // - Return null if operation was successfult and server returned with HTTP ok
-         // - Assigns the potentialPointsForWords array returned by
-         //   the server to the client side global array varialbe
-         //   potentialPointsForWords i.e. if words were found
-         //   and the server returned with OK 200.
+         // - Return null if operation was successful and server returned with HTTP ok
          // - Return error message if operation was unsuccesful
          //   (The placement may still have been successful even though
          //    the server returned an error).
@@ -203,9 +237,8 @@ function placeLetter(replaceWildcardLetterCode, letterId, tilesXCoordinate, tile
                  }
              ),
          })
-         .done(function(httpResponsePotentialPointsForWords) {
+         .done(function(gameId) {
              console.log("Letter Placed")
-             potentialPointsForWords = JSON.parse(httpResponsePotentialPointsForWords)
              return null
          })
          .fail(function(response) {

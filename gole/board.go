@@ -369,8 +369,8 @@ func (game *Game) GetNewWordsFromBoard() ([]WordOnBoard, error) {
 	// - Return each unique found word in an array of WordOnBoard structs.
     //   A word is defined as a slice of letters with a length of at least 2.
 	// - Return en empty WordOnBoard slice and an error
-	//   if no word has been found or if an unlocked tile is not connected
-	//   to the center tile through other tiles.
+	//   if an unlocked tile is not connected
+    //   to the center tile through other tiles.
 
 	var newWords []WordOnBoard
 
@@ -450,10 +450,6 @@ func (game *Game) GetNewWordsFromBoard() ([]WordOnBoard, error) {
 			}
 		}
 	}
-
-    if len(newWords) == 0 {
-        return newWords, errors.New("No new words found on board.")
-    }
 
     return newWords, nil
 

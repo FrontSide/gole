@@ -55,7 +55,7 @@ function reloadBoard() {
         if (game.board == null) {
                 promptError("There has been a connection issue. The current game could not be restored.", "Start new Game", promptNewGame, initNewGame)
         }
-        updatePotentialPointsForWords(drawBoard)
+        getPotentialPoints(updatePotentialPointsForWords, drawBoard)
 }
 
 function reloadPlayer() {
@@ -247,18 +247,23 @@ function updatePotentialPointsForWords(finishedCallback) {
     // tile.potentialPointsForWord
     // tile.wordAlignment
 
-    $.each(potentialPointsForWords, function(idx, potentialPointsStruct) {
-        console.log("Letter with index y::" + potentialPointsStruct.LastLetterYIdx + "::x::" + potentialPointsStruct.LastLetterXIdx + ":: holds potential points ::" + potentialPointsStruct.PotentialPoints)
-        game.board[potentialPointsStruct.LastLetterYIdx][potentialPointsStruct.LastLetterXIdx].potentialPointsForWord = potentialPointsStruct.PotentialPoints
+    if (potentialPointsForWords) {
 
-        if (potentialPointsStruct.LastLetterYIdx == potentialPointsStruct.firstLetterYIdx) {
-            game.board[potentialPointsStruct.LastLetterYIdx][potentialPointsStruct.LastLetterXIdx].wordAlignment = wordAlignment.HORIZONTAL
-        } else {
-            game.board[potentialPointsStruct.LastLetterYIdx][potentialPointsStruct.LastLetterXIdx].wordAlignment = wordAlignment.VERTICAL
-        }
+        $.each(potentialPointsForWords, function(idx, potentialPointsStruct) {
+            console.log("Unconfirmed word starting at y::" + potentialPointsStruct.FirstLetterYIdx + "::x::" + potentialPointsStruct.FisrstLetterXIdx)
+            console.log("Letter with index y::" + potentialPointsStruct.LastLetterYIdx + "::x::" + potentialPointsStruct.LastLetterXIdx + ":: holds potential points ::" + potentialPointsStruct.PotentialPoints)
+            game.board[potentialPointsStruct.LastLetterYIdx][potentialPointsStruct.LastLetterXIdx].potentialPointsForWord = potentialPointsStruct.PotentialPoints
+
+            if (potentialPointsStruct.LastLetterYIdx == potentialPointsStruct.firstLetterYIdx) {
+                game.board[potentialPointsStruct.LastLetterYIdx][potentialPointsStruct.LastLetterXIdx].wordAlignment = wordAlignment.HORIZONTAL
+            } else {
+                game.board[potentialPointsStruct.LastLetterYIdx][potentialPointsStruct.LastLetterXIdx].wordAlignment = wordAlignment.VERTICAL
+            }
 
 
-    })
+        })
+
+    }
 
     finishedCallback()
 
