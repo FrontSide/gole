@@ -125,72 +125,72 @@ func PopLetterFromSet(game *Game) (Letter, error) {
 }
 
 type PotentialPointsForWord struct {
-    FirstLetterXIdx  int
-    FirstLetterYIdx  int
-    LastLetterXIdx  int
-    LastLetterYIdx  int
-    PotentialPoints int
+	FirstLetterXIdx int
+	FirstLetterYIdx int
+	LastLetterXIdx  int
+	LastLetterYIdx  int
+	PotentialPoints int
 }
 
 type PotentialPointsForWords []*PotentialPointsForWord
 
 func GetPotentialPoints(game *Game) (PotentialPointsForWords, error) {
-    // Get the potential points a player could gain for an unplayed but
-    // placed word on the board.
-    //
-    // Guarantees:
-    // - Return a list/slice of PotentialPointsForWord structs.
-    //   This struct contains the last indexes
-    //   (i.e. the coordinates of the word's last tile/letter)
-    //   of each unconfirmed word
-    //   (i.e. a word that has unlocked tiles/letteres and for which a player
-    //    has not redeemed any points)
-    //   that has been found on the board and the points that a player
-    //   would gain for this word if s/he ended the turn now.
-    //   Note that potential points do not consider the validity of
-    //   the word nor the legality of the placements of all letters.
-    // - Return nil and an error in case of failure
+	// Get the potential points a player could gain for an unplayed but
+	// placed word on the board.
+	//
+	// Guarantees:
+	// - Return a list/slice of PotentialPointsForWord structs.
+	//   This struct contains the last indexes
+	//   (i.e. the coordinates of the word's last tile/letter)
+	//   of each unconfirmed word
+	//   (i.e. a word that has unlocked tiles/letteres and for which a player
+	//    has not redeemed any points)
+	//   that has been found on the board and the points that a player
+	//   would gain for this word if s/he ended the turn now.
+	//   Note that potential points do not consider the validity of
+	//   the word nor the legality of the placements of all letters.
+	// - Return nil and an error in case of failure
 
-    newWordsOnBoard, err := game.GetNewWordsFromBoard(false)
-    if err != nil {
-        return nil, err
-    }
+	newWordsOnBoard, err := game.GetNewWordsFromBoard(false)
+	if err != nil {
+		return nil, err
+	}
 
-    log.Printf("\nNr. Of new words found: %d\n", len(newWordsOnBoard))
+	log.Printf("\nNr. Of new words found: %d\n", len(newWordsOnBoard))
 
-    var potentialPointsForWords PotentialPointsForWords
+	var potentialPointsForWords PotentialPointsForWords
 
-    for _, wordOnBoard := range newWordsOnBoard {
-        pointsForWord, _, err := GetPointsForWord(wordOnBoard, false)
-        if err != nil {
-            return nil, err
-        }
+	for _, wordOnBoard := range newWordsOnBoard {
+		pointsForWord, _, err := GetPointsForWord(wordOnBoard, false)
+		if err != nil {
+			return nil, err
+		}
 
-        potentialPointsForWord := PotentialPointsForWord{
-            LastLetterYIdx: wordOnBoard.lastLetterYIdx,
-            LastLetterXIdx: wordOnBoard.lastLetterXIdx,
-            FirstLetterXIdx: wordOnBoard.firstLetterXIdx,
-            FirstLetterYIdx: wordOnBoard.firstLetterYIdx,
-            PotentialPoints: pointsForWord,
-        }
+		potentialPointsForWord := PotentialPointsForWord{
+			LastLetterYIdx:  wordOnBoard.lastLetterYIdx,
+			LastLetterXIdx:  wordOnBoard.lastLetterXIdx,
+			FirstLetterXIdx: wordOnBoard.firstLetterXIdx,
+			FirstLetterYIdx: wordOnBoard.firstLetterYIdx,
+			PotentialPoints: pointsForWord,
+		}
 
-        potentialPointsForWords = append(potentialPointsForWords, &potentialPointsForWord)
-    }
+		potentialPointsForWords = append(potentialPointsForWords, &potentialPointsForWord)
+	}
 
-    return potentialPointsForWords, nil
+	return potentialPointsForWords, nil
 
 }
 
 func PlaceLetter(game *Game, verticalTileIdx int,
-			horizontalTileIdx int, letterId string) error {
+	horizontalTileIdx int, letterId string) error {
 	// Add a letter to the board.
 	//
 	// Guarantees:
 	// - If successful, the affected letter will be moved away from the
 	//   active player's hand and put on the specified board tile
 	// - Return nil and error if:
-    //   -- placement is illeal
-    //   -- the game is over
+	//   -- placement is illeal
+	//   -- the game is over
 	//   -- the letter with the given ID is a wildcard letter, that
 	//      has not yet been replaced with an actual letter
 	//   -- the active player does not own the letter that is to be placed
@@ -264,13 +264,13 @@ func GetPointsForWord(wordOnBoard WordOnBoard, doCheckVailidity bool) (int, stri
 	// and the tile effects
 	// Requires:
 	// - Slice of tiles with letters on them
-    // - A boolean describing whether the word should be
-    //   checked for vailidity against a dictionary
+	// - A boolean describing whether the word should be
+	//   checked for vailidity against a dictionary
 	// Guarantees:
 	// - Return the points gained with this word (if valid)
 	// - Return the word from the tiles as a string
 	// - Return an error if the word is invalid if doCheckVailidity
-    //   is set to true
+	//   is set to true
 
 	if len(wordOnBoard.wordTiles) < 2 {
 		return -1, "", errors.New(
@@ -323,35 +323,35 @@ func FinishTurn(game *Game) (int, []string, error) {
 	//   an array with the word(s) for which the points were awarded
 	//   and nil for error
 	// - If turn was unsuccessful, return -1, nil and the error
-    //   This inclused the case that no new words were found on the board.
+	//   This inclused the case that no new words were found on the board.
 
 	// Stores the words that have been successfully confirmed
 	// in this round
 	var confirmedWords []string
 
-    // Stores the points that have been gaines in this round.
-    // After all words have been confirmed,
-    // these points will be accounted to the player.
+	// Stores the points that have been gaines in this round.
+	// After all words have been confirmed,
+	// these points will be accounted to the player.
 	var points int
 
-    newWordsOnBoard, err := game.GetNewWordsFromBoard(true)
+	newWordsOnBoard, err := game.GetNewWordsFromBoard(true)
 
-    if err != nil {
-        return -1, nil, err
-    }
+	if err != nil {
+		return -1, nil, err
+	}
 
-    if len(newWordsOnBoard) == 0 {
-        return -1, nil, errors.New("No new words found on board.")
-    }
+	if len(newWordsOnBoard) == 0 {
+		return -1, nil, errors.New("No new words found on board.")
+	}
 
-    for _, wordOnBoard := range newWordsOnBoard {
-        pointsForWord, newConfirmdWord, err := GetPointsForWord(wordOnBoard, true)
-        if err != nil {
-            return -1, nil, err
-        }
-        points += pointsForWord
-        confirmedWords = append(confirmedWords, newConfirmdWord)
-    }
+	for _, wordOnBoard := range newWordsOnBoard {
+		pointsForWord, newConfirmdWord, err := GetPointsForWord(wordOnBoard, true)
+		if err != nil {
+			return -1, nil, err
+		}
+		points += pointsForWord
+		confirmedWords = append(confirmedWords, newConfirmdWord)
+	}
 
 	// Add earned points to current player
 	game.Players[game.PlayerIdxWithTurn].Points += points

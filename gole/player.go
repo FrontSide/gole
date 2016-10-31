@@ -2,10 +2,10 @@ package main
 
 import (
 	"errors"
-	"math/rand"
 	"fmt"
-	"time"
 	"log"
+	"math/rand"
+	"time"
 )
 
 type Player struct {
@@ -54,7 +54,7 @@ func (player *Player) SortHand(letterIds []string) error {
 	if len(letterIds) != len(player.LettersInHand) {
 		return errors.New(
 			"The amount of the given letter IDs does not match " +
-			"the amount of letters in the player's hand.")
+				"the amount of letters in the player's hand.")
 	}
 
 	var rearrangedLettersInHand = make([]Letter, len(player.LettersInHand))
@@ -123,7 +123,7 @@ func (player *Player) ReplaceWildcard(letterId string, letterCharacter rune) err
 		return err
 	}
 
-	if ! isWildcardLetter {
+	if !isWildcardLetter {
 		return errors.New("Cannot replace letter on non-wildcard letter.")
 	}
 

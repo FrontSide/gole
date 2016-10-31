@@ -3,9 +3,9 @@ package main
 import (
 	"errors"
 	"fmt"
+	"gole/golelibs"
 	"log"
 	"strings"
-	"gole/golelibs"
 )
 
 var games []Game

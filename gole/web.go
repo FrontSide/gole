@@ -14,13 +14,13 @@ type CreateNewGameRequestBody struct {
 
 type SortHandRequestBody struct {
 	LetterIds []string
-	GameId string
+	GameId    string
 }
 
 type ReplaceWildcardRequestBody struct {
-	LetterId string
+	LetterId          string
 	ReplacementLetter rune
-	GameId string
+	GameId            string
 }
 
 type PlaceLetterRequestBody struct {
@@ -74,13 +74,13 @@ func CreateNewGameHandler(responseWriter http.ResponseWriter, request *http.Requ
 }
 
 func GetBoardHandler(responseWriter http.ResponseWriter, request *http.Request) {
-    // Get the board of a Game as JSON
-    // Requires:
-    // - An incoming GET request with an ID in the request Path
-    // Guarantees:
-    // - Return a json object that represents the board of the game with
-    //   the given ID similar to how the Board struct on the server
-    //   side represents it.
+	// Get the board of a Game as JSON
+	// Requires:
+	// - An incoming GET request with an ID in the request Path
+	// Guarantees:
+	// - Return a json object that represents the board of the game with
+	//   the given ID similar to how the Board struct on the server
+	//   side represents it.
 
 	id := mux.Vars(request)["id"]
 
@@ -105,19 +105,19 @@ func GetBoardHandler(responseWriter http.ResponseWriter, request *http.Request) 
 }
 
 func GetPotentialPointsHandler(responseWriter http.ResponseWriter, request *http.Request) {
-    // Get the potential points that can be earned for every placed
-    // but unconfirmed word on the board
-    // Requires:
-    // - An incoming GET request with an ID in the request Path
-    // Guarantees:
-    // - Return a JSON list containing PotentialPointsForWord Structs
-    //   whereas each of these structs contains the start and end coordinates
-    //   for an unconfirmed word on the board and the points a player could
-    //   gain for playing this word (assuming it is a valid word)
+	// Get the potential points that can be earned for every placed
+	// but unconfirmed word on the board
+	// Requires:
+	// - An incoming GET request with an ID in the request Path
+	// Guarantees:
+	// - Return a JSON list containing PotentialPointsForWord Structs
+	//   whereas each of these structs contains the start and end coordinates
+	//   for an unconfirmed word on the board and the points a player could
+	//   gain for playing this word (assuming it is a valid word)
 
-    id := mux.Vars(request)["id"]
+	id := mux.Vars(request)["id"]
 
-    game, err := GetGameByUUID(id)
+	game, err := GetGameByUUID(id)
 
 	if err != nil {
 		log.Println("Not a valid GameID: ", id)
@@ -125,24 +125,23 @@ func GetPotentialPointsHandler(responseWriter http.ResponseWriter, request *http
 		return
 	}
 
-    potentialPointsForWords, err := GetPotentialPoints(game)
+	potentialPointsForWords, err := GetPotentialPoints(game)
 
-    if err != nil {
-        http.Error(responseWriter, err.Error(), 500)
-        return
-    }
+	if err != nil {
+		http.Error(responseWriter, err.Error(), 500)
+		return
+	}
 
-    var potentialPointsForWordsJson []byte
-    potentialPointsForWordsJson, err = json.Marshal(potentialPointsForWords)
-    if err != nil {
-        http.Error(responseWriter, err.Error(), 500)
-        return
-    }
+	var potentialPointsForWordsJson []byte
+	potentialPointsForWordsJson, err = json.Marshal(potentialPointsForWords)
+	if err != nil {
+		http.Error(responseWriter, err.Error(), 500)
+		return
+	}
 
-    responseWriter.Write(potentialPointsForWordsJson)
+	responseWriter.Write(potentialPointsForWordsJson)
 
 }
-
 
 func SortHandHandler(responseWriter http.ResponseWriter, request *http.Request) {
 	// Sort or shuffle the hand of the active player
@@ -201,7 +200,6 @@ func SortHandHandler(responseWriter http.ResponseWriter, request *http.Request) 
 	responseWriter.Write([]byte(requestBody.GameId))
 
 }
-
 
 func ReplaceWildcardHandler(responseWriter http.ResponseWriter, request *http.Request) {
 	// Handle the client request to replace a wildcard letter tile with an
@@ -463,7 +461,7 @@ func StartWebServer() {
 	r.HandleFunc("/new", CreateNewGameHandler).Methods("POST")
 	r.HandleFunc("/{id}/board.json", GetBoardHandler).Methods("GET")
 	r.HandleFunc("/{id}/player.json", GetActivePlayerHandler).Methods("GET")
-    r.HandleFunc("/{id}/potentialPoints.json", GetPotentialPointsHandler).Methods("GET")
+	r.HandleFunc("/{id}/potentialPoints.json", GetPotentialPointsHandler).Methods("GET")
 	r.HandleFunc("/wildcard/replace", ReplaceWildcardHandler).Methods("POST")
 	r.HandleFunc("/hand/sort", SortHandHandler).Methods("POST")
 	r.HandleFunc("/place", PlaceLetterHandler).Methods("POST")

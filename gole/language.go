@@ -6,9 +6,9 @@ package main
 import (
 	"errors"
 	"fmt"
+	"gole/golelibs"
 	"math/rand"
 	"time"
-	"gole/golelibs"
 )
 
 type LetterAttributes struct {
@@ -16,7 +16,7 @@ type LetterAttributes struct {
 }
 
 type Letter struct {
-	Id string
+	Id         string
 	Character  rune
 	Attributes LetterAttributes
 }
