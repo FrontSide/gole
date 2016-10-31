@@ -42,6 +42,16 @@ var removeLetterOrigin = {
 // (see server documentation)
 var potentialPointsForWords = []
 
+// Enum-like struct holding constants
+// defining the alignment of a word.
+// This attribute can for example be added to
+// the last tile in a word so thet the potentialPointsForWord container
+// can be placed accordingly
+var wordAlignment = {
+    HORIZONTAL: 1,
+    VERTICAL: 2
+}
+
 // The ASCII representation of the wildcard character
 // needs to correspond with the wildcard charater defined on the server side
 var WILDCARD_CHARACTER = '*'

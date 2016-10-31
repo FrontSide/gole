@@ -234,13 +234,30 @@ function updatePotentialPointsForWords(finishedCallback) {
     //   to the tile with the according index.
     //   The tile that holds this value is always the last
     //   tile of the related word and should be displayed accordingly.
-    // You may access the potential points for a word by looking for
-    // the potentialPointsForWord attribute of the last tile of a given word
+    // - Add the word alignment of the word the potentialPoints are
+    //   related to to the wordAlignment attribute of the same tile.
+    // You may access the potential points for a word as well as
+    // the alignment of the word, the potential points are refering to,
+    // by looking for the potentialPointsForWord attribute o
+    // and the wordAlignment attribute of the last tile of a given word.
+    //
+    // For possible values of the wordAlignment, see the
+    // enum-like struct with the same name in the libgole module.
+    //
     // tile.potentialPointsForWord
+    // tile.wordAlignment
 
     $.each(potentialPointsForWords, function(idx, potentialPointsStruct) {
         console.log("Letter with index y::" + potentialPointsStruct.LastLetterYIdx + "::x::" + potentialPointsStruct.LastLetterXIdx + ":: holds potential points ::" + potentialPointsStruct.PotentialPoints)
         game.board[potentialPointsStruct.LastLetterYIdx][potentialPointsStruct.LastLetterXIdx].potentialPointsForWord = potentialPointsStruct.PotentialPoints
+
+        if (potentialPointsStruct.LastLetterYIdx == potentialPointsStruct.firstLetterYIdx) {
+            game.board[potentialPointsStruct.LastLetterYIdx][potentialPointsStruct.LastLetterXIdx].wordAlignment = wordAlignment.HORIZONTAL
+        } else {
+            game.board[potentialPointsStruct.LastLetterYIdx][potentialPointsStruct.LastLetterXIdx].wordAlignment = wordAlignment.VERTICAL
+        }
+
+
     })
 
     finishedCallback()

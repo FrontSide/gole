@@ -83,7 +83,17 @@ function drawBoard() {
                                  if (tile.potentialPointsForWord > 0) {
                                      console.log("Draw potential Points Appendix")
                                      var potentialPointsDiv = $("<div>", {class: "gole-tile-potential-points-appendix-container"})
-                                     potentialPointsDiv.html(XXX)
+
+                                     switch (tile.wordAlignment) {
+                                         case wordAlignment.HORIZONTAL:
+                                            potentialPointsDiv.addClass("gole-tile-potential-points-horizontal-appendix-container");
+                                            break;
+                                         case wordAlignment.VERTICAL:
+                                            potentialPointsDiv.addClass("gole-tile-potential-points-vertical-appendix-container");
+                                            break;
+                                     }
+
+                                     potentialPointsDiv.html(tile.potentialPointsForWord)
                                      tileDiv.append(potentialPointsDiv)
                                  }
 

@@ -399,15 +399,18 @@ func (game *Game) GetNewWordsFromBoard() ([]WordOnBoard, error) {
 				}
 
                 var ignoreHorizontalWord, ignoreVerticalWord bool
-                var hasHorizontalWord bool
-                var horizontalWordTiles []Tile
+                horizontalWordFirstLetterXIdx := horizontalIdx
+                verticalWordFirstLetterYIdx := verticalIdx
+                var hasHorizontalWord, hasVerticalWord bool
+                var horizontalWordTiles, verticalWordTiles []Tile
+
                 if ! horizontalWordFoundInRow {
-			        hasHorizontalWord, horizontalWordTiles, _ = GetHorizontalWordAtTile(verticalIdx, horizontalIdx, game.Tiles)
+			        hasHorizontalWord, horizontalWordTiles, horizontalWordFirstLetterXIdx = GetHorizontalWordAtTile(verticalIdx, horizontalIdx, game.Tiles)
                 } else {
                     ignoreHorizontalWord = true
                 }
 
-                hasVerticalWord, verticalWordTiles, firstLetterYIdx := GetVerticalWordAtTile(verticalIdx, horizontalIdx, game.Tiles)
+                hasVerticalWord, verticalWordTiles, verticalWordFirstLetterYIdx = GetVerticalWordAtTile(verticalIdx, horizontalIdx, game.Tiles)
 
                 // Make sure that each word that has been found
                 // is only registered i.e. accounted for once
@@ -422,9 +425,9 @@ func (game *Game) GetNewWordsFromBoard() ([]WordOnBoard, error) {
 
                 if hasHorizontalWord && ! ignoreHorizontalWord {
                     word := WordOnBoard{
-                        firstLetterXIdx: horizontalIdx,
+                        firstLetterXIdx: horizontalWordFirstLetterXIdx,
                         firstLetterYIdx: verticalIdx,
-                        lastLetterXIdx: // WRONG ---> horizontalIdx + len(horizontalWordTiles) - 1,
+                        lastLetterXIdx: horizontalWordFirstLetterXIdx + len(horizontalWordTiles) - 1,
                         lastLetterYIdx: verticalIdx,
                         wordTiles: horizontalWordTiles,
                     }
@@ -435,9 +438,9 @@ func (game *Game) GetNewWordsFromBoard() ([]WordOnBoard, error) {
                 if hasVerticalWord && ! ignoreVerticalWord {
                     word := WordOnBoard{
                         firstLetterXIdx: horizontalIdx,
-                        firstLetterYIdx: verticalIdx,
+                        firstLetterYIdx: verticalWordFirstLetterYIdx,
                         lastLetterXIdx: horizontalIdx,
-                        lastLetterYIdx: verticalIdx + len(horizontalWordTiles) - 1,
+                        lastLetterYIdx: verticalWordFirstLetterYIdx + len(verticalWordTiles) - 1,
                         wordTiles: verticalWordTiles,
                     }
                     newWords = append(newWords, word)
