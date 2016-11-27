@@ -1,422 +1,491 @@
 html, body {
-        height:100%;
+    height: 100%;
 }
 
 body {
-        background: linear-gradient(to bottom left, #A9EFFC, #4682B4);
-        background-repeat: no-repeat;
-        width: 100%;
-        position: relative;
+    background: linear-gradient(to bottom left, #A9EFFC, #4682B4);
+    background-repeat: no-repeat;
+    width: 100%;
+    position: relative;
 }
 
 div.gole-game-container {
-        margin-left: auto;
-        margin-right: auto;
-        margin-top: 20px;
-        text-align: center;
-        height: auto;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
+    text-align: center;
+    height: auto;
 }
 
 div.gole-control-panel-container {
-        position: fixed;
-        left: 10px;
-        top: 10px;
-        width: 30%;
-        height: 40px;
+    position: fixed;
+    left: 10px;
+    top: 10px;
+    width: 30%;
+    height: 40px;
 }
 
 div.gole-control-panel-button-container {
-        width: 30%;
-        position: relative;
-        float: left;
+    width: 30%;
+    position: relative;
+    float: left;
 }
 
 div.gole-control-panel-button-container:hover {
-        font-weight: bold;
-        cursor: pointer;
+    font-weight: bold;
+    cursor: pointer;
 }
 
 span.gole-control-panel-button {
-        color: #FFF;
-        font-size: 12px;
-        text-decoration: none;
+    color: #FFF;
+    font-size: 12px;
+    text-decoration: none;
 }
 
-span.gole-control-panel-button > i {
-        font-size: 20px;
+span.gole-control-panel-button>i {
+    font-size: 20px;
 }
 
-div.gole-control-panel-button-container:hover > span.gole-control-panel-button > i {
-        -webkit-animation: symbol-quick-rotate-animation  0.5s linear 1 forwards;
-        animation: symbol-quick-rotate-animation  0.5s linear 1 forwards;
+div.gole-control-panel-button-container:hover>span.gole-control-panel-button>i {
+    -webkit-animation: symbol-quick-rotate-animation 0.5s linear 1 forwards;
+    animation: symbol-quick-rotate-animation 0.5s linear 1 forwards;
 }
 
 @-webkit-keyframes symbol-quick-rotate-animation {
-        0% {  -webkit-transform: rotate(0deg); }
-        100% {  -webkit-transform: rotate(360deg);}
+    0% {
+        -webkit-transform: rotate(0deg);
+    }
+    100% {
+        -webkit-transform: rotate(360deg);
+    }
 }
 
 @keyframes symbol-quick-rotate-animation {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg);}
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 div.gole-prompt-container {
-        position: fixed;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(255, 255, 255, 0.8);
-        top: 0px;
-        left: 0px;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.8);
+    top: 0px;
+    left: 0px;
 }
 
 div.gole-prompt-dialog-container {
-        margin: auto;
-        margin-top: 50px;
-        background-color: #FFF;
-        border: solid 1px #AAA;
-        box-shadow: 0px 0px 5px -2px #222;
-        border-radius: 3px;
-        width: 400px;
-        min-height: 100px;
-        padding: 20px;
-
-        -webkit-animation: prompt-dialog-container-fadein-animation 0.7s linear 1 forwards;
-        animation: prompt-dialog-container-fadein-animation 0.7s linear 1 forwards;
+    margin: auto;
+    margin-top: 50px;
+    background-color: #FFF;
+    border: solid 1px #AAA;
+    box-shadow: 0px 0px 5px -2px #222;
+    border-radius: 3px;
+    width: 400px;
+    min-height: 100px;
+    padding: 20px;
+    -webkit-animation: prompt-dialog-container-fadein-animation 0.7s linear 1 forwards;
+    animation: prompt-dialog-container-fadein-animation 0.7s linear 1 forwards;
 }
 
 div.gole-prompt-dialog-container-close {
-        -webkit-animation: prompt-dialog-container-fadeout-animation 0.4s linear 1 forwards;
-        animation: prompt-dialog-container-fadeout-animation 0.4s linear 1 forwards;
+    -webkit-animation: prompt-dialog-container-fadeout-animation 0.4s linear 1 forwards;
+    animation: prompt-dialog-container-fadeout-animation 0.4s linear 1 forwards;
 }
 
 @-webkit-keyframes prompt-dialog-container-fadein-animation {
-        0% { margin-top: -100px; }
-        30% { margin-top: 60px; }
-        60% { margin-top: 45px; }
-        100% { margin-top: 50px; }
+    0% {
+        margin-top: -100px;
+    }
+    30% {
+        margin-top: 60px;
+    }
+    60% {
+        margin-top: 45px;
+    }
+    100% {
+        margin-top: 50px;
+    }
 }
 
 @keyframes prompt-dialog-container-fadein-animation {
-        0% { margin-top: -100px; }
-        30% { margin-top: 60px; }
-        60% { margin-top: 45px; }
-        100% { margin-top: 50px; }
+    0% {
+        margin-top: -100px;
+    }
+    30% {
+        margin-top: 60px;
+    }
+    60% {
+        margin-top: 45px;
+    }
+    100% {
+        margin-top: 50px;
+    }
 }
 
 @-webkit-keyframes prompt-dialog-container-fadeout-animation {
-        0% { margin-top: 50px; }
-        30% { margin-top: 60px; }
-        100% { margin-top: -500px; }
+    0% {
+        margin-top: 50px;
+    }
+    30% {
+        margin-top: 60px;
+    }
+    100% {
+        margin-top: -500px;
+    }
 }
 
 @keyframes prompt-dialog-container-fadeout-animation {
-        0% { margin-top: 50px; }
-        30% { margin-top: 60px; }
-        100% { margin-top: -500px; }
+    0% {
+        margin-top: 50px;
+    }
+    30% {
+        margin-top: 60px;
+    }
+    100% {
+        margin-top: -500px;
+    }
 }
 
 div.gole-prompt-error-dialog-container {
-        background-color: #E55;
+    background-color: #E55;
 }
 
 div.gole-prompt-text-container {
-        width: 100%;
-        margin-bottom: 20px;
+    width: 100%;
+    margin-bottom: 20px;
 }
 
 div.gole-prompt-neutral-text-container {
-        color: #222;
+    color: #222;
 }
 
 div.gole-prompt-error-text-container {
-        color: #FFF;
-        font-weight: bold;
+    color: #FFF;
+    font-weight: bold;
 }
 
-input[type="text"].gole-prompt-dialog-text-field  {
-        padding: 10px;
-        border: none;
-        border-bottom: solid 2px #c9c9c9;
-        transition: border 0.3s;
-        margin: 5px;
+input[type="text"].gole-prompt-dialog-text-field {
+    padding: 10px;
+    border: none;
+    border-bottom: solid 2px #c9c9c9;
+    transition: border 0.3s;
+    margin: 5px;
 }
-input[type="text"].gole-prompt-dialog-text-field:focus,
-input[type="text"].gole-prompt-dialog-text-field .focus {
-        border-bottom: solid 2px #969696;
+
+input[type="text"].gole-prompt-dialog-text-field:focus, input[type="text"].gole-prompt-dialog-text-field .focus {
+    border-bottom: solid 2px #969696;
 }
 
 button.gole-prompt-dialog-button {
-        border: none;
-        padding: 10px 20px;
-        text-align: center;
-        text-decoration: none;
-        display: inline-block;
-        font-size: 16px;
-        margin-left: 25%;
-        margin-right: auto;
-        margin-top: 10px;
-        box-shadow: 0px 0px 4px -2px #222;
-        border-radius: 5px;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin-left: 25%;
+    margin-right: auto;
+    margin-top: 10px;
+    box-shadow: 0px 0px 4px -2px #222;
+    border-radius: 5px;
 }
 
 button.gole-prompt-dialog-button:hover {
-        cursor: pointer;
+    cursor: pointer;
 }
 
 button.gole-prompt-dialog-neutral-button {
-        background-color: #EFEFEF;
-        color: #222;
+    background-color: #EFEFEF;
+    color: #222;
 }
 
 button.gole-prompt-dialog-neutral-button:hover {
-        background-color: #FAFAFA;
+    background-color: #FAFAFA;
 }
 
 button.gole-prompt-dialog-success-button {
-        background-color: #EFFFEF;
-        color: #222;
+    background-color: #EFFFEF;
+    color: #222;
 }
 
 button.gole-prompt-dialog-success-button:hover {
-        background-color: #DFFFDF;
+    background-color: #DFFFDF;
 }
 
 button.gole-gameplay-button {
-        border: 1px #555 solid;
-        border-radius: 5px;
-        box-shadow: 1px 1px 3px -1px #555;
-        padding: 5px 5px;
-        text-align: center;
-        text-decoration: none;
-        display: inline-block;
-        font-size: 16px;
-        margin: 5px;
-        background-color: #FFF;
-        width: 150px;
-        float: left;
+    border: 1px #555 solid;
+    border-radius: 5px;
+    box-shadow: 1px 1px 3px -1px #555;
+    padding: 5px 5px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 5px;
+    background-color: #FFF;
+    width: 150px;
+    float: left;
 }
 
 button.gole-gameplay-button:hover {
-        background-color: #EFEFFF;
+    background-color: #EFEFFF;
 }
 
 button.gole-confirm-word-button {
-        color: #222;
+    color: #222;
 }
 
 button.gole-start-new-game-button {
-        color: #222;
+    color: #222;
 }
 
 button.gole-shuffle-hand-button {
-        width: 45px;
-        height: 45px;
-        color: #A22;
+    width: 45px;
+    height: 45px;
+    color: #A22;
 }
 
 div.gole-board-container {
-        margin-left: auto;
-        margin-right: auto;
-        margin-top: 50px;
-        text-align:center;
-        height: auto;
-        display: inline-block;
-        background-color: rgba(255, 255, 255, 0.8);
-        box-shadow: 0px 0px 20px #000;
-        border: solid 1px #FFF;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 50px;
+    text-align: center;
+    height: auto;
+    display: inline-block;
+    background-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0px 0px 20px #000;
+    border: solid 1px #FFF;
 }
 
 div.gole-board-tile {
-        margin-left: auto;
-        margin-right: auto;
-        width: 45px;
-        height: 45px;
-        border: solid 1px #FFF;
-        float:left;
-        font-size: 20px;
-        font-weight: bold;
-        color: #555
+    margin-left: auto;
+    margin-right: auto;
+    width: 45px;
+    height: 45px;
+    border: solid 1px #FFF;
+    float: left;
+    font-size: 20px;
+    font-weight: bold;
+    color: #555
 }
 
 div.gole-board-tile-no-tile {
-        padding-top: 10px;
+    padding-top: 10px;
 }
 
 div.gole-board-tile-effect-double-word {
-        background-color: rgba(150, 150, 255, 0.2);
+    background-color: rgba(150, 150, 255, 0.2);
 }
 
 div.gole-board-tile-effect-triple-word {
-        background-color: rgba(255, 100, 100, 1);
+    background-color: rgba(255, 100, 100, 1);
 }
 
 div.gole-board-tile-effect-double-letter {
-        background-color: rgba(200, 200, 255, 0.2);
+    background-color: rgba(200, 200, 255, 0.2);
 }
 
 div.gole-board-tile-effect-triple-letter {
-        background-color: rgba(170, 255, 170, 0.2);
+    background-color: rgba(170, 255, 170, 0.2);
 }
 
 div.gole-board-tile-effect-center {
-        background-color: #FF0;
+    background-color: #FF0;
 }
 
 div.gole-board-tile-legal-placement.gole-board-tile-legal-placement-show {
-        border-color: #EFF;
+    border-color: #EFF;
 }
 
 div.gole-board-tile-illegal-placement.gole-board-tile-legal-placement-show {
-        background-color: #EEE;
+    background-color: #EEE;
 }
 
 div.gole-tile {
-        width: 45px;
-        height: 45px;
-        background-color: #FEFEFE;
-        box-shadow: 0px 0px 3px 0px #222;
-        border: solid 2px #222;
-        float: left;
-        border-radius: 5px
+    width: 45px;
+    height: 45px;
+    background-color: #FEFEFE;
+    box-shadow: 0px 0px 3px 0px #222;
+    border: solid 2px #222;
+    float: left;
+    border-radius: 5px;
+    position: static;
 }
 
 div.gole-tile-locked {
-        background-color: #EEE;
+    background-color: #EEE;
 }
 
 div.gole-tile-selectable:hover {
-        background-color: #EFEFEF;
-        box-shadow: 0px 0px 3px #222;
-        cursor: pointer;
+    background-color: #EFEFEF;
+    box-shadow: 0px 0px 3px #222;
+    cursor: pointer;
 }
 
 div.gole-tile-activated {
-        background-color: #EFFFEF;
-        box-shadow: 0px 0px 3px #000;
+    background-color: #EFFFEF;
+    box-shadow: 0px 0px 3px #000;
 }
 
 div.gole-tile-margin {
-        margin-right: 5px;
+    margin-right: 5px;
 }
 
 div.gole-tile-letter-character-container {
-        width: 15px;
-        height: 15px;
-        color: #222;
-        font-size: 30px;
-        margin-left: 3px;
+    width: 15px;
+    height: 15px;
+    color: #222;
+    font-size: 30px;
+    margin-left: 3px;
 }
 
 div.gole-tile-letter-value-container {
-        width: 7px;
-        height: 7px;
-        color: #AAA;
-        font-size: 10px;
-        font-weight: bold;
-        float: right;
-        vertical-align: bottom;
-        margin-right: 3px;
-        margin-top: 10px
+    width: 7px;
+    height: 7px;
+    color: #AAA;
+    font-size: 10px;
+    font-weight: bold;
+    float: right;
+    vertical-align: bottom;
+    margin-right: 5px;
+    margin-top: 10px
 }
 
 div.gole-tile-potential-points-appendix-container {
-    width: 20px;
-    height: 20px;
+    width: 25px;
+    height: 25px;
     background-color: #FFFF55;
     border: solid 1px #222;
     position: absolute;
     border-radius: 5px;
     line-height: 1;
+    font-size: 0.8em;
+    text-align: center;
+    padding-top: 0.2em;
 }
 
 div.gole-tile-potential-points-horizontal-appendix-container {
     margin-left: 42px;
-    margin-top: 12px;
+    margin-top: 9px;
 }
 
 div.gole-tile-potential-points-vertical-appendix-container {
     margin-top: 42px;
-    margin-left: 12px;
+    margin-left: 9px;
 }
 
 div.gole-active-player-container {
-        width: 100%;
-        left: 0px;
-        border-radius: 5px 5px 0px 0px;
-        height: 100px;
-        position: fixed;
-        margin-top: 50px;
-        padding: 10px;
-        padding-top: 5px;
-        text-align: left;
-        background-color: #223;
-        bottom: 0px;
-        color: #DDD;
-        box-shadow: 0px 0px 5px #222;
-        border: solid 1px #DDD;
+    width: 100%;
+    left: 0px;
+    border-radius: 5px 5px 0px 0px;
+    height: 100px;
+    position: fixed;
+    margin-top: 50px;
+    padding: 10px;
+    padding-top: 5px;
+    text-align: left;
+    background-color: #223;
+    bottom: 0px;
+    color: #DDD;
+    box-shadow: 0px 0px 5px #222;
+    border: solid 1px #DDD;
 }
 
 div.gole-active-player-name-container {
-        width: 20%;
-        font-size: 20px;
-        float: left;
-        margin-bottom: 10px;
+    width: 20%;
+    font-size: 20px;
+    float: left;
+    margin-bottom: 10px;
 }
 
 div.gole-active-player-hand-container {
-        width: 30%;
-        min-width: 400px;
-        float: left;
-        background-color: #3F3F4F;
-        padding-top: 2px;
-        border-bottom: 1px solid #AAA;
-        height: 50px;
+    width: 30%;
+    min-width: 400px;
+    float: left;
+    background-color: #3F3F4F;
+    padding-top: 2px;
+    border-bottom: 1px solid #AAA;
+    height: 50px;
 }
 
 div.gole-active-player-points-container {
-        font-size: 20px;
-        float: right;
-        width: 10%;
-        text-align: right;
-        margin-right: 10px;
+    font-size: 20px;
+    float: right;
+    width: 10%;
+    text-align: right;
+    margin-right: 10px;
 }
 
 div.points-gained-animation-container {
-        position: fixed;
-        top: 250px;
-        left: 40%;
-        width: 300px;
-        height: 300px;
+    position: fixed;
+    top: 250px;
+    left: 40%;
+    width: 300px;
+    height: 300px;
 }
 
 div.points-gained-animation-points-container {
-        color: #8E8;
-        font-weight: bold;
-        text-shadow: 0px 0px 5px #555;
-        text-align: center;
-
-        -webkit-animation: points-gained-fadeinout-animation 0.7s linear 1 forwards;
-        animation: points-gained-fadeinout-animation 0.7s linear 1 forwards;
-
+    color: #8E8;
+    font-weight: bold;
+    text-shadow: 0px 0px 5px #555;
+    text-align: center;
+    -webkit-animation: points-gained-fadeinout-animation 0.7s linear 1 forwards;
+    animation: points-gained-fadeinout-animation 0.7s linear 1 forwards;
 }
 
 @-webkit-keyframes points-gained-fadeinout-animation {
-        0% { opacity: 0; font-size: 40px; margin-top: 50px;}
-        10% { opacity: 1; font-size: 100px;  margin-top: 0px;}
-        90% { opacity: 1; font-size: 90px;  margin-top: 10px;}
-        100% { opacity: 0; font-size: 40px;  margin-top: 50px;}
+    0% {
+        opacity: 0;
+        font-size: 40px;
+        margin-top: 50px;
+    }
+    10% {
+        opacity: 1;
+        font-size: 100px;
+        margin-top: 0px;
+    }
+    90% {
+        opacity: 1;
+        font-size: 90px;
+        margin-top: 10px;
+    }
+    100% {
+        opacity: 0;
+        font-size: 40px;
+        margin-top: 50px;
+    }
 }
 
 @keyframes points-gained-fadeinout-animation {
-        0% { opacity: 0; font-size: 40px; margin-top: 50px;}
-        10% { opacity: 1; font-size: 100px;  margin-top: 0px;}
-        90% { opacity: 1; font-size: 90px;  margin-top: 10px;}
-        100% { opacity: 0; font-size: 40px;  margin-top: 50px;}
+    0% {
+        opacity: 0;
+        font-size: 40px;
+        margin-top: 50px;
+    }
+    10% {
+        opacity: 1;
+        font-size: 100px;
+        margin-top: 0px;
+    }
+    90% {
+        opacity: 1;
+        font-size: 90px;
+        margin-top: 10px;
+    }
+    100% {
+        opacity: 0;
+        font-size: 40px;
+        margin-top: 50px;
+    }
 }
 
 div.points-gained-animation-words-container {
-        font-size: 32px;
-        color: #4A4;
-        font-weight: bold;
+    font-size: 32px;
+    color: #4A4;
+    font-weight: bold;
 }
