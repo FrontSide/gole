@@ -1,18 +1,23 @@
-export GOPATH := $(GOPATH):$(PWD)/server
-export SERVER_SRC := $(PWD)/server/src
-export BUILD_PATH := $(PWD)
+export GOPATH := $(HOME)/.go
+export GOLE_PATH := $$(echo $$GOPATH | cut -d ":" -f 1)/src/gole
+export PATH := $(PATH):$(GOPATH)/bin
+export GOLE_GIT_PATH := $(pwd)
 
 stop:
 	kill -9 $$(cat server.pid) $$(cat client.pid) || true
 
 clean: stop
 	rm server.pid client.pid || true
-	rm gole || true
-	cd $(SERVER_SRC) && go clean
+	rm gole/gole || true
+	cd gole && go clean
 
 prepare-server:
-	echo "Goroot is: $(GOROOT)"
 	echo "Gopath is: $(GOPATH)"
+	mkdir -p $$GOPATH/src || true
+	echo "Gole Path is: $(GOLE_PATH)"
+	rm -r $(GOLE_PATH) || true
+	cp -r $$(pwd)/gole $$(echo $$GOPATH | cut -d ":" -f 1)/src/ 
+	cd $(GOLE_PATH) && go get
 
 prepare-client:
 	cd client && npm install
@@ -20,15 +25,15 @@ prepare-client:
 prepare: prepare-server prepare-client
 
 test: prepare-server
-	cd $(SERVER_SRC) && go test
+	cd $(GOLE_PATH) && go test
 
 build: clean prepare
-	cd $(SERVER_SRC) && go build -o gole
-	mv $(SERVER_SRC)/gole $(BUILD_PATH)
+	cd $(GOLE_PATH) && go build 
+	cd $(GOLE_GIT_PATH)
 	touch server.pid client.pid
 
 start-server:
-	./gole & echo $$! >> server.pid 
+	gole & echo $$! >> server.pid 
 
 start-client:	
 	cd client && npm start & echo $$! >> ../client.pid
