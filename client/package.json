@@ -28,7 +28,7 @@
     "electron-json-storage": "2.0.0",
     "eslint": "^3.11.0",
     "eslint-config-google": "^0.7.0",
-    "jquery": "2.1.4",
+    "jquery": "3.0.0",
     "jquery-ui": "1.12.0"
   }
 }
